@@ -1251,11 +1251,15 @@
 
         try {
             const hash = await generateHash(login, pass);
+            
+            // ЗАЩИТА: Если в локальном кэше лежат чужие данные (хэш не совпадает)
+            if (state.network && state.network.syncId && state.network.syncId !== hash) {
+                console.warn("Обнаружена смена аккаунта. Очистка кэша.");
+                state = getDefaultState(); // Сбрасываем всё в 0
+            }
+
             state.network.syncId = hash;
             localStorage.setItem('rpg_os_session_hash', hash);
-            
-            // УДАЛЕНО: if (!state.global.lastUpdated) ...
-            // Телефон больше не выдает себе свежую метку времени просто за вход
             
             saveLocal(); 
             startApp(hash);
@@ -1285,14 +1289,19 @@
    
     
     // И обновляем функцию выхода (logout), чтобы она удаляла этот ключ
+    // И обновляем функцию выхода (logout), чтобы она удаляла этот ключ
     function logout() {
-        if(confirm("Выйти из учетной записи?")) {
-            // Удаляем ключ сессии
+        if(confirm("Выйти из учетной записи? Локальные несинхронизированные данные будут стерты.")) {
+            // 1. Уничтожаем ключ доступа
             localStorage.removeItem('rpg_os_session_hash');
-            // Очищаем текущий стейт
-            state.network.syncId = null;
-            saveLocal();
-            // Перезагружаем страницу
+            
+            // 2. КРИТИЧЕСКИ ВАЖНО: Уничтожаем локальную базу предыдущего юзера!
+            localStorage.removeItem('rpg_os_final_v2');
+            
+            // 3. Очищаем оперативную память
+            state = getDefaultState();
+            
+            // 4. Перезагружаем страницу
             location.reload();
         }
     }
@@ -1437,22 +1446,30 @@
         "Повторяющаяся": { xp: 5, g: 2 }
     };
 
+    // ФАБРИКА: Создает гарантированно чистый и правильный объект состояния
+    function getDefaultState() {
+        return {
+            global: { level: 1, xp: 0, gold: 150 },
+            user: { tasksCompletedForLoot: 0, lootboxThreshold: 5 },
+            lootboxes: 2,
+            skills: [],
+            schedule: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] }, 
+            store: [],
+            notes: [],
+            network: { syncId: null, isHost: false, peers: [], sharedGoals: [] },
+            customAchievements: [],
+            unlockedAchievements: []
+        };
+    }
+
     // Умная загрузка из LocalStorage с защитой от ошибок
     const savedState = localStorage.getItem('rpg_os_final_v2');
     
-    let state = savedState ? JSON.parse(savedState) : {
-        global: { level: 1, xp: 0, gold: 150 },
-        user: { tasksCompletedForLoot: 0, lootboxThreshold: 5 },
-        lootboxes: 2,
-        skills: [],
-        schedule: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] }, 
-        store: [],
-        notes: [],
-        network: { syncId: null, isHost: false, peers: [], sharedGoals: [] }
-    };
+    // Используем фабрику, если кэш пуст
+    let state = savedState ? JSON.parse(savedState) : getDefaultState();
 
     // БРОНЕЖИЛЕТ ДЛЯ СТЕЙТА: Гарантируем, что массивы всегда существуют
-    if (!state.skills) state.skills = []; // <--- ЭТОГО НЕ ХВАТАЛО!
+    if (!state.skills) state.skills = []; 
     if (!state.store) state.store = [];
     if (!state.notes) state.notes = [];
     if (!state.customAchievements) state.customAchievements = [];
