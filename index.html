@@ -1451,12 +1451,16 @@
         network: { syncId: null, isHost: false, peers: [], sharedGoals: [] }
     };
 
-    // Защита: если в старом сохранении чего-то не хватает, код добавит это сам
+    // БРОНЕЖИЛЕТ ДЛЯ СТЕЙТА: Гарантируем, что массивы всегда существуют
+    if (!state.skills) state.skills = []; // <--- ЭТОГО НЕ ХВАТАЛО!
+    if (!state.store) state.store = [];
+    if (!state.notes) state.notes = [];
+    if (!state.customAchievements) state.customAchievements = [];
+    if (!state.unlockedAchievements) state.unlockedAchievements = [];
     if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
     if (!state.global) state.global = { level: 1, xp: 0, gold: 150 };
     if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
     if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
-    if (!state.notes) state.notes = [];
 
     // Временные переменные (Не сохраняются при обновлении страницы)
     let flow = { active: false, timeRemaining: 0, interval: null, tasks: [] };
