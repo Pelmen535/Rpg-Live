@@ -1229,40 +1229,10 @@
     let syncRef = null;
     let isSyncing = false; // Защита от зацикливания
 
-    async function authenticateUser() {
-        const login = document.getElementById('auth-login').value.trim();
-        const pass = document.getElementById('auth-password').value.trim();
-        if (!login || !pass) return alert("Введите учетные данные");
-
-        const hash = await generateHash(login, pass);
-        state.network.syncId = hash;
-        
-        // СОХРАНЯЕМ КЛЮЧ В БРАУЗЕРЕ НАВСЕГДА
-        localStorage.setItem('rpg_os_session_hash', hash);
-        
-        saveLocal(); 
-        startApp(hash);
-    }
-
+    
     // ==========================================
     // АВТОЛОГИН
     // ==========================================
-    
-    // Эту функцию мы вызываем при самом первом старте
-    window.addEventListener('load', () => {
-        // 1. Сначала проверяем, есть ли сохраненный ключ в localStorage
-        const savedHash = localStorage.getItem('rpg_os_session_hash');
-        
-        if (savedHash) {
-            // Если ключ есть, сразу запускаем приложение (пропускаем экран входа)
-            state.network.syncId = savedHash;
-            startApp(savedHash);
-        } else if (state.network && state.network.syncId) {
-            // Фолбэк на старую логику, если что-то пошло не так
-            startApp(state.network.syncId);
-        }
-    });
-
     // Немного меняем функцию аутентификации, чтобы она сохраняла ключ
     async function authenticateUser() {
         const login = document.getElementById('auth-login').value.trim();
@@ -1280,6 +1250,22 @@
         saveLocal(); 
         startApp(hash);
     }
+    // Эту функцию мы вызываем при самом первом старте
+    window.addEventListener('load', () => {
+        // 1. Сначала проверяем, есть ли сохраненный ключ в localStorage
+        const savedHash = localStorage.getItem('rpg_os_session_hash');
+        
+        if (savedHash) {
+            // Если ключ есть, сразу запускаем приложение (пропускаем экран входа)
+            state.network.syncId = savedHash;
+            startApp(savedHash);
+        } else if (state.network && state.network.syncId) {
+            // Фолбэк на старую логику, если что-то пошло не так
+            startApp(state.network.syncId);
+        }
+    });
+
+   
     
     // И обновляем функцию выхода (logout), чтобы она удаляла этот ключ
     function logout() {
