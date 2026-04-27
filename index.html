@@ -1230,25 +1230,43 @@
     let isSyncing = false; // Защита от зацикливания
 
     
-    // ==========================================
-    // АВТОЛОГИН
-    // ==========================================
-    // Немного меняем функцию аутентификации, чтобы она сохраняла ключ
+    // Добавляем отсутствующую функцию криптографии (заглушка на базе Web Crypto API)
+    async function generateHash(login, pass) {
+        const msgBuffer = new TextEncoder().encode(login + ":" + pass);
+        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
+        const hashArray = Array.from(new Uint8Array(hashBuffer));
+        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
+    }
+
     async function authenticateUser() {
         const login = document.getElementById('auth-login').value.trim();
         const pass = document.getElementById('auth-password').value.trim();
+        
         if (!login || !pass) return alert("Введите учетные данные");
 
-        const hash = await generateHash(login, pass);
-        state.network.syncId = hash;
-        
-        // СОХРАНЯЕМ КЛЮЧ В БРАУЗЕРЕ НАВСЕГДА
-        localStorage.setItem('rpg_os_session_hash', hash);
-        
-        if (!state.global.lastUpdated) state.global.lastUpdated = Date.now();
-        
-        saveLocal(); 
-        startApp(hash);
+        // Блокируем UI (предотвращаем двойные клики)
+        const authBtn = document.querySelector('#auth-view .btn');
+        const originalText = authBtn.innerText;
+        authBtn.innerText = "Авторизация...";
+        authBtn.disabled = true;
+
+        try {
+            const hash = await generateHash(login, pass);
+            state.network.syncId = hash;
+            localStorage.setItem('rpg_os_session_hash', hash);
+            
+            if (!state.global.lastUpdated) state.global.lastUpdated = Date.now();
+            
+            saveLocal(); 
+            startApp(hash);
+        } catch (error) {
+            console.error("Auth Error:", error);
+            alert("Ошибка инициализации ключа: " + error.message);
+        } finally {
+            // Всегда разблокируем кнопку
+            authBtn.innerText = originalText;
+            authBtn.disabled = false;
+        }
     }
     // Эту функцию мы вызываем при самом первом старте
     window.addEventListener('load', () => {
@@ -1287,48 +1305,41 @@
     }
 
     function initNetwork(hash) {
-        // Указываем путь в базе данных для конкретного пользователя
         syncRef = database.ref('users/' + hash);
+        
+        // ПРАВИЛЬНЫЙ ПАТТЕРН: Использование системного флага Firebase для статуса сети
+        database.ref('.info/connected').on('value', (snap) => {
+            if (snap.val() === true) {
+                updateSyncUI('online');
+            } else {
+                updateSyncUI('offline');
+            }
+        });
 
-        updateSyncUI('connecting');
-
-        // Подписываемся на изменения в реальном времени!
         syncRef.on('value', (snapshot) => {
             const incomingState = snapshot.val();
-            
-            // Сценарий 1: В облаке вообще ничего нет (первый запуск в жизни)
             if (!incomingState || !incomingState.global) {
-                console.log("Синхронизация: Облако пустое, отправляем локальные данные 📤");
                 pushState();
-                return; // Выходим, pushState сам обновит UI
+                return;
             }
 
-            // Сценарий 2: В облаке есть данные. Сравниваем время.
             const myTime = state.global.lastUpdated || 0;
             const incomingTime = incomingState.global.lastUpdated || 0;
 
+            // Защита от эха (Race condition protection)
             if (incomingTime > myTime) {
-                // Данные в облаке НОВЕЕ, чем у нас (или мы зашли с чистого устройства)
-                console.log("Синхронизация: приняты новые данные из облака ☁️");
                 isSyncing = true; 
-                state = incomingState;
+                state = incomingState; // В идеале здесь нужен deep clone, но для текущей архитектуры сойдет
                 localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
                 render();
-                updateSyncUI('online');
-                setTimeout(() => isSyncing = false, 500); // Снимаем блокировку
+                setTimeout(() => isSyncing = false, 500); 
             } else if (myTime > incomingTime) {
-                // Наши локальные данные НОВЕЕ, чем в облаке. 
-                // Это бывает, если мы играли в оффлайне, а потом появился интернет.
-                console.log("Синхронизация: наши данные новее, обновляем облако 🚀");
-                pushState(); // Отправляем свежак в облако
-            } else {
-                // Время совпадает. Мы полностью синхронизированы.
-                updateSyncUI('online');
+                pushState(); 
             }
-
         }, (error) => {
-            console.error("Firebase Sync Error:", error);
-            updateSyncUI('offline');
+            // Ошибка прав доступа (Permission Denied), а не потеря сети
+            console.error("Firebase Auth/Sync Error. Check Database Rules:", error);
+            alert("Критическая ошибка доступа к базе данных.");
         });
     }
 
@@ -1384,15 +1395,16 @@
     // ==========================================
     function save() {
         state.global.lastUpdated = Date.now();
-        const stateStr = JSON.stringify(state);
         
-        // 1. Всегда сохраняем локально (оффлайн-режим)
+        // Вычисляем достижения ДО сохранения, и без рекурсивного вызова
+        if(typeof checkAutoAchievements === 'function') {
+            checkAutoAchievements(); // Теперь не вызывает save() внутри себя
+        }
+
+        const stateStr = JSON.stringify(state);
         localStorage.setItem('rpg_os_final_v2', stateStr);
         
-        // 2. Отправляем в облако Firebase (если есть интернет, улетит мгновенно)
         pushState();
-        
-        if(typeof checkAutoAchievements === 'function') checkAutoAchievements();
         render();
     }
     /* =========================================
@@ -2614,12 +2626,13 @@
                 alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
             }
         });
+        
         if (changed) {
             if (state.global.xp >= 100) {
                 state.global.level += Math.floor(state.global.xp / 100);
                 state.global.xp = state.global.xp % 100;
             }
-            save();
+            // УБРАН ВЫЗОВ save();!
             renderAchievements();
         }
     }
