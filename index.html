@@ -1906,8 +1906,10 @@
         flowSelect.innerHTML = '<option value="">-- Выберите цель --</option>';
         
         state.skills.forEach(skill => {
-            // Показываем только невыполненные краткосрочные и повторяющиеся цели
-            const validNodes = skill.goals.filter(n => !n.done && (n.type === 'Краткосрочная' || n.type === 'Повторяющаяся'));
+            // ФИКС: Оборачиваем skill.goals в (skill.goals || [])
+            // Это спасет от краша, если Firebase удалил пустой массив целей
+            const validNodes = (skill.goals || []).filter(n => !n.done && (n.type === 'Краткосрочная' || n.type === 'Повторяющаяся'));
+            
             if (validNodes.length > 0) {
                 let optGroup = `<optgroup label="${skill.name}">`;
                 validNodes.forEach(n => {
@@ -1917,6 +1919,8 @@
                 flowSelect.innerHTML += optGroup;
             }
         });
+        
+        // ... остальной код отрисовки очереди (flow.tasks.map...) оставляем без изменений
         
         // Отрисовка списка задач в потоке
         const queueHtml = flow.tasks.map(t => {
