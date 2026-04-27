@@ -10,6 +10,7 @@
     <meta name="theme-color" content="#0d0d0f">
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-app-compat.js"></script>
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-database-compat.js"></script>
+    <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
     <style>
         /* =========================================
            БАЗОВЫЕ ПЕРЕМЕННЫЕ И НАСТРОЙКИ
@@ -639,20 +640,25 @@
     <main>
         <div id="auth-view" class="view active" style="display: flex; justify-content: center; align-items: center; min-height: 80vh;">
             <div class="card" style="width: 100%; max-width: 400px; text-align: center; border-color: var(--accent);">
-                <h2 style="color: var(--accent); margin-top: 0;">Вход в Систему</h2>
+                <h2 style="color: var(--accent); margin-top: 0;">Терминал Доступа</h2>
                 <p style="color: var(--text-dim); font-size: 0.9em; margin-bottom: 25px;">
-                    Введите логин и пароль. Они будут зашифрованы для создания уникального P2P-ключа синхронизации устройств.
+                    Идентификация пользователя через защищенный шлюз Firebase.
                 </p>
 
                 <div style="text-align: left;">
-                    <label>Позывной (Логин)</label>
-                    <input type="text" id="auth-login" placeholder="Например: Сталкер" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
+                    <label>Email (Почта)</label>
+                    <input type="email" id="auth-email" placeholder="stalker@zone.com" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
 
-                    <label>Пароль доступа</label>
+                    <label>Пароль (минимум 6 символов)</label>
                     <input type="password" id="auth-password" placeholder="••••••••" style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
                 </div>
 
-                <button class="btn" style="width: 100%; font-size: 1.1em;" onclick="authenticateUser()">Инициализация</button>
+                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                    <button class="btn" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
+                    <button class="btn btn-outline" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
+                </div>
+                
+                <div id="auth-error" style="color: var(--danger); font-size: 0.85em; display: none;"></div>
             </div>
         </div>
         <div id="dashboard" class="view">
@@ -1230,86 +1236,125 @@
     let isSyncing = false; // Защита от зацикливания
 
     
-    // Добавляем отсутствующую функцию криптографии (заглушка на базе Web Crypto API)
-    async function generateHash(login, pass) {
-        const msgBuffer = new TextEncoder().encode(login + ":" + pass);
-        const hashBuffer = await crypto.subtle.digest('SHA-256', msgBuffer);
-        const hashArray = Array.from(new Uint8Array(hashBuffer));
-        return hashArray.map(b => b.toString(16).padStart(2, '0')).join('');
-    }
+    
+    // ==========================================
+    // СИСТЕМА АВТОРИЗАЦИИ (FIREBASE AUTH)
+    // ==========================================
+    const auth = firebase.auth();
 
-    async function authenticateUser() {
-        const login = document.getElementById('auth-login').value.trim();
-        const pass = document.getElementById('auth-password').value.trim();
-        
-        if (!login || !pass) return alert("Введите учетные данные");
-
-        const authBtn = document.querySelector('#auth-view .btn');
-        const originalText = authBtn.innerText;
-        authBtn.innerText = "Авторизация...";
-        authBtn.disabled = true;
-
-        try {
-            const hash = await generateHash(login, pass);
-            
-            // ЗАЩИТА: Если в локальном кэше лежат чужие данные (хэш не совпадает)
-            if (state.network && state.network.syncId && state.network.syncId !== hash) {
-                console.warn("Обнаружена смена аккаунта. Очистка кэша.");
-                state = getDefaultState(); // Сбрасываем всё в 0
-            }
-
-            state.network.syncId = hash;
-            localStorage.setItem('rpg_os_session_hash', hash);
-            
-            saveLocal(); 
-            startApp(hash);
-        } catch (error) {
-            console.error("Auth Error:", error);
-            alert("Ошибка инициализации ключа: " + error.message);
-        } finally {
-            authBtn.innerText = originalText;
-            authBtn.disabled = false;
-        }
-    }
-    // Эту функцию мы вызываем при самом первом старте
-    window.addEventListener('load', () => {
-        // 1. Сначала проверяем, есть ли сохраненный ключ в localStorage
-        const savedHash = localStorage.getItem('rpg_os_session_hash');
-        
-        if (savedHash) {
-            // Если ключ есть, сразу запускаем приложение (пропускаем экран входа)
-            state.network.syncId = savedHash;
-            startApp(savedHash);
-        } else if (state.network && state.network.syncId) {
-            // Фолбэк на старую логику, если что-то пошло не так
-            startApp(state.network.syncId);
+    // Слушатель состояния (Автоматический вход, если сессия жива)
+    auth.onAuthStateChanged((user) => {
+        if (user) {
+            console.log("Сессия восстановлена для:", user.email);
+            startApp(user.uid); // Используем надежный UID от Firebase вместо самописного хэша
+        } else {
+            // Пользователь не авторизован - показываем экран входа
+            document.getElementById('auth-view').style.display = 'flex';
+            document.getElementById('main-nav').style.display = 'none';
+            document.querySelectorAll('.view').forEach(v => {
+                if(v.id !== 'auth-view') v.classList.remove('active');
+            });
         }
     });
 
-   
-    
-    // И обновляем функцию выхода (logout), чтобы она удаляла этот ключ
-    // И обновляем функцию выхода (logout), чтобы она удаляла этот ключ
-    function logout() {
-        if(confirm("Выйти из учетной записи? Локальные несинхронизированные данные будут стерты.")) {
-            // 1. Уничтожаем ключ доступа
-            localStorage.removeItem('rpg_os_session_hash');
-            
-            // 2. КРИТИЧЕСКИ ВАЖНО: Уничтожаем локальную базу предыдущего юзера!
+    // ФУНКЦИЯ РЕГИСТРАЦИИ
+    async function registerUser() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-password').value.trim();
+        const errorBox = document.getElementById('auth-error');
+        
+        if (!email || !pass) {
+            showAuthError("Введите Email и пароль!");
+            return;
+        }
+
+        setAuthLoading(true);
+        try {
+            // Очищаем старый локальный кэш при новой регистрации
             localStorage.removeItem('rpg_os_final_v2');
+            state = getDefaultState(); 
             
-            // 3. Очищаем оперативную память
-            state = getDefaultState();
-            
-            // 4. Перезагружаем страницу
-            location.reload();
+            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+            // Firebase сам вызовет onAuthStateChanged и запустит startApp
+        } catch (error) {
+            console.error("Ошибка регистрации:", error);
+            if (error.code === 'auth/email-already-in-use') showAuthError("Этот Email уже зарегистрирован. Нажмите 'Войти'.");
+            else if (error.code === 'auth/weak-password') showAuthError("Пароль слишком простой (минимум 6 символов).");
+            else showAuthError(error.message);
+        } finally {
+            setAuthLoading(false);
         }
     }
-    function startApp(hash) {
+
+    // ФУНКЦИЯ ВХОДА
+    async function loginUser() {
+        const email = document.getElementById('auth-email').value.trim();
+        const pass = document.getElementById('auth-password').value.trim();
+        
+        if (!email || !pass) {
+            showAuthError("Введите Email и пароль!");
+            return;
+        }
+
+        setAuthLoading(true);
+        try {
+            const userCredential = await auth.signInWithEmailAndPassword(email, pass);
+            const uid = userCredential.user.uid;
+            
+            // ЗАЩИТА ОТ УТЕЧКИ: Проверяем, не чужие ли данные висят в памяти
+            if (state.network && state.network.syncId && state.network.syncId !== uid) {
+                console.warn("Обнаружена смена аккаунта. Очистка кэша.");
+                localStorage.removeItem('rpg_os_final_v2');
+                state = getDefaultState();
+            }
+            // Успешный вход автоматически триггерит onAuthStateChanged
+        } catch (error) {
+            console.error("Ошибка входа:", error);
+            if (error.code === 'auth/invalid-credential') showAuthError("Неверный Email или пароль.");
+            else showAuthError(error.message);
+        } finally {
+            setAuthLoading(false);
+        }
+    }
+
+    // БЕЗОПАСНЫЙ ВЫХОД
+    function logout() {
+        if(confirm("Выйти из учетной записи? Локальные данные будут стерты.")) {
+            auth.signOut().then(() => {
+                localStorage.removeItem('rpg_os_final_v2');
+                state = getDefaultState();
+                location.reload();
+            }).catch((error) => {
+                alert("Ошибка при выходе: " + error.message);
+            });
+        }
+    }
+
+    // Утилиты интерфейса авторизации
+    function setAuthLoading(isLoading) {
+        document.getElementById('btnLogin').disabled = isLoading;
+        document.getElementById('btnRegister').disabled = isLoading;
+        document.getElementById('auth-error').style.display = 'none';
+    }
+
+    function showAuthError(msg) {
+        const box = document.getElementById('auth-error');
+        box.innerText = msg;
+        box.style.display = 'block';
+    }
+
+   
+    
+   
+    function startApp(uid) {
         document.getElementById('auth-view').style.display = 'none';
         document.getElementById('main-nav').style.display = 'flex';
+        
+        // Обновляем syncId на новый надежный UID
+        state.network.syncId = uid; 
+        
         switchView('dashboard');
-        initNetwork(hash);
+        initNetwork(uid); // Передаем uid в сеть
     }
 
     function initNetwork(hash) {
