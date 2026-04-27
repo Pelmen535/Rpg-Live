@@ -1244,7 +1244,6 @@
         const hash = await generateHash(login, pass);
         state.network.syncId = hash;
         
-        if (!state.global.lastUpdated) state.global.lastUpdated = Date.now();
         
         saveLocal(); // Сохраняем локально
         startApp(hash);
@@ -1321,7 +1320,8 @@
                 const incomingTime = incomingState.global.lastUpdated || 0;
 
                 // Если в облаке данные новее, чем у нас локально — обновляем интерфейс
-                if (incomingTime > myTime) {
+                // Если в облаке данные новее, ИЛИ у нас чистый локальный стейт (первый вход на устройстве)
+                if (incomingTime > myTime || myTime === 0) {
                     console.log("Синхронизация: приняты новые данные из облака ☁️");
                     isSyncing = true; 
                     state = incomingState;
@@ -3114,13 +3114,7 @@
         document.getElementById('taskDayContainer').style.display = (mode === 'template') ? 'block' : 'none';
         document.getElementById('taskDateContainer').style.display = (mode === 'date') ? 'block' : 'none';
     }
-    function logout() {
-        if(confirm("Выйти из учетной записи? Данные останутся на устройстве, но сеть отключится.")) {
-            state.network.syncId = null;
-            save();
-            location.reload();
-        }
-    }
+   
 </script>
 </body>
 </html>
