@@ -1244,7 +1244,6 @@
         
         if (!login || !pass) return alert("Введите учетные данные");
 
-        // Блокируем UI (предотвращаем двойные клики)
         const authBtn = document.querySelector('#auth-view .btn');
         const originalText = authBtn.innerText;
         authBtn.innerText = "Авторизация...";
@@ -1255,7 +1254,8 @@
             state.network.syncId = hash;
             localStorage.setItem('rpg_os_session_hash', hash);
             
-            if (!state.global.lastUpdated) state.global.lastUpdated = Date.now();
+            // УДАЛЕНО: if (!state.global.lastUpdated) ...
+            // Телефон больше не выдает себе свежую метку времени просто за вход
             
             saveLocal(); 
             startApp(hash);
@@ -1263,7 +1263,6 @@
             console.error("Auth Error:", error);
             alert("Ошибка инициализации ключа: " + error.message);
         } finally {
-            // Всегда разблокируем кнопку
             authBtn.innerText = originalText;
             authBtn.disabled = false;
         }
@@ -1307,7 +1306,6 @@
     function initNetwork(hash) {
         syncRef = database.ref('users/' + hash);
         
-        // ПРАВИЛЬНЫЙ ПАТТЕРН: Использование системного флага Firebase для статуса сети
         database.ref('.info/connected').on('value', (snap) => {
             if (snap.val() === true) {
                 updateSyncUI('online');
@@ -1318,6 +1316,8 @@
 
         syncRef.on('value', (snapshot) => {
             const incomingState = snapshot.val();
+            
+            // Если в облаке пусто, пушим локальные данные (инициализация облака)
             if (!incomingState || !incomingState.global) {
                 pushState();
                 return;
@@ -1326,19 +1326,22 @@
             const myTime = state.global.lastUpdated || 0;
             const incomingTime = incomingState.global.lastUpdated || 0;
 
-            // Защита от эха (Race condition protection)
-            if (incomingTime > myTime) {
+            // ПРОВЕРКА НА НОВИЧКА: Если локально нет навыков, это чистый клиент (телефон)
+            const isLocalEmpty = (!state.skills || state.skills.length === 0);
+
+            // Защита от эха + Форсированная загрузка для пустых клиентов
+            if (incomingTime > myTime || isLocalEmpty) {
                 isSyncing = true; 
-                state = incomingState; // В идеале здесь нужен deep clone, но для текущей архитектуры сойдет
+                state = incomingState; // Принимаем данные из облака
                 localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
                 render();
                 setTimeout(() => isSyncing = false, 500); 
-            } else if (myTime > incomingTime) {
+            } else if (myTime > incomingTime && !isLocalEmpty) {
+                // Пушим только если наши данные реально новее И мы не пустой клиент
                 pushState(); 
             }
         }, (error) => {
-            // Ошибка прав доступа (Permission Denied), а не потеря сети
-            console.error("Firebase Auth/Sync Error. Check Database Rules:", error);
+            console.error("Firebase Auth/Sync Error:", error);
             alert("Критическая ошибка доступа к базе данных.");
         });
     }
