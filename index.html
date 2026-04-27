@@ -1329,17 +1329,34 @@
             // ПРОВЕРКА НА НОВИЧКА: Если локально нет навыков, это чистый клиент (телефон)
             const isLocalEmpty = (!state.skills || state.skills.length === 0);
 
-            // Защита от эха + Форсированная загрузка для пустых клиентов
-            if (incomingTime > myTime || isLocalEmpty) {
-                isSyncing = true; 
-                state = incomingState; // Принимаем данные из облака
-                localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-                render();
-                setTimeout(() => isSyncing = false, 500); 
-            } else if (myTime > incomingTime && !isLocalEmpty) {
-                // Пушим только если наши данные реально новее И мы не пустой клиент
-                pushState(); 
-            }
+            // ... внутри syncRef.on('value', ...)
+        if (incomingTime > myTime || isLocalEmpty) {
+            console.log("Синхронизация: приняты данные из облака ☁️");
+            isSyncing = true; 
+            
+            // 1. Принимаем "сырые" данные
+            state = incomingState;
+
+            // 2. СЛОЙ ГИДРАТАЦИИ (Восстанавливаем структуру, которую мог сожрать Firebase)
+            if (!state.skills) state.skills = [];
+            if (!state.store) state.store = [];
+            if (!state.notes) state.notes = [];
+            if (!state.customAchievements) state.customAchievements = [];
+            if (!state.unlockedAchievements) state.unlockedAchievements = [];
+            if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
+            if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
+            if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+
+            // 3. Теперь безопасно сохраняем и рендерим
+            localStorage.setItem('rpg_os_session_hash', hash); // обновляем сессию на всякий случай
+            localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+            
+            render();
+            updateSyncUI('online');
+            setTimeout(() => isSyncing = false, 500);
+        } else if (myTime > incomingTime && !isLocalEmpty) {
+            pushState();
+        }
         }, (error) => {
             console.error("Firebase Auth/Sync Error:", error);
             alert("Критическая ошибка доступа к базе данных.");
