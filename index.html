@@ -151,16 +151,106 @@
         }
 
         .btn {
-            background-color: var(--accent);
-            color: #000000;
-            border: none;
-            padding: 12px 24px;
-            border-radius: 4px;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            gap: 8px;
+            font-family: inherit;
+            font-size: 16px; /* Защита от авто-зума на iOS */
+            font-weight: 500;
+            border-radius: 8px; /* Единый радиус для всех кнопок */
             cursor: pointer;
-            font-weight: bold;
-            transition: filter 0.2s ease;
+            border: 2px solid transparent;
+            transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease, transform 0.1s ease;
+            min-height: 44px; /* Стандарт Apple/Google для touch-устройств */
+            padding: 8px 24px;
+            box-sizing: border-box;
+            text-decoration: none;
+            line-height: 1.2;
+        }
+        .btn:focus-visible {
+            outline: 2px solid var(--accent);
+            outline-offset: 2px;
         }
 
+        /* Состояние Disabled */
+        .btn:disabled, .btn[disabled] {
+            opacity: 0.5;
+            cursor: not-allowed;
+            pointer-events: none;
+        }
+        .btn:active {
+            transform: scale(0.97);
+        }
+        /* 1. PRIMARY BUTTON (Акцентное действие) */
+        .btn-primary {
+            background-color: var(--accent);
+            color: #0d0d0f; /* Темный текст для контраста > 4.5:1 на голубом */
+        }
+
+        /* 2. SECONDARY BUTTON (Второстепенное, бывшая btn btn-secondary) */
+        .btn-secondary {
+            background-color: transparent;
+            border-color: var(--border);
+            color: var(--text);
+        }
+
+        /* 3. TERTIARY BUTTON (Отмена, ссылки) */
+        .btn-tertiary {
+            background-color: transparent;
+            color: var(--text-dim);
+            padding: 8px 16px; /* Чуть меньше визуального веса */
+        }
+
+        /* 4. DANGER BUTTON (Деструктивное действие) */
+        .btn-danger {
+            background-color: transparent;
+            border-color: rgba(255, 68, 68, 0.4);
+            color: var(--danger);
+        }
+        .btn-flow-action {
+            background-color: var(--flow);
+            color: #ffffff;
+        }
+        /* === ХОВЕРЫ ТОЛЬКО ДЛЯ УСТРОЙСТВ С МЫШЬЮ === */
+        @media (hover: hover) and (pointer: fine) {
+            .btn-primary:hover {
+                filter: brightness(1.15);
+            }
+            .btn-flow-action:hover {
+                filter: brightness(1.15);
+                box-shadow: 0 0 15px rgba(255, 0, 85, 0.3);
+            }
+            .btn-secondary:hover {
+                border-color: var(--text-dim);
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            .btn-tertiary:hover {
+                color: var(--text);
+                background-color: rgba(255, 255, 255, 0.05);
+            }
+            .btn-danger:hover {
+                border-color: var(--danger);
+                background-color: rgba(255, 68, 68, 0.1);
+            }
+        }
+
+        /* =========================================
+        МОБИЛЬНАЯ АДАПТАЦИЯ КНОПОК
+        ========================================= */
+        @media (max-width: 768px) {
+            .btn {
+                width: 100%; /* На мобилке кнопки растягиваем для тапа большим пальцем */
+                padding: 12px 20px;
+            }
+            
+            /* Контейнеры с кнопками (особенно модалки) */
+            .modal-buttons, .flex-gap-mobile {
+                display: flex;
+                flex-direction: column;
+                gap: 12px !important; /* Безопасное расстояние между touch-мишенями */
+            }
+        }
         .canvas-node-wrap {
             position: absolute;
             z-index: 5;
@@ -219,38 +309,7 @@
             border-style: solid;
         }
 
-        .btn:hover {
-            filter: brightness(1.2);
-        }
-
-        .btn-outline {
-            background-color: transparent;
-            border: 1px solid var(--border);
-            color: var(--text);
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: border-color 0.2s ease;
-        }
-
-            .btn-outline:hover {
-                border-color: var(--text-dim);
-            }
-
-        .btn-danger {
-            background-color: transparent;
-            border: 1px solid var(--danger);
-            color: var(--danger);
-            padding: 10px 20px;
-            border-radius: 4px;
-            cursor: pointer;
-            transition: background-color 0.2s ease;
-        }
-
-            .btn-danger:hover {
-                background-color: rgba(255, 68, 68, 0.1);
-            }
-
+        
         /* =========================================
            ДАШБОРД (СТАТИСТИКА)
         ========================================= */
@@ -932,8 +991,8 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button class="btn" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
-                    <button class="btn btn-outline" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
+                    <button class="btn btn-primary" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
+                    <button class="btn btn-secondary" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
                 </div>
 
                 <div id="auth-error" style="color: var(--danger); font-size: 0.85em; display: none;"></div>
@@ -977,9 +1036,9 @@
                 </div>
             </div>
             <div style="display: flex; gap: 15px; margin-bottom: 30px;">
-                <button class="btn btn-outline" style="border-color: var(--xp-color); color: var(--text);" onclick="manualEvent()">✨ Добавить опыт за событие</button>
-                <button class="btn btn-outline" onclick="exportData()">💾 Экспорт данных</button>
-                <button class="btn btn-outline" onclick="importData()">📂 Импорт данных</button>
+                <button class="btn btn-secondary" onclick="manualEvent()">✨ Добавить опыт за событие</button>
+                <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт данных</button>
+                <button class="btn btn-secondary" onclick="importData()">📂 Импорт данных</button>
                 <button class="btn btn-danger" onclick="logout()">Выход</button>
             </div>
             <div style="display: flex; gap: 10px; align-items: center; border-left: 1px solid var(--border); padding-left: 15px;">
@@ -1000,8 +1059,8 @@
                             • Локальный хост (Вы)
                         </div>
                     </div>
-                    <button class="btn-outline" style="font-size: 0.8em; border-color: var(--accent);" onclick="location.reload()">🔄 Перезапуск узла</button>
-                    <button class="btn-outline" style="font-size: 0.8em;" onclick="forceSync()">Принудительная передача</button>
+                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Перезапуск узла</button>
+                    <button class="btn btn-secondary" style="font-size: 0.8em;" onclick="forceSync()">Принудительная передача</button>
                 </div>
             </div>
             <h2>Сводка по навыкам</h2>
@@ -1021,8 +1080,8 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px;">
                 <h3 style="color: var(--flow); margin: 0;">Кровные договоры (Групповые стрики)</h3>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn" style="background: var(--flow); color: white;" onclick="createSharedHabit()">+ Создать</button>
-                    <button class="btn-outline" onclick="joinSharedHabit()">Присоединиться</button>
+                    <button class="btn btn-flow-action" onclick="createSharedHabit()">+ Создать</button>
+                    <button class="btn btn-secondary" onclick="joinSharedHabit()">Присоединиться</button>
                 </div>
             </div>
             <p style="color: var(--text-dim); font-size: 0.9em;">Раздели привычку с друзьями. Если хотя бы один человек не отметится до конца дня — стрик сгорит у всех!</p>
@@ -1066,7 +1125,7 @@
                     <div style="color: var(--text-dim); font-size: 0.9em; margin-top:5px;">Автоматические достижения выдаются сами, а свои собственные квесты можно создавать вручную.</div>
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center;">
-                    <button class="btn" onclick="openModal('addAchievementModal')">+ Создать достижение</button>
+                    <button class="btn btn-primary" onclick="openModal('addAchievementModal')">+ Создать достижение</button>
                     <div style="text-align: right; margin-left: 15px;">
                         <div style="font-size: 1.5em; font-weight: bold; color: var(--gold);" id="achievements-count">0 / 0</div>
                     </div>
@@ -1082,7 +1141,7 @@
                     <h2 style="margin:0;">Архитектура Навыков</h2>
                     <div style="color: var(--text-dim); font-size: 0.9em; margin-top:5px;">Декомпозируйте навыки на визуальном графе, а затем ставьте цели здесь для получения опыта.</div>
                 </div>
-                <button class="btn" onclick="openModal('skillModal')">+ Создать Навык</button>
+                <button class="btn btn-primary" onclick="openModal('skillModal')">+ Создать Навык</button>
             </div>
             <div id="skills-list"></div>
         </div>
@@ -1090,11 +1149,11 @@
         <div id="skill-tree-view" class="view">
             <div class="tree-header">
                 <div>
-                    <button class="btn-outline" style="padding: 5px 15px; margin-right: 15px;" onclick="switchView('skills')">← Назад</button>
+                    <button class="btn btn-secondary" style="padding: 5px 15px; margin-right: 15px;" onclick="switchView('skills')">← Назад</button>
                     <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция: Навык</span>
                 </div>
                 <div style="display: flex; gap: 10px;">
-                    <button class="btn" onclick="addMindmapNode()">+ Создать узел</button>
+                    <button class="btn btn-primary" onclick="addMindmapNode()">+ Создать узел</button>
                 </div>
             </div>
             <div style="padding: 10px 30px; background: #000000; color: #888888; font-size: 0.85em;">
@@ -1117,7 +1176,7 @@
                         <label style="color:var(--text); margin-bottom:0; font-size: 1.1em;">Выберите цель из вашей базы:</label>
                         <div style="display:flex; gap:15px;">
                             <select id="flowGoalSelect" style="margin:0; flex:3;"></select>
-                            <button class="btn" onclick="addFlowGoal()">Добавить в Поток</button>
+                            <button class="btn btn-primary" onclick="addFlowGoal()">Добавить в Поток</button>
                         </div>
                     </div>
 
@@ -1136,7 +1195,7 @@
                     <div style="text-align: center; color: var(--gold); font-size: 1.3em; font-weight: bold; margin-bottom: 30px;">АКТИВЕН МНОЖИТЕЛЬ ОПЫТА x2</div>
                     <div class="flow-queue" id="flow-queue-active"></div>
                     <div style="text-align: center; margin-top: 50px;">
-                        <button class="btn-outline" style="border-color: var(--danger); color: var(--danger);" onclick="stopFlow()">Остановить таймер (Сдаться)</button>
+                        <button class="btn btn-danger" onclick="stopFlow()">Остановить таймер (Сдаться)</button>
                     </div>
                 </div>
             </div>
@@ -1150,10 +1209,10 @@
                 </div>
                 <div style="display: flex; gap: 15px; align-items: center;">
                     <div style="background: #1c1c1e; padding: 4px; border-radius: 8px; display: flex; gap: 5px; border: 1px solid var(--border);">
-                        <button id="tab-dynamic" class="btn" style="padding: 8px 15px; border: none; box-shadow: none;" onclick="switchScheduleTab('dynamic')">Динамика (Конвейер)</button>
-                        <button id="tab-static" class="btn btn-outline" style="padding: 8px 15px; border: none;" onclick="switchScheduleTab('static')">Шаблон (База)</button>
+                        <button id="tab-dynamic" class="btn btn-primary" style="padding: 8px 15px; border: none; box-shadow: none;" onclick="switchScheduleTab('dynamic')">Динамика (Конвейер)</button>
+                        <button id="tab-static" class="btn btn-secondary" style="padding: 8px 15px; border: none;" onclick="switchScheduleTab('static')">Шаблон (База)</button>
                     </div>
-                    <button class="btn" onclick="openTaskModal()">+ Запланировать</button>
+                    <button class="btn btn-primary" onclick="openTaskModal()">+ Запланировать</button>
                 </div>
             </div>
 
@@ -1167,7 +1226,7 @@
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
                 <h2>Рынок наград</h2>
                 <div style="font-size: 1.2em;">Баланс: <strong style="color: var(--gold);" id="store-gold-balance">0</strong></div>
-                <button class="btn" onclick="openModal('storeItemModal')">+ Добавить товар</button>
+                <button class="btn btn-primary" onclick="openModal('storeItemModal')">+ Добавить товар</button>
             </div>
             <div class="store-grid" id="store-container"></div>
         </div>
@@ -1178,7 +1237,7 @@
                 <div class="card" style="text-align: center;">
                     <div id="lootbox-progress" style="margin-bottom: 10px; color: var(--text-dim);">Прогресс: 0 / 5</div>
                     <div id="lootbox-status" style="font-size: 1.2em; margin-bottom: 20px;">Доступно: 0 🎁</div>
-                    <button class="btn" onclick="openLootbox()">Открыть Лутбокс</button>
+                    <button class="btn btn-primary" onclick="openLootbox()">Открыть Лутбокс</button>
                     <div id="lootbox-reward" style="margin-top: 20px; font-size: 1.2em; color: var(--accent); min-height: 1.5em;"></div>
                 </div>
 
@@ -1188,7 +1247,7 @@
                         <input type="text" id="customLootName" placeholder="Название (напр. Стейк)" style="margin:0; flex:2;">
                         <input type="number" id="customLootGold" placeholder="Золото" style="margin:0; flex:1;">
                         <input type="number" id="customLootXP" placeholder="XP" style="margin:0; flex:1;">
-                        <button class="btn" onclick="addCustomLoot()">+</button>
+                        <button class="btn btn-primary" onclick="addCustomLoot()">+</button>
                     </div>
                     <div id="custom-loot-list" style="font-size: 0.9em; max-height: 150px; overflow-y: auto;"></div>
                 </div>
@@ -1198,7 +1257,7 @@
         <div id="notes" class="view">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
                 <h2>База Знаний / Заметки</h2>
-                <button class="btn" onclick="createNewNote()">+ Создать заметку</button>
+                <button class="btn btn-primary" onclick="createNewNote()">+ Создать заметку</button>
             </div>
             <div id="notes-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             </div>
@@ -1303,8 +1362,8 @@
             <textarea id="skillNotes" placeholder="Глобальная цель или описание..."></textarea>
             <input type="color" id="skillColor" value="#00f2ff">
             <div class="modal-buttons">
-                <button class="btn" onclick="saveSkill()">Создать</button>
-                <button class="btn btn-outline" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveSkill()">Создать</button>
+                <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1343,9 +1402,9 @@
             <label>Заметки</label>
             <textarea id="goalNotes" placeholder="Детали, ссылки, шаги..."></textarea>
             <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
-                <button class="btn" style="flex:2" onclick="saveGoal()">Сохранить</button>
-                <button class="btn btn-danger" style="flex:1" id="btnDeleteGoal" onclick="deleteGoal()">Удалить</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveGoal()">Сохранить</button>
+                <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-danger" onclick="deleteGoal()">Удалить</button>
             </div>
         </div>
     </div>
@@ -1359,8 +1418,8 @@
             <input type="text" id="graphNodeName" placeholder="Название темы">
             <textarea id="graphNodeNotes" placeholder="Теория, конспект или заметка..."></textarea>
             <div class="modal-buttons">
-                <button class="btn" onclick="saveGraphNode()">Сохранить</button>
-                <button class="btn btn-outline" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" onclick="saveGraphNode()">Сохранить</button>
+                <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1373,8 +1432,8 @@
             <label>Текст заметки</label>
             <textarea id="newNoteContent" placeholder="Пишите сюда..."></textarea>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="btn" style="flex:1" onclick="saveNewNote()">Сохранить</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" style="flex:1" onclick="saveNewNote()">Сохранить</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1431,9 +1490,9 @@
             <label>Название / Описание</label>
             <input type="text" id="taskTitle" placeholder="Например: Пара в университете">
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="btn" style="flex:2" onclick="saveTask()">Сохранить</button>
+                <button class="btn btn-primary" style="flex:2" onclick="saveTask()">Сохранить</button>
                 <button class="btn btn-danger" style="flex:1" id="btnDeleteTask" onclick="deleteTask()">Удалить</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1454,8 +1513,8 @@
                 </div>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="btn" style="flex:1" onclick="saveStoreItem()">Добавить</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" style="flex:1" onclick="saveStoreItem()">Добавить</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1475,8 +1534,8 @@
                 </div>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="btn" style="flex:1" onclick="saveManualEvent()">Начислить</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" style="flex:1" onclick="saveManualEvent()">Начислить</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -1497,7 +1556,7 @@
             <div class="calendar-grid" id="calGrid">
             </div>
 
-            <button class="btn" style="width: 100%; margin-top: 15px; border-radius: 8px;" onclick="applyIOSCalendar()">Готово</button>
+            <button class="btn btn-primary" style="width: 100%; margin-top: 15px; border-radius: 8px;" onclick="applyIOSCalendar()">Готово</button>
         </div>
     </div>
     <div id="addAchievementModal" class="modal">
@@ -1520,8 +1579,8 @@
                 </div>
             </div>
             <div style="display:flex; gap:15px; margin-top:25px;">
-                <button class="btn" style="flex:1" onclick="saveCustomAchievement()">Создать</button>
-                <button class="btn btn-outline" style="flex:1" onclick="closeModals()">Отмена</button>
+                <button class="btn btn-primary" style="flex:1" onclick="saveCustomAchievement()">Создать</button>
+                <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
         </div>
     </div>
@@ -2354,15 +2413,18 @@
         let currentScheduleTab = 'dynamic';
 
         function switchScheduleTab(tab) {
-        currentScheduleTab = tab;
-        document.getElementById('tab-dynamic').className = tab === 'dynamic' ? 'btn' : 'btn btn-outline';
-        document.getElementById('tab-dynamic').style.background = tab === 'dynamic' ? 'var(--accent)' : 'transparent';
-        document.getElementById('tab-dynamic').style.color = tab === 'dynamic' ? '#000' : 'var(--text)';
+            currentScheduleTab = tab;
+            
+            // Активный таб получает primary, неактивный - secondary
+            document.getElementById('tab-dynamic').className = tab === 'dynamic' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('tab-dynamic').style.background = tab === 'dynamic' ? 'var(--accent)' : 'transparent';
+            document.getElementById('tab-dynamic').style.color = tab === 'dynamic' ? '#000' : 'var(--text)';
 
-        document.getElementById('tab-static').className = tab === 'static' ? 'btn' : 'btn btn-outline';
-        document.getElementById('tab-static').style.background = tab === 'static' ? 'var(--accent)' : 'transparent';
-        document.getElementById('tab-static').style.color = tab === 'static' ? '#000' : 'var(--text)';
-        render();
+            document.getElementById('tab-static').className = tab === 'static' ? 'btn btn-primary' : 'btn btn-secondary';
+            document.getElementById('tab-static').style.background = tab === 'static' ? 'var(--accent)' : 'transparent';
+            document.getElementById('tab-static').style.color = tab === 'static' ? '#000' : 'var(--text)';
+            
+            render();
         }
 
         function toggleTaskDone(type, key, id, dateStr = '') {
@@ -3146,7 +3208,7 @@
         <div style="font-size: 0.8em; color: var(--text-dim); line-height: 1.3;">${ach.desc}</div>
         ${!ach.auto ? `<div style="font-size: 0.7em; color: var(--xp-color); margin-top: 5px;">Награда: 🪙 ${ach.gold} | ✨ ${ach.xp}</div>` : ''}
         </div>
-        ${(!isUnlocked && !ach.auto) ? `<button class="btn-outline" style="padding: 5px 10px; font-size: 0.8em;" onclick="unlockManualAchievement('${ach.id}')">Выполнено!</button>` : ''}
+        ${(!isUnlocked && !ach.auto) ? `<button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;" onclick="unlockManualAchievement('${ach.id}')">Выполнено!</button>` : ''}
         ${isUnlocked ? `<div style="color: var(--success); font-weight: bold;">✓</div>` : ''}
         </div>
         `;
@@ -3290,7 +3352,7 @@
         <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">🎯 Фокус: ${ft.skill.name}</div>
         <strong style="font-size: 1.1em;">${ft.goal.name}</strong>
         </div>
-        <button class="btn-outline" style="border-color: var(--success); color: var(--success);">Выполнить</button>
+        <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success);">Выполнить</button>
         </div>
         `).join('');
 
@@ -3364,9 +3426,9 @@
         ${extraContent}
         </div>
         <div style="display:flex; gap:8px;">
-        ${n.done ? `<button class="btn-outline" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-        <button class="btn-outline" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
-        <button class="btn-outline" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
+        ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
+        <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
+        <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
         </div>
         </div>
         </div>
@@ -3383,8 +3445,8 @@
         <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
         </div>
         <div style="display:flex; gap:10px;">
-        <button class="btn-outline" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
-        <button class="btn" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
+        <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
+        <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
         </div>
         </div>
         <div style="margin-top:15px;">
@@ -3485,8 +3547,8 @@
         <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
         ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
         <div style="display:flex; gap:10px; margin-top:auto;">
-        <button class="btn" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
-        <button class="btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
+        <button class="btn btn-primary" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
+        <button class="btn btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
         </div>
         </div>
         `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
@@ -3579,10 +3641,10 @@
         <p style="font-size:0.9em; margin:15px 0; color:var(--text-dim); white-space:pre-wrap;">${note.content}</p>
         <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
         ${note.sourceId ? `
-        <button class="btn-outline" style="font-size:0.7em; padding:5px 10px;"
+        <button class="btn btn-secondary" style="font-size:0.7em; padding:5px 10px;"
         onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
         ` : ''}
-        <button class="btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
+        <button class="btn btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
         </div>
         </div>
         `).join('') || '<p>Заметок пока нет.</p>';
@@ -3771,10 +3833,10 @@
         <div style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">${membersHtml}</div>
         <div style="display: flex; gap: 10px;">
         ${iDidIt ?
-        `<button class="btn-outline" disabled style="flex: 2; opacity: 0.5; color: var(--success); border-color: var(--success);">Выполнено</button>` :
-        `<button class="btn" style="flex: 2; background: var(--flow); color: white;" onclick="toggleSharedHabit('${habit.id}')">Отметиться</button>`
+        `<button class="btn btn-secondary" disabled style="flex: 2; opacity: 0.5; color: var(--success); border-color: var(--success);">Выполнено</button>` :
+        `<button class="btn btn-flow-action" style="flex: 2;" onclick="toggleSharedHabit('${habit.id}')">Отметиться</button>`
         }
-        <button class="btn-outline" style="flex: 1; padding: 5px; font-size: 0.8em;" onclick="navigator.clipboard.writeText('${habit.id}'); alert('ID скопирован!')">📋 ID</button>
+        <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 0.8em;" onclick="navigator.clipboard.writeText('${habit.id}'); alert('ID скопирован!')">📋 ID</button>
         </div>
         </div>
         `;
