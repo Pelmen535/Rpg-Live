@@ -778,6 +778,7 @@
 <body>
 
     <nav id="main-nav" style="display: none;">
+
         <div class="nav-link active" onclick="switchView('dashboard')">Дашборд</div>
         <div class="nav-link" onclick="switchView('analytics')">Аналитика</div>
         <div class="nav-link" onclick="switchView('achievements')">Достижения 🏆</div>
@@ -787,6 +788,7 @@
         <div class="nav-link" onclick="switchView('store')">Магазин</div>
         <div class="nav-link" onclick="switchView('lootbox')">Лутбоксы</div>
         <div class="nav-link" onclick="switchView('notes')">Заметки</div>
+        <div class="nav-link" onclick="switchView('network')">Сеть 🌐</div>
         <div class="nav-link" onclick="switchView('info')">Справка</div>
     </nav>
 
@@ -850,6 +852,9 @@
                 <button class="btn btn-outline" onclick="importData()">📂 Импорт данных</button>
                 <button class="btn btn-danger" onclick="logout()">Выход</button>
             </div>
+            <div style="display: flex; gap: 10px; align-items: center; border-left: 1px solid var(--border); padding-left: 15px;">
+                <input type="text" id="userNickname" placeholder="Твой никнейм" onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 4px;">
+            </div>
             <div class="card" style="border-color: var(--accent); margin-bottom: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
                     <h3 style="margin:0;">Сетвой узел (P2P)</h3>
@@ -871,6 +876,20 @@
             </div>
             <h2>Сводка по навыкам</h2>
             <div id="dash-summary" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
+        </div>
+        <div id="network" class="view">
+            <h2 style="color: var(--accent);">Глобальная Таблица Лидеров</h2>
+            <div class="card" style="border-color: var(--accent);">
+                <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; color: var(--text-dim); font-weight: bold;">
+                    <span style="flex: 2;">Игрок</span>
+                    <span style="flex: 1; text-align: center;">Уровень</span>
+                    <span style="flex: 1; text-align: right;">Опыт</span>
+                </div>
+                <div id="leaderboard-list">Загрузка данных из матрицы...</div>
+            </div>
+
+            <h3 style="margin-top: 40px; color: var(--text-dim);">Групповые стрики (Скоро)</h3>
+            <p style="color: #666; font-size: 0.9em;">Для создания групповой привычки отправь свой ID товарищу: <strong id="my-sync-id" style="color: var(--accent);"></strong></p>
         </div>
         <div id="analytics" class="view">
             <h2>Аналитика Персонажа</h2>
@@ -1159,12 +1178,25 @@
                 <option value="">-- В корень навыка --</option>
             </select>
             <label>Тип цели</label>
-            <select id="goalType">
+            <select id="goalType" onchange="document.getElementById('bossSettings').style.display = this.value === 'Босс' ? 'block' : 'none'">
                 <option value="Краткосрочная">Краткосрочная</option>
                 <option value="Среднесрочная">Среднесрочная</option>
                 <option value="Долгосрочная">Долгосрочная</option>
                 <option value="Повторяющаяся">Повторяющаяся</option>
+                <option value="Босс">Рейдовый Босс 👹</option>
             </select>
+
+            <div id="bossSettings" style="display: none; background: rgba(255, 68, 68, 0.1); padding: 15px; border: 1px solid var(--danger); border-radius: 8px; margin-top: 10px; margin-bottom: 10px;">
+                <label style="color: var(--danger);">Здоровье Босса (HP)</label>
+                <input type="number" id="bossHp" placeholder="Например: 1000" style="margin-bottom: 10px;">
+                <label style="color: var(--danger);">Дедлайн (Если не убить до этой даты — сброс стамины)</label>
+                <input type="date" id="bossDeadline">
+            </div>
+
+            <label style="display: flex; align-items: center; gap: 10px; margin: 15px 0; cursor: pointer;">
+                <input type="checkbox" id="goalIsFocus" style="width: auto; margin: 0;">
+                <span style="color: var(--gold); font-weight: bold;">🎯 Сделать Фокусом Дня (Вывести на Дашборд)</span>
+            </label>
             <label>Заметки</label>
             <textarea id="goalNotes" placeholder="Детали, ссылки, шаги..."></textarea>
             <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
@@ -1826,7 +1858,9 @@
         document.getElementById('goalParentSelect').value = node.parentId || '';
         document.getElementById('goalNotes').value = node.notes || '';
         document.getElementById('btnDeleteGoal').style.display = 'block';
+        document.getElementById('goalIsFocus').checked = node.isFocus || false;
         } else {
+        document.getElementById('goalIsFocus').checked = false;
         document.getElementById('goalModalTitle').innerText = 'Новая цель';
         document.getElementById('editGoalId').value = '';
         document.getElementById('goalName').value = '';
@@ -1838,41 +1872,45 @@
         }
 
         function saveGoal() {
-        const skillId = document.getElementById('currentSkillId').value;
-        const editId = document.getElementById('editGoalId').value;
-        const skill = state.skills.find(s => s.id === skillId);
-        const goalName = document.getElementById('goalName').value;
-        const goalNotes = document.getElementById('goalNotes').value;
+            const skillId = document.getElementById('currentSkillId').value;
+            const editId = document.getElementById('editGoalId').value;
+            const skill = state.skills.find(s => s.id === skillId);
+            const goalName = document.getElementById('goalName').value;
+            const goalNotes = document.getElementById('goalNotes').value;
 
-        const goalData = {
-        name: document.getElementById('goalName').value,
-        type: document.getElementById('goalType').value,
-        notes: document.getElementById('goalNotes').value,
-        parentId: document.getElementById('goalParentSelect').value || null
-        };
+            const goalData = {
+                name: document.getElementById('goalName').value,
+                type: document.getElementById('goalType').value,
+                notes: document.getElementById('goalNotes').value,
+                parentId: document.getElementById('goalParentSelect').value || null,
+                isFocus: document.getElementById('goalIsFocus').checked,
+                maxHp: parseInt(document.getElementById('bossHp').value) || 1000,
+                deadline: document.getElementById('bossDeadline').value || null
+            };
 
-        if (!goalData.name) return;
-        if (!skill.goals) skill.goals = [];
+            if (!goalData.name) return;
+            if (!skill.goals) skill.goals = [];
 
-        let finalId = editId;
+            let finalId = editId;
 
-        if (editId) {
-        const target = skill.goals.find(g => g.id === editId);
-        Object.assign(target, goalData);
-        } else {
-        finalId = Date.now().toString();
-        skill.goals.push({
-        id: finalId,
-        ...goalData,
-        done: false,
-        rewardCollected: false
-        });
-        }
+            if (editId) {
+                const target = skill.goals.find(g => g.id === editId);
+                Object.assign(target, goalData);
+            } else {
+                finalId = Date.now().toString();
+                skill.goals.push({
+                    id: finalId,
+                    ...goalData,
+                    hp: goalData.maxHp, // Устанавливаем HP равным maxHp только при создании
+                    done: false,
+                    rewardCollected: false
+                });
+            }
 
-        closeModals();
-        syncNote(finalId, goalName, goalNotes, "Цель", skillId);
-        save();
-        render(); // Обновляем список на дашборде
+            closeModals();
+            syncNote(finalId, goalName, goalNotes, "Цель", skillId);
+            save();
+            render(); 
         }
 
         function deleteGoal() {
@@ -1963,53 +2001,76 @@
         return baseReward;
         }
         function toggleNodeDone(skillId, nodeId) {
-        const skill = state.skills.find(s => s.id === skillId);
-        const node = skill.goals.find(n => n.id === nodeId);
+            const skill = state.skills.find(s => s.id === skillId);
+            const node = skill.goals.find(n => n.id === nodeId);
 
-        // Античит: Кулдаун на клик (защита от макросов и даблкликов)
-        const now = Date.now();
-        if (node.lastToggled && (now - node.lastToggled < 1000)) return;
-        node.lastToggled = now;
+            // Античит: Кулдаун на клик (защита от макросов и даблкликов)
+            const now = Date.now();
+            if (node.lastToggled && (now - node.lastToggled < 1000)) return;
+            node.lastToggled = now;
 
-        node.done = !node.done;
+            node.done = !node.done;
 
-        // Тактильная отдача при нажатии (только для мобилок)
-        if ('vibrate' in navigator) {
-        node.done ? navigator.vibrate(50) : navigator.vibrate(20);
-        }
+            // Тактильная отдача при нажатии (только для мобилок)
+            if ('vibrate' in navigator) {
+                node.done ? navigator.vibrate(50) : navigator.vibrate(20);
+            }
 
-        if (node.done) {
-        if (node.type === 'Повторяющаяся') {
-        const today = new Date().toDateString();
-        if (node.lastCompleted !== today) {
-        node.streak = (node.streak || 0) + 1;
-        node.lastCompleted = today;
-        grantXP(skill, node.type);
-        }
-        } else if (!node.rewardCollected) {
-        grantXP(skill, node.type || 'Краткосрочная');
-        node.rewardCollected = true; // Защита от повторного фарма
+            if (node.done) {
+                let rewardGiven = false;
 
-        if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
-        state.user.tasksCompletedForLoot++;
-        if (state.user.tasksCompletedForLoot >= 5) {
-        state.lootboxes = (state.lootboxes || 0) + 1;
-        state.user.tasksCompletedForLoot = 0;
-        if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]); // Вибрация лутбокса
-        }
-        }
-        } else {
-        // Если сняли галочку с повторяющейся в тот же день - откатываем стрик
-        if (node.type === 'Повторяющаяся') {
-        const today = new Date().toDateString();
-        if (node.lastCompleted === today) {
-        node.streak = Math.max(0, (node.streak || 1) - 1);
-        node.lastCompleted = null;
-        // Мы не отнимаем XP (чтобы не уйти в минус), но стрик сбрасываем
-        }
-        }
-        }
-        save();
+                if (node.type === 'Повторяющаяся') {
+                    const today = new Date().toDateString();
+                    if (node.lastCompleted !== today) {
+                        node.streak = (node.streak || 0) + 1;
+                        node.lastCompleted = today;
+                        grantXP(skill, node.type);
+                        rewardGiven = true;
+                    }
+                } else if (!node.rewardCollected) {
+                    grantXP(skill, node.type || 'Краткосрочная');
+                    node.rewardCollected = true; // Защита от повторного фарма
+                    rewardGiven = true;
+
+                    if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
+                    state.user.tasksCompletedForLoot++;
+                    if (state.user.tasksCompletedForLoot >= 5) {
+                        state.lootboxes = (state.lootboxes || 0) + 1;
+                        state.user.tasksCompletedForLoot = 0;
+                        if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]); // Вибрация лутбокса
+                    }
+                }
+
+                // --- МЕХАНИКА УРОНА ПО БОССУ (Срабатывает для всех задач) ---
+                if (rewardGiven && node.type !== 'Босс') {
+                    const activeBoss = skill.goals.find(g => g.type === 'Босс' && !g.done);
+                    if (activeBoss) {
+                        const damage = REWARDS[node.type]?.xp || 10;
+                        activeBoss.hp -= (flow.active ? damage * 2 : damage);
+                        if (activeBoss.hp <= 0) {
+                            activeBoss.hp = 0;
+                            activeBoss.done = true;
+                            grantXP(skill, 'Долгосрочная'); // Награда за килл
+                            grantXP(skill, 'Долгосрочная');
+                            alert(`⚔️ БОСС "${activeBoss.name}" ПОВЕРЖЕН! Огромная награда получена!`);
+                        } else {
+                            console.log(`Нанесен урон боссу! Осталось: ${activeBoss.hp}`);
+                        }
+                    }
+                }
+
+            } else {
+                // Если сняли галочку с повторяющейся в тот же день - откатываем стрик
+                if (node.type === 'Повторяющаяся') {
+                    const today = new Date().toDateString();
+                    if (node.lastCompleted === today) {
+                        node.streak = Math.max(0, (node.streak || 1) - 1);
+                        node.lastCompleted = null;
+                        // Мы не отнимаем XP (чтобы не уйти в минус), но стрик сбрасываем
+                    }
+                }
+            }
+            save();
         }
 
         /* =========================================
@@ -2982,6 +3043,33 @@
         document.getElementById('global-gold').innerText = state.global.gold;
         document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
 
+        // --- ФОКУС ДНЯ НА ДАШБОРДЕ ---
+        const focusTasks = [];
+        state.skills.forEach(s => {
+            (s.goals || []).filter(g => g.isFocus && !g.done).forEach(g => {
+                focusTasks.push({ skill: s, goal: g });
+            });
+        });
+
+        const focusHtml = focusTasks.map(ft => `
+            <div class="task-block" style="border-left: 4px solid ${ft.skill.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;" 
+                 onclick="toggleNodeDone('${ft.skill.id}', '${ft.goal.id}')">
+                <div>
+                    <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">🎯 Фокус: ${ft.skill.name}</div>
+                    <strong style="font-size: 1.1em;">${ft.goal.name}</strong>
+                </div>
+                <button class="btn-outline" style="border-color: var(--success); color: var(--success);">Выполнить</button>
+            </div>
+        `).join('');
+        
+        // Вставляем фокус перед дашбордом навыков
+        let focusContainer = document.getElementById('dash-focus-container');
+        if (!focusContainer) {
+            document.getElementById('dash-summary').insertAdjacentHTML('beforebegin', '<div id="dash-focus-container"></div>');
+            focusContainer = document.getElementById('dash-focus-container');
+        }
+        focusContainer.innerHTML = focusHtml ? `<h3 style="color: var(--gold);">🎯 Фокус дня</h3>${focusHtml}<hr style="border-color: var(--border); margin: 25px 0;">` : '';
+
         document.getElementById('dash-summary').innerHTML = state.skills.map(s => `
         <div class="card" style="border-top: 3px solid ${s.color}; margin-bottom: 0;">
         <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
@@ -3006,15 +3094,27 @@
         let extraContent = '';
 
         // ЛОГИКА ПРОЕКТА (Долгосрочная)
-        if (n.type === 'Долгосрочная') {
-        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
-        const doneCount = subTasks.filter(sub => sub.done).length;
-        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
-        extraContent = `
-        <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
-        <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
-        `;
-        }
+                    if (n.type === 'Долгосрочная') {
+                        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
+                        const doneCount = subTasks.filter(sub => sub.done).length;
+                        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
+                        extraContent = `
+                            <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
+                            <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
+                        `;
+                    }
+
+                    // ЛОГИКА БОССА 👿
+                    if (n.type === 'Босс') {
+                        const hpPercent = Math.max(0, (n.hp / n.maxHp) * 100);
+                        extraContent = `
+                            <div style="font-size: 0.8em; color: var(--danger); margin-top: 10px; font-weight: bold;">👿 БОСС: ${n.hp} / ${n.maxHp} HP</div>
+                            <div class="project-progress-container" style="border-color: var(--danger); height: 10px; background: #222;">
+                                <div class="project-progress-fill" style="width: ${hpPercent}%; background: var(--danger);"></div>
+                            </div>
+                            ${n.deadline ? `<div style="font-size: 0.7em; color: var(--text-dim); margin-top: 4px;">⏳ Дедлайн: ${n.deadline}</div>` : ''}
+                        `;
+                    }
 
         // ЛОГИКА ПРИВЫЧКИ (Повторяющаяся)
         if (n.type === 'Повторяющаяся') {
@@ -3391,7 +3491,59 @@
         document.getElementById('taskDayContainer').style.display = (mode === 'template') ? 'block' : 'none';
         document.getElementById('taskDateContainer').style.display = (mode === 'date') ? 'block' : 'none';
         }
+        function saveNickname() {
+        const nick = document.getElementById('userNickname').value;
+        if (!state.user) state.user = {};
+        state.user.nickname = nick;
+        save();
+    }
 
+    // Патчим функцию pushState, чтобы она отправляла стату в глобальный топ
+    const originalPushState = pushState;
+    pushState = function() {
+        originalPushState();
+        if (state.network && state.network.syncId) {
+            database.ref('leaderboard/' + state.network.syncId).set({
+                name: state.user?.nickname || 'Анонимный Сталкер',
+                level: state.global.level,
+                xp: state.global.xp,
+                lastActive: Date.now()
+            });
+        }
+    };
+
+    function loadLeaderboard() {
+        database.ref('leaderboard').orderByChild('level').limitToLast(20).once('value', snapshot => {
+            const data = snapshot.val();
+            if (!data) return;
+            
+            // Превращаем в массив и сортируем по уровню (убывание)
+            const players = Object.values(data).sort((a, b) => b.level - a.level || b.xp - a.xp);
+            
+            document.getElementById('leaderboard-list').innerHTML = players.map((p, index) => `
+                <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; ${index === 0 ? 'color: var(--gold); font-size: 1.1em; font-weight: bold;' : ''}">
+                    <span style="flex: 2;">${index === 0 ? '👑 ' : ''}${index + 1}. ${p.name}</span>
+                    <span style="flex: 1; text-align: center;">${p.level}</span>
+                    <span style="flex: 1; text-align: right;">${p.xp} / 100</span>
+                </div>
+            `).join('');
+        });
+    }
+
+    // Патчим switchView, чтобы грузить таблицу только когда открывают вкладку
+    const originalSwitchViewForNet = switchView;
+    switchView = function(viewId) {
+        originalSwitchViewForNet(viewId);
+        if(viewId === 'network') loadLeaderboard();
+        
+        // Подставляем данные в инпуты при рендере
+        if (document.getElementById('userNickname') && state.user?.nickname) {
+            document.getElementById('userNickname').value = state.user.nickname;
+        }
+        if (document.getElementById('my-sync-id') && state.network?.syncId) {
+            document.getElementById('my-sync-id').innerText = state.network.syncId.slice(0, 8) + '...';
+        }
+    };
     </script>
 </body>
 </html>
