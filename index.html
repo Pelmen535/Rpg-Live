@@ -923,6 +923,13 @@
                         <div class="progress-fill" id="global-stamina-bar" style="width:100%; background-color: #ff4444;"></div>
                     </div>
                 </div>
+                <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
+                        <span class="hero-label">Здоровье ❤️</span>
+                        <span id="global-hp-text" style="font-weight:bold; color:var(--danger);">100 / 100</span>
+                    </div>
+                    <div class="hero-xp-bar" style="height: 10px;">
+                        <div class="progress-fill" id="global-hp-bar" style="width:100%; background-color: var(--danger); box-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
+                    </div>
                 <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
                     <div class="hero-val gold-val" id="global-gold">0</div>
                     <div class="hero-label">Золото</div>
@@ -2537,19 +2544,24 @@
         if (state.global.gold >= item.price) {
         state.global.gold -= item.price;
 
-        if (item.isSpecial && item.id === 'freeze') {
-        if (!state.inventory) state.inventory = { streakFreezes: 0 };
-        state.inventory.streakFreezes++;
-        alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
+        if (item.isSpecial) {
+            if (item.id === 'freeze') {
+                if (!state.inventory) state.inventory = { streakFreezes: 0 };
+                state.inventory.streakFreezes++;
+                alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
+            } else if (item.id === 'heal') {
+                state.global.hp = Math.min(state.global.maxHp || 100, (state.global.hp || 100) + (item.heal || 30));
+                alert(`Вы выпили зелье 🧪! Восстановлено 30 HP. Текущее здоровье: ${state.global.hp}`);
+            }
         } else {
-        const restoreAmount = item.stamina || 0;
-        if (restoreAmount > 0) {
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
-        alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
-        } else {
-        alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
-        }
+            const restoreAmount = item.stamina || 0;
+            if (restoreAmount > 0) {
+                state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+                state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
+                alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
+            } else {
+                alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
+            }
         }
 
         item.price = Math.ceil(item.price * 1.15);
@@ -2904,26 +2916,41 @@
 
         // Базовые уникальные ачивки
         const AUTO_ACHIEVEMENTS = [
-        { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
-        { id: 'burnout', icon: '🔥', title: 'Испытание пределов', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
-        { id: 'first_boss', icon: '👹', title: 'Убийца Чудовищ', desc: 'Победить своего первого Рейдового Босса.', auto: true, condition: () => state.analytics?.archive?.some(a => a.type === 'Босс') }
+            // --- БАЗОВЫЕ / ИГРОВЫЕ ---
+            { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
+            { id: 'burnout', icon: '🔥', title: 'Испытание пределов', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
+            { id: 'first_boss', icon: '👹', title: 'Убийца Чудовищ', desc: 'Победить своего первого Рейдового Босса.', auto: true, condition: () => state.analytics?.archive?.some(a => a.type === 'Босс') },
+            { id: 'death', icon: '☠️', title: 'Возрождение из пепла', desc: 'Умереть (HP = 0) и воскреснуть.', auto: true, condition: () => (state.analytics?.deaths || 0) >= 1 },
+            { id: 'survivor', icon: '❤️‍🩹', title: 'На волоске', desc: 'Выжить, когда HP опускается ниже 10.', auto: true, condition: () => state.global.hp > 0 && state.global.hp <= 10 },
+            
+            // --- СОЗДАНИЕ И ПЛАНИРОВАНИЕ ---
+            { id: 'arch_1', icon: '🏗️', title: 'Архитектор Реальности', desc: 'Создать свой первый Навык.', auto: true, condition: () => state.skills.length >= 1 },
+            { id: 'arch_5', icon: '🏛️', title: 'Демиург', desc: 'Развить 5 разных Навыков.', auto: true, condition: () => state.skills.length >= 5 },
+            { id: 'goal_1', icon: '🎯', title: 'Первый Шаг', desc: 'Создать свою первую цель.', auto: true, condition: () => state.skills.some(s => s.goals && s.goals.length >= 1) },
+            { id: 'tree_10', icon: '🌳', title: 'Дерево Жизни', desc: 'Завести 10 целей внутри одного навыка.', auto: true, condition: () => state.skills.some(s => s.goals && s.goals.length >= 10) },
+            { id: 'focus_ach', icon: '👁️', title: 'Абсолютный Фокус', desc: 'Отметить задачу как "Фокус Дня".', auto: true, condition: () => state.skills.some(s => s.goals && s.goals.some(g => g.isFocus)) },
+            { id: 'planner', icon: '📅', title: 'Мастер-Планировщик', desc: 'Запланировать 5 блоков в Расписании.', auto: true, condition: () => Object.values(state.schedule).flat().length >= 5 },
+            
+            // --- ВИЗУАЛЬНЫЙ ГРАФ И ЗАМЕТКИ ---
+            { id: 'mind_1', icon: '🧠', title: 'Искусство Декомпозиции', desc: 'Создать дополнительный узел в Визуальном Графе.', auto: true, condition: () => state.skills.some(s => s.graphNodes && s.graphNodes.length > 1) },
+            { id: 'note_1', icon: '📜', title: 'Писарь Матрицы', desc: 'Создать первую заметку в Базе Знаний.', auto: true, condition: () => (state.notes?.length || 0) >= 1 },
+            { id: 'note_10', icon: '📚', title: 'Хранитель ЛОРа', desc: 'Создать 10 заметок.', auto: true, condition: () => (state.notes?.length || 0) >= 10 },
+            
+            // --- СОЦИАЛЬНЫЕ И ЭКОНОМИКА ---
+            { id: 'social_1', icon: '🤝', title: 'Кровный Брат', desc: 'Присоединиться к Групповому Стрику с другом.', auto: true, condition: () => (state.network?.sharedHabits?.length || 0) >= 1 },
+            { id: 'social_3', icon: '🌐', title: 'Сетевой Разум', desc: 'Участвовать в 3 общих договорах одновременно.', auto: true, condition: () => (state.network?.sharedHabits?.length || 0) >= 3 },
+            { id: 'freeze_buy', icon: '❄️', title: 'Зима Близко', desc: 'Купить "Заморозку Стрика" в Магазине.', auto: true, condition: () => (state.inventory?.streakFreezes || 0) >= 1 },
+            { id: 'store_add', icon: '🛒', title: 'Капиталист', desc: 'Создать свою собственную награду в Магазине.', auto: true, condition: () => state.store.length > 2 },
+            { id: 'lootbox_5', icon: '🎁', title: 'Коллекционер', desc: 'Накопить 5 не открытых Лутбоксов.', auto: true, condition: () => state.lootboxes >= 5 },
+            { id: 'rank_1', icon: '👑', title: 'Альфа-Хищник', desc: 'Достичь 20-го уровня (вход в Элиту Таблицы Лидеров).', auto: true, condition: () => state.global.level >= 20 }
         ];
 
-        // Генерация: Уровни (20 ачивок)
+        // Динамическая генерация уровней и золота (Оставляем из прошлого кода)
         for (let i = 5; i <= 100; i += 5) {
-        AUTO_ACHIEVEMENTS.push({
-        id: `lvl_${i}`, icon: '🌟', title: `Пробуждение Силы: Ур. ${i}`, desc: `Достичь ${i}-го глобального уровня.`, auto: true,
-        condition: () => state.global.level >= i
-        });
+            AUTO_ACHIEVEMENTS.push({ id: `lvl_${i}`, icon: '🌟', title: `Пробуждение Силы: Ур. ${i}`, desc: `Достичь ${i}-го уровня.`, auto: true, condition: () => state.global.level >= i });
         }
-
-        // Генерация: Богатство (10 ачивок)
-        const goldTiers = [500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000];
-        goldTiers.forEach(t => {
-        AUTO_ACHIEVEMENTS.push({
-        id: `gold_${t}`, icon: '💰', title: `Магнат x${t}`, desc: `Накопить ${t} золота единовременно.`, auto: true,
-        condition: () => state.global.gold >= t
-        });
+        [500, 1000, 5000, 10000, 50000].forEach(t => {
+            AUTO_ACHIEVEMENTS.push({ id: `gold_${t}`, icon: '💰', title: `Магнат x${t}`, desc: `Накопить ${t} золота.`, auto: true, condition: () => state.global.gold >= t });
         });
 
         // Генерация: Выполненные задачи (15 ачивок)
@@ -3113,34 +3140,68 @@
 
         const todayStr = new Date().toDateString();
         if (state.global.lastLoginDate !== todayStr) {
+            let damageTaken = 0;
 
-        state.skills.forEach(s => {
-        (s.goals || []).filter(g => g.type === 'Повторяющаяся').forEach(g => {
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
+            state.skills.forEach(s => {
+                (s.goals || []).forEach(g => {
+                    // 1. Урон от пропущенных привычек
+                    if (g.type === 'Повторяющаяся') {
+                        const yesterday = new Date();
+                        yesterday.setDate(yesterday.getDate() - 1);
 
-        if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-        if (state.inventory.streakFreezes > 0) {
-        state.inventory.streakFreezes--;
-        console.log(`Использована заморозка для: ${g.name}`);
-        } else {
-        g.streak = 0;
+                        if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+                            if (state.inventory.streakFreezes > 0) {
+                                state.inventory.streakFreezes--;
+                                console.log(`Использована заморозка для: ${g.name}`);
+                            } else {
+                                g.streak = 0; 
+                                damageTaken += 10; // 10 урона за каждую пропущенную привычку
+                            }
+                        }
+                    }
+                    // 2. Урон от проваленных Боссов
+                    if (g.type === 'Босс' && !g.done && g.deadline) {
+                        const deadlineDate = new Date(g.deadline);
+                        deadlineDate.setHours(0,0,0,0);
+                        const todayDate = new Date();
+                        todayDate.setHours(0,0,0,0);
+                        
+                        if (deadlineDate < todayDate) {
+                            damageTaken += 50; // 50 урона за провал дедлайна босса
+                            g.done = true; // Босс "уходит"
+                            alert(`💀 Вы провалили дедлайн босса "${g.name}"! Получено 50 урона.`);
+                        }
+                    }
+                });
+            });
+
+            // Применение урона и проверка на СМЕРТЬ
+            if (damageTaken > 0) {
+                state.global.hp = (state.global.hp || 100) - damageTaken;
+                if (state.global.hp <= 0) {
+                    alert(`☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики привычек\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь снова!`);
+                    state.global.level = Math.max(1, state.global.level - 1);
+                    state.global.gold = Math.floor(state.global.gold / 2);
+                    state.global.hp = 100;
+                    if (!state.analytics) state.analytics = {};
+                    state.analytics.deaths = (state.analytics.deaths || 0) + 1; // Для ачивки
+                } else {
+                    alert(`🌙 Ночной отчет: Вы получили ${damageTaken} урона за пропущенные задачи! Осталось HP: ${state.global.hp}`);
+                }
+            }
+
+            state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+            state.global.stamina = state.global.maxStamina;
+            state.global.lastLoginDate = todayStr;
+            localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
         }
-        }
-        });
-        });
 
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = state.global.maxStamina;
-        state.global.lastLoginDate = todayStr;
-        localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-        }
-
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        if (state.global.stamina === undefined) state.global.stamina = state.global.maxStamina;
-
-        document.getElementById('global-stamina-text').innerText = `${Math.floor(state.global.stamina)} / ${state.global.maxStamina}`;
-        document.getElementById('global-stamina-bar').style.width = `${(state.global.stamina / state.global.maxStamina) * 100}%`;
+        // Инициализация HP для старых сохранений
+        if (typeof state.global.hp === 'undefined') { state.global.hp = 100; state.global.maxHp = 100; }
+        
+        // Отрисовка HP
+        document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
+        document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
         document.getElementById('global-level').innerText = state.global.level;
         document.getElementById('global-xp-text').innerText = `${state.global.xp} / 100`;
         document.getElementById('global-xp-bar').style.width = `${state.global.xp}%`;
@@ -3365,7 +3426,10 @@
         }
 
         if (!state.store.find(i => i.id === 'freeze')) {
-        state.store.push({ id: 'freeze', name: 'Заморозка стрейка ❄️', price: 200, stamina: 0, isSpecial: true });
+            state.store.push({ id: 'freeze', name: 'Заморозка стрейка ❄️', price: 200, stamina: 0, isSpecial: true });
+        }
+        if (!state.store.find(i => i.id === 'heal')) {
+            state.store.push({ id: 'heal', name: 'Малое Зелье Лечения 🧪', price: 150, stamina: 0, heal: 30, isSpecial: true });
         }
         render();
 
