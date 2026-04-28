@@ -44,6 +44,7 @@
             flex-direction: column;
             height: 100vh;
             overflow: hidden;
+            touch-action: manipulation;
         }
 
         /* =========================================
@@ -72,25 +73,33 @@
             white-space: nowrap;
         }
 
-        .nav-link:hover {
-            color: #ffffff;
-        }
+            .nav-link:hover {
+                color: #ffffff;
+            }
 
-        .nav-link.active {
-            color: var(--accent);
-            border-bottom-color: var(--accent);
-        }
+            .nav-link.active {
+                color: var(--accent);
+                border-bottom-color: var(--accent);
+            }
 
-        .nav-link.flow-active {
-            color: var(--flow);
-            border-bottom-color: var(--flow);
-            animation: pulse 2s infinite;
-        }
+            .nav-link.flow-active {
+                color: var(--flow);
+                border-bottom-color: var(--flow);
+                animation: pulse 2s infinite;
+            }
 
         @keyframes pulse {
-            0% { text-shadow: 0 0 0 transparent; }
-            50% { text-shadow: 0 0 10px var(--flow); }
-            100% { text-shadow: 0 0 0 transparent; }
+            0% {
+                text-shadow: 0 0 0 transparent;
+            }
+
+            50% {
+                text-shadow: 0 0 10px var(--flow);
+            }
+
+            100% {
+                text-shadow: 0 0 0 transparent;
+            }
         }
 
         /* =========================================
@@ -109,9 +118,9 @@
             margin: 0 auto;
         }
 
-        .view.active {
-            display: block;
-        }
+            .view.active {
+                display: block;
+            }
 
         #skill-tree-view.active {
             display: flex;
@@ -142,6 +151,7 @@
             font-weight: bold;
             transition: filter 0.2s ease;
         }
+
         .canvas-node-wrap {
             position: absolute;
             z-index: 5;
@@ -173,15 +183,33 @@
             color: black;
         }
 
-        .node-control-btn.left { left: -10px; top: 15px; }
-        .node-control-btn.right { right: -10px; top: 15px; }
-        .node-control-btn.bottom { bottom: -10px; left: 50%; transform: translateX(-50%); }
-        .node-control-btn.bottom.active { background: var(--success); border-color: white; opacity: 1; }
+        .node-control-btn.left {
+            left: -10px;
+            top: 15px;
+        }
+
+        .node-control-btn.right {
+            right: -10px;
+            top: 15px;
+        }
+
+        .node-control-btn.bottom {
+            bottom: -10px;
+            left: 50%;
+            transform: translateX(-50%);
+        }
+
+            .node-control-btn.bottom.active {
+                background: var(--success);
+                border-color: white;
+                opacity: 1;
+            }
 
         .graph-node.done {
             background: rgba(0, 204, 102, 0.1);
             border-style: solid;
         }
+
         .btn:hover {
             filter: brightness(1.2);
         }
@@ -196,9 +224,9 @@
             transition: border-color 0.2s ease;
         }
 
-        .btn-outline:hover {
-            border-color: var(--text-dim);
-        }
+            .btn-outline:hover {
+                border-color: var(--text-dim);
+            }
 
         .btn-danger {
             background-color: transparent;
@@ -210,9 +238,9 @@
             transition: background-color 0.2s ease;
         }
 
-        .btn-danger:hover {
-            background-color: rgba(255, 68, 68, 0.1);
-        }
+            .btn-danger:hover {
+                background-color: rgba(255, 68, 68, 0.1);
+            }
 
         /* =========================================
            ДАШБОРД (СТАТИСТИКА)
@@ -228,7 +256,7 @@
             border-radius: 12px;
             margin-bottom: 40px;
         }
-        
+
         .hero-stat-block {
             text-align: center;
             flex: 1;
@@ -286,9 +314,9 @@
             transition: border-color 0.2s ease;
         }
 
-        .goal-list-item:hover {
-            border-color: #555555;
-        }
+            .goal-list-item:hover {
+                border-color: #555555;
+            }
 
         .goal-meta {
             font-size: 0.8em;
@@ -322,9 +350,9 @@
             cursor: grab;
         }
 
-        #graph-container:active {
-            cursor: grabbing;
-        }
+            #graph-container:active {
+                cursor: grabbing;
+            }
 
         #graph-svg {
             position: absolute;
@@ -353,11 +381,12 @@
             font-weight: bold;
             text-align: center;
             transition: border-color 0.2s ease;
+            touch-action: none; /* Предотвращает стандартное поведение браузера при тапах */
         }
 
-        .graph-node:hover {
-            border-color: #ffffff;
-        }
+            .graph-node:hover {
+                border-color: #ffffff;
+            }
 
         /* =========================================
            РЕЖИМ ПОТОКА (FLOW)
@@ -375,10 +404,10 @@
             transition: filter 0.2s ease, box-shadow 0.2s ease;
         }
 
-        .btn-flow:hover {
-            filter: brightness(1.1);
-            box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
-        }
+            .btn-flow:hover {
+                filter: brightness(1.1);
+                box-shadow: 0 0 20px rgba(255, 0, 85, 0.5);
+            }
 
         .flow-timer-display {
             font-size: 7em;
@@ -409,16 +438,16 @@
             transition: border-color 0.2s ease, opacity 0.2s ease;
         }
 
-        .flow-task:hover {
-            border-color: #555555;
-        }
+            .flow-task:hover {
+                border-color: #555555;
+            }
 
-        .flow-task.done {
-            opacity: 0.4;
-            border-color: var(--success);
-        }
+            .flow-task.done {
+                opacity: 0.4;
+                border-color: var(--success);
+            }
 
-                /* =========================================
+        /* =========================================
         РАСПИСАНИЕ (БЕЗ ЛИНЕЙКИ ВРЕМЕНИ)
         ========================================= */
         .week-wrapper {
@@ -464,16 +493,16 @@
             transition: border-color 0.2s ease, transform 0.2s ease;
         }
 
-        .task-block:hover {
-            border-color: var(--accent);
-            transform: translateY(-2px);
-        }
+            .task-block:hover {
+                border-color: var(--accent);
+                transform: translateY(-2px);
+            }
 
-        .task-block.done {
-            opacity: 0.4;
-            border-color: transparent;
-            text-decoration: line-through;
-        }
+            .task-block.done {
+                opacity: 0.4;
+                border-color: transparent;
+                text-decoration: line-through;
+            }
 
         /* =========================================
            МАГАЗИН И МОДАЛЬНЫЕ ОКНА
@@ -518,76 +547,87 @@
             overflow-y: auto;
         }
 
-        .modal-content input, 
-        .modal-content select, 
-        .modal-content textarea {
-            width: 100%;
-            background-color: #0b0b0d;
-            border: 1px solid var(--border);
-            color: #ffffff;
-            padding: 14px;
-            margin-bottom: 20px;
-            border-radius: 4px;
-            font-family: inherit;
-            font-size: 1em;
-        }
+            .modal-content input,
+            .modal-content select,
+            .modal-content textarea {
+                width: 100%;
+                background-color: #0b0b0d;
+                border: 1px solid var(--border);
+                color: #ffffff;
+                padding: 14px;
+                margin-bottom: 20px;
+                border-radius: 4px;
+                font-family: inherit;
+                font-size: 1em;
+            }
 
-        .modal-content textarea {
-            resize: vertical;
-            min-height: 120px;
-        }
+            .modal-content textarea {
+                resize: vertical;
+                min-height: 120px;
+            }
 
-        .modal-content label {
-            display: block;
-            margin-bottom: 8px;
-            color: var(--text-dim);
-            font-size: 0.95em;
-        }
-    /* =========================================
+            .modal-content label {
+                display: block;
+                margin-bottom: 8px;
+                color: var(--text-dim);
+                font-size: 0.95em;
+            }
+        /* =========================================
            МОБИЛЬНАЯ АДАПТАЦИЯ
         ========================================= */
         @media (max-width: 768px) {
-            .hero-stats { 
-                flex-direction: column; 
-                padding: 20px; 
-                gap: 15px; 
+            .hero-stats {
+                flex-direction: column;
+                padding: 20px;
+                gap: 15px;
             }
-            .hero-stat-block { 
-                width: 100%; 
+
+            .hero-stat-block {
+                width: 100%;
             }
-            .week-grid { 
+
+            .week-grid {
                 grid-template-columns: 1fr; /* Дни расписания друг под другом */
             }
-            .day-col { 
-                min-height: auto; 
+
+            .day-col {
+                min-height: auto;
             }
-            .modal-content { 
-                width: 95%; 
-                padding: 20px; 
-                margin: 10px; 
+
+            .modal-content {
+                width: 95%;
+                padding: 20px;
+                margin: 10px;
             }
-            nav { 
-                padding: 10px; 
+
+            nav {
+                padding: 10px;
                 scrollbar-width: none; /* Прячем скроллбар в меню на Android */
             }
-            nav::-webkit-scrollbar { 
-                display: none; /* Прячем скроллбар в меню на iOS */
+
+                nav::-webkit-scrollbar {
+                    display: none; /* Прячем скроллбар в меню на iOS */
+                }
+
+            .nav-link {
+                padding: 10px;
+                font-size: 0.8em;
             }
-            .nav-link { 
-                padding: 10px; 
-                font-size: 0.8em; 
+
+            #dash-summary, .store-grid {
+                grid-template-columns: 1fr;
             }
-            #dash-summary, .store-grid { 
-                grid-template-columns: 1fr; 
+
+            .tree-header {
+                flex-direction: column;
+                align-items: flex-start;
+                gap: 15px;
             }
-            .tree-header { 
-                flex-direction: column; 
-                align-items: flex-start; 
-                gap: 15px; 
-            }
+
             #graph-container {
-                overflow: scroll; /* Чтобы граф можно было свайпать */
+                overflow: hidden; /* Изменено, чтобы drag'n'drop работал корректно на мобилках */
             }
+
             .modal-buttons {
                 flex-direction: column;
             }
@@ -595,38 +635,151 @@
         /* =========================================
            IOS КАЛЕНДАРЬ (НАПОМИНАНИЯ)
         ========================================= */
-        .cal-quick-buttons { display: flex; gap: 10px; margin-bottom: 20px; }
-        .cal-btn { flex: 1; background: #1c1c1e; border: none; color: var(--accent); padding: 10px; border-radius: 8px; cursor: pointer; font-size: 0.9em; font-weight: bold; transition: 0.2s; }
-        .cal-btn:hover { background: #2c2c2e; }
-        .calendar-grid { display: grid; grid-template-columns: repeat(7, 1fr); gap: 5px; text-align: center; margin-bottom: 15px;}
-        .cal-header { color: var(--text-dim); font-size: 0.8em; margin-bottom: 10px; }
-        .cal-day { padding: 10px 0; border-radius: 50%; cursor: pointer; font-size: 1em; transition: 0.2s; }
-        .cal-day:hover { background: #2c2c2e; }
-        .cal-day.active { background: var(--accent); color: #000; font-weight: bold; }
-        .cal-day.dim { color: transparent; pointer-events: none; }
-        .ios-date-button { background: #0b0b0d; border: 1px solid var(--border); padding: 14px; border-radius: 8px; color: #fff; cursor: pointer; font-weight: bold; margin-bottom: 20px; transition: 0.2s; }
-        .ios-date-button:hover { border-color: var(--accent); }
-        .cal-nav { display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; font-weight: bold; font-size: 1.1em; }
-        .cal-nav button { background: none; border: none; color: var(--accent); font-size: 1.5em; cursor: pointer; padding: 0 10px;}
+        .cal-quick-buttons {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 20px;
+        }
+
+        .cal-btn {
+            flex: 1;
+            background: #1c1c1e;
+            border: none;
+            color: var(--accent);
+            padding: 10px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 0.9em;
+            font-weight: bold;
+            transition: 0.2s;
+        }
+
+            .cal-btn:hover {
+                background: #2c2c2e;
+            }
+
+        .calendar-grid {
+            display: grid;
+            grid-template-columns: repeat(7, 1fr);
+            gap: 5px;
+            text-align: center;
+            margin-bottom: 15px;
+        }
+
+        .cal-header {
+            color: var(--text-dim);
+            font-size: 0.8em;
+            margin-bottom: 10px;
+        }
+
+        .cal-day {
+            padding: 10px 0;
+            border-radius: 50%;
+            cursor: pointer;
+            font-size: 1em;
+            transition: 0.2s;
+        }
+
+            .cal-day:hover {
+                background: #2c2c2e;
+            }
+
+            .cal-day.active {
+                background: var(--accent);
+                color: #000;
+                font-weight: bold;
+            }
+
+            .cal-day.dim {
+                color: transparent;
+                pointer-events: none;
+            }
+
+        .ios-date-button {
+            background: #0b0b0d;
+            border: 1px solid var(--border);
+            padding: 14px;
+            border-radius: 8px;
+            color: #fff;
+            cursor: pointer;
+            font-weight: bold;
+            margin-bottom: 20px;
+            transition: 0.2s;
+        }
+
+            .ios-date-button:hover {
+                border-color: var(--accent);
+            }
+
+        .cal-nav {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: 20px;
+            font-weight: bold;
+            font-size: 1.1em;
+        }
+
+            .cal-nav button {
+                background: none;
+                border: none;
+                color: var(--accent);
+                font-size: 1.5em;
+                cursor: pointer;
+                padding: 0 10px;
+            }
 
         /* Прогресс-бары для проектов */
-        .project-progress-container { width: 100%; height: 6px; background: #000; border-radius: 3px; margin: 10px 0; overflow: hidden; border: 1px solid #333; }
-        .project-progress-fill { height: 100%; background: var(--xp-color); transition: width 0.3s ease; }
-        
+        .project-progress-container {
+            width: 100%;
+            height: 6px;
+            background: #000;
+            border-radius: 3px;
+            margin: 10px 0;
+            overflow: hidden;
+            border: 1px solid #333;
+        }
+
+        .project-progress-fill {
+            height: 100%;
+            background: var(--xp-color);
+            transition: width 0.3s ease;
+        }
+
         /* Мини-сетка для привычек (7 дней) */
-        .habit-grid-mini { display: flex; gap: 4px; margin-top: 8px; }
-        .habit-day-dot { width: 10px; height: 10px; border-radius: 2px; background: #222; border: 1px solid #333; }
-        .habit-day-dot.active { background: var(--accent); box-shadow: 0 0 5px var(--accent); }
-        
+        .habit-grid-mini {
+            display: flex;
+            gap: 4px;
+            margin-top: 8px;
+        }
+
+        .habit-day-dot {
+            width: 10px;
+            height: 10px;
+            border-radius: 2px;
+            background: #222;
+            border: 1px solid #333;
+        }
+
+            .habit-day-dot.active {
+                background: var(--accent);
+                box-shadow: 0 0 5px var(--accent);
+            }
+
         /* Предупреждение о наложении (п. 5) */
-        .overlap-warning { color: #ff9800; font-size: 0.8em; margin-top: 5px; display: none; }
+        .overlap-warning {
+            color: #ff9800;
+            font-size: 0.8em;
+            margin-top: 5px;
+            display: none;
+        }
     </style>
 </head>
 <body>
 
-    <nav id="main-nav"style="display: none;">
+    <nav id="main-nav" style="display: none;">
         <div class="nav-link active" onclick="switchView('dashboard')">Дашборд</div>
-        <div class="nav-link" onclick="switchView('analytics')">Аналитика</div> 
+        <div class="nav-link" onclick="switchView('analytics')">Аналитика</div>
         <div class="nav-link" onclick="switchView('achievements')">Достижения 🏆</div>
         <div class="nav-link" onclick="switchView('skills')">Навыки и Древа</div>
         <div class="nav-link" onclick="switchView('flow')" id="nav-flow">ПОТОК (Фокус)</div>
@@ -657,7 +810,7 @@
                     <button class="btn" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
                     <button class="btn btn-outline" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
                 </div>
-                
+
                 <div id="auth-error" style="color: var(--danger); font-size: 0.85em; display: none;"></div>
             </div>
         </div>
@@ -699,7 +852,7 @@
             </div>
             <div class="card" style="border-color: var(--accent); margin-bottom: 30px;">
                 <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin:0;">Сетевой узел (P2P)</h3>
+                    <h3 style="margin:0;">Сетвой узел (P2P)</h3>
                     <div id="sync-status-badge" style="padding: 5px 12px; border-radius: 20px; font-size: 0.8em; background: rgba(255,68,68,0.1); color: var(--danger);">
                         Offline
                     </div>
@@ -788,7 +941,7 @@
                 </div>
             </div>
             <div style="padding: 10px 30px; background: #000000; color: #888888; font-size: 0.85em;">
-                Левый клик + тянуть — переместить узел. Правый клик — удалить. Двойной клик — переименовать. (Опыта за узлы нет, это визуальный черновик).
+                На мобильном: зажать и тащить. На ПК: левый клик + тянуть. Правый клик — удалить. Двойной клик — переименовать. (Опыта за узлы нет, это визуальный черновик).
             </div>
             <div id="graph-container">
                 <svg id="graph-svg"></svg>
@@ -898,7 +1051,6 @@
             <div class="card">
                 <h2 style="color: var(--accent); text-align: center; margin-bottom: 30px;">🎓 Академия: Как играть в свою жизнь (Справка)</h2>
 
-                <!-- Быстрый старт -->
                 <div style="background: rgba(0, 242, 255, 0.05); border: 1px solid var(--accent); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
                     <h3 style="color: var(--accent); margin-top: 0;">🚀 Быстрый старт (для новичков за 30 секунд)</h3>
                     <p style="color: var(--text); line-height: 1.6; margin-bottom: 0;">
@@ -906,10 +1058,8 @@
                     </p>
                 </div>
 
-                <!-- Карточки с разделами -->
                 <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
 
-                    <!-- Как завести задачу -->
                     <div class="goal-list-item">
                         <h4 style="margin: 0 0 10px 0; color: var(--gold);">📝 Как завести задачу (без хаоса и стресса)</h4>
                         <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
@@ -930,7 +1080,6 @@
                         </ul>
                     </div>
 
-                    <!-- Геймификация и Баланс -->
                     <div class="goal-list-item">
                         <h4 style="margin: 0 0 10px 0; color: var(--xp-color);">⚔️ Геймификация (Как прокачать персонажа и не умереть)</h4>
                         <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
@@ -941,7 +1090,6 @@
                         </ul>
                     </div>
 
-                    <!-- Расписание и тайм-менеджмент -->
                     <div class="goal-list-item">
                         <h4 style="margin: 0 0 10px 0; color: var(--accent);">📅 Расписание и тайм-менеджмент</h4>
                         <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
@@ -951,7 +1099,6 @@
                         </ul>
                     </div>
 
-                    <!-- Частые ошибки и FAQ -->
                     <div class="goal-list-item" style="border-color: var(--danger);">
                         <h4 style="margin: 0 0 10px 0; color: var(--danger);">❓ Частые ошибки и вопросы (FAQ)</h4>
                         <div style="color: var(--text-dim); font-size: 0.85em; line-height: 1.6;">
@@ -970,7 +1117,6 @@
 
                 </div>
 
-                <!-- Скрытые фичи для Pro-игроков -->
                 <div style="margin-top: 25px; padding: 15px; border: 1px dashed var(--border); border-radius: 8px;">
                     <h4 style="margin: 0 0 10px 0; color: #fff;">🕵️ Скрытые фичи для Pro-игроков (Тайные механики)</h4>
                     <p style="color: var(--text-dim); font-size: 0.9em; margin: 0; line-height: 1.6;">
@@ -1064,7 +1210,7 @@
             <input type="hidden" id="editTaskId">
             <input type="hidden" id="editTaskOldType">
             <input type="hidden" id="editTaskOldKey">
-            
+
             <label>Тип события</label>
             <select id="taskMode" onchange="toggleTaskModeUI()">
                 <option value="template">Еженедельная рутина (Шаблон)</option>
@@ -1173,7 +1319,7 @@
             </div>
 
             <div class="calendar-grid" id="calGrid">
-                </div>
+            </div>
 
             <button class="btn" style="width: 100%; margin-top: 15px; border-radius: 8px;" onclick="applyIOSCalendar()">Готово</button>
         </div>
@@ -1203,13 +1349,13 @@
             </div>
         </div>
     </div>
-<script>
-    // ==========================================
-    // МАГИЧЕСКАЯ СИНХРОНИЗАЦИЯ (FIREBASE REALTIME DB)
-    // ==========================================
-    
-    // ВСТАВЬ СЮДА СВОИ КЛЮЧИ ИЗ КОНСОЛИ FIREBASE!
-    const firebaseConfig = {
+    <script>
+        // ==========================================
+        // МАГИЧЕСКАЯ СИНХРОНИЗАЦИЯ (FIREBASE REALTIME DB)
+        // ==========================================
+
+        // ВСТАВЬ СЮДА СВОИ КЛЮЧИ ИЗ КОНСОЛИ FIREBASE!
+        const firebaseConfig = {
 
         apiKey: "AIzaSyCGtMNjhSehfuGjZ-c1bBQtV_VXhbOSir8",
 
@@ -1225,482 +1371,484 @@
 
         appId: "1:644805336630:web:c2797dd84e3d6d58dd4297"
 
-    };
+        };
 
 
-    // Инициализация Firebase
-    firebase.initializeApp(firebaseConfig);
-    const database = firebase.database();
-    
-    let syncRef = null;
-    let isSyncing = false; // Защита от зацикливания
+        // Инициализация Firebase
+        firebase.initializeApp(firebaseConfig);
+        const database = firebase.database();
 
-    
-    
-    // ==========================================
-    // СИСТЕМА АВТОРИЗАЦИИ (FIREBASE AUTH)
-    // ==========================================
-    const auth = firebase.auth();
+        let syncRef = null;
+        let isSyncing = false; // Защита от зацикливания
 
-    // Слушатель состояния (Автоматический вход, если сессия жива)
-    auth.onAuthStateChanged((user) => {
+
+
+        // ==========================================
+        // СИСТЕМА АВТОРИЗАЦИИ (FIREBASE AUTH)
+        // ==========================================
+        const auth = firebase.auth();
+
+        // Слушатель состояния (Автоматический вход, если сессия жива)
+        auth.onAuthStateChanged((user) => {
         if (user) {
-            console.log("Сессия восстановлена для:", user.email);
-            startApp(user.uid); // Используем надежный UID от Firebase вместо самописного хэша
+        console.log("Сессия восстановлена для:", user.email);
+        startApp(user.uid); // Используем надежный UID от Firebase вместо самописного хэша
         } else {
-            // Пользователь не авторизован - показываем экран входа
-            document.getElementById('auth-view').style.display = 'flex';
-            document.getElementById('main-nav').style.display = 'none';
-            document.querySelectorAll('.view').forEach(v => {
-                if(v.id !== 'auth-view') v.classList.remove('active');
-            });
+        // Пользователь не авторизован - показываем экран входа
+        document.getElementById('auth-view').style.display = 'flex';
+        document.getElementById('main-nav').style.display = 'none';
+        document.querySelectorAll('.view').forEach(v => {
+        if(v.id !== 'auth-view') v.classList.remove('active');
+        });
         }
-    });
+        });
 
-    // ФУНКЦИЯ РЕГИСТРАЦИИ
-    async function registerUser() {
+        // ФУНКЦИЯ РЕГИСТРАЦИИ
+        async function registerUser() {
         const email = document.getElementById('auth-email').value.trim();
         const pass = document.getElementById('auth-password').value.trim();
         const errorBox = document.getElementById('auth-error');
-        
+
         if (!email || !pass) {
-            showAuthError("Введите Email и пароль!");
-            return;
+        showAuthError("Введите Email и пароль!");
+        return;
         }
 
         setAuthLoading(true);
         try {
-            // Очищаем старый локальный кэш при новой регистрации
-            localStorage.removeItem('rpg_os_final_v2');
-            state = getDefaultState(); 
-            
-            const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
-            // Firebase сам вызовет onAuthStateChanged и запустит startApp
-        } catch (error) {
-            console.error("Ошибка регистрации:", error);
-            if (error.code === 'auth/email-already-in-use') showAuthError("Этот Email уже зарегистрирован. Нажмите 'Войти'.");
-            else if (error.code === 'auth/weak-password') showAuthError("Пароль слишком простой (минимум 6 символов).");
-            else showAuthError(error.message);
-        } finally {
-            setAuthLoading(false);
-        }
-    }
+        // Очищаем старый локальный кэш при новой регистрации
+        localStorage.removeItem('rpg_os_final_v2');
+        state = getDefaultState();
 
-    // ФУНКЦИЯ ВХОДА
-    async function loginUser() {
+        const userCredential = await auth.createUserWithEmailAndPassword(email, pass);
+        // Firebase сам вызовет onAuthStateChanged и запустит startApp
+        } catch (error) {
+        console.error("Ошибка регистрации:", error);
+        if (error.code === 'auth/email-already-in-use') showAuthError("Этот Email уже зарегистрирован. Нажмите 'Войти'.");
+        else if (error.code === 'auth/weak-password') showAuthError("Пароль слишком простой (минимум 6 символов).");
+        else showAuthError(error.message);
+        } finally {
+        setAuthLoading(false);
+        }
+        }
+
+        // ФУНКЦИЯ ВХОДА
+        async function loginUser() {
         const email = document.getElementById('auth-email').value.trim();
         const pass = document.getElementById('auth-password').value.trim();
-        
+
         if (!email || !pass) {
-            showAuthError("Введите Email и пароль!");
-            return;
+        showAuthError("Введите Email и пароль!");
+        return;
         }
 
         setAuthLoading(true);
         try {
-            const userCredential = await auth.signInWithEmailAndPassword(email, pass);
-            const uid = userCredential.user.uid;
-            
-            // ЗАЩИТА ОТ УТЕЧКИ: Проверяем, не чужие ли данные висят в памяти
-            if (state.network && state.network.syncId && state.network.syncId !== uid) {
-                console.warn("Обнаружена смена аккаунта. Очистка кэша.");
-                localStorage.removeItem('rpg_os_final_v2');
-                state = getDefaultState();
-            }
-            // Успешный вход автоматически триггерит onAuthStateChanged
+        const userCredential = await auth.signInWithEmailAndPassword(email, pass);
+        const uid = userCredential.user.uid;
+
+        // ЗАЩИТА ОТ УТЕЧКИ: Проверяем, не чужие ли данные висят в памяти
+        if (state.network && state.network.syncId && state.network.syncId !== uid) {
+        console.warn("Обнаружена смена аккаунта. Очистка кэша.");
+        localStorage.removeItem('rpg_os_final_v2');
+        state = getDefaultState();
+        }
+        // Успешный вход автоматически триггерит onAuthStateChanged
         } catch (error) {
-            console.error("Ошибка входа:", error);
-            if (error.code === 'auth/invalid-credential') showAuthError("Неверный Email или пароль.");
-            else showAuthError(error.message);
+        console.error("Ошибка входа:", error);
+        if (error.code === 'auth/invalid-credential') showAuthError("Неверный Email или пароль.");
+        else showAuthError(error.message);
         } finally {
-            setAuthLoading(false);
+        setAuthLoading(false);
         }
-    }
+        }
 
-    // БЕЗОПАСНЫЙ ВЫХОД
-    function logout() {
+        // БЕЗОПАСНЫЙ ВЫХОД
+        function logout() {
         if(confirm("Выйти из учетной записи? Локальные данные будут стерты.")) {
-            auth.signOut().then(() => {
-                localStorage.removeItem('rpg_os_final_v2');
-                state = getDefaultState();
-                location.reload();
-            }).catch((error) => {
-                alert("Ошибка при выходе: " + error.message);
-            });
+        auth.signOut().then(() => {
+        localStorage.removeItem('rpg_os_final_v2');
+        state = getDefaultState();
+        location.reload();
+        }).catch((error) => {
+        alert("Ошибка при выходе: " + error.message);
+        });
         }
-    }
+        }
 
-    // Утилиты интерфейса авторизации
-    function setAuthLoading(isLoading) {
+        // Утилиты интерфейса авторизации
+        function setAuthLoading(isLoading) {
         document.getElementById('btnLogin').disabled = isLoading;
         document.getElementById('btnRegister').disabled = isLoading;
         document.getElementById('auth-error').style.display = 'none';
-    }
+        }
 
-    function showAuthError(msg) {
+        function showAuthError(msg) {
         const box = document.getElementById('auth-error');
         box.innerText = msg;
         box.style.display = 'block';
-    }
+        }
 
-   
-    
-   
-    function startApp(uid) {
+
+
+
+        function startApp(uid) {
         document.getElementById('auth-view').style.display = 'none';
         document.getElementById('main-nav').style.display = 'flex';
-        
+
         // Обновляем syncId на новый надежный UID
-        state.network.syncId = uid; 
-        
+        state.network.syncId = uid;
+
         switchView('dashboard');
         initNetwork(uid); // Передаем uid в сеть
-    }
+        }
 
-    function initNetwork(hash) {
+        function initNetwork(hash) {
         syncRef = database.ref('users/' + hash);
-        
+
         database.ref('.info/connected').on('value', (snap) => {
-            if (snap.val() === true) {
-                updateSyncUI('online');
-            } else {
-                updateSyncUI('offline');
-            }
+        if (snap.val() === true) {
+        updateSyncUI('online');
+        } else {
+        updateSyncUI('offline');
+        }
         });
 
         syncRef.on('value', (snapshot) => {
-            const incomingState = snapshot.val();
-            
-            // Если в облаке пусто, пушим локальные данные (инициализация облака)
-            if (!incomingState || !incomingState.global) {
-                pushState();
-                return;
-            }
+        const incomingState = snapshot.val();
 
-            const myTime = state.global.lastUpdated || 0;
-            const incomingTime = incomingState.global.lastUpdated || 0;
+        // Если в облаке пусто, пушим локальные данные (инициализация облака)
+        if (!incomingState || !incomingState.global) {
+        pushState();
+        return;
+        }
 
-            // ПРОВЕРКА НА НОВИЧКА: Если локально нет навыков, это чистый клиент (телефон)
-            const isLocalEmpty = (!state.skills || state.skills.length === 0);
+        const myTime = state.global.lastUpdated || 0;
+        const incomingTime = incomingState.global.lastUpdated || 0;
 
-            // ... внутри syncRef.on('value', ...)
+        // ПРОВЕРКА НА НОВИЧКА: Если локально нет навыков, это чистый клиент (телефон)
+        const isLocalEmpty = (!state.skills || state.skills.length === 0);
+
+        // ... внутри syncRef.on('value', ...)
         if (incomingTime > myTime || isLocalEmpty) {
-            console.log("Синхронизация: приняты данные из облака ☁️");
-            isSyncing = true; 
-            
-            // 1. Принимаем "сырые" данные
-            state = incomingState;
+        console.log("Синхронизация: приняты данные из облака ☁️");
+        isSyncing = true;
 
-            // 2. СЛОЙ ГИДРАТАЦИИ (Восстанавливаем структуру, которую мог сожрать Firebase)
-            if (!state.skills) state.skills = [];
-            if (!state.store) state.store = [];
-            if (!state.notes) state.notes = [];
-            if (!state.customAchievements) state.customAchievements = [];
-            if (!state.unlockedAchievements) state.unlockedAchievements = [];
-            if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
-            if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
-            if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+        // 1. Принимаем "сырые" данные
+        state = incomingState;
 
-            // 3. Теперь безопасно сохраняем и рендерим
-            localStorage.setItem('rpg_os_session_hash', hash); // обновляем сессию на всякий случай
-            localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-            
-            render();
-            updateSyncUI('online');
-            setTimeout(() => isSyncing = false, 500);
+        // 2. СЛОЙ ГИДРАТАЦИИ (Восстанавливаем структуру, которую мог сожрать Firebase)
+        if (!state.skills) state.skills = [];
+        if (!state.store) state.store = [];
+        if (!state.notes) state.notes = [];
+        if (!state.customAchievements) state.customAchievements = [];
+        if (!state.unlockedAchievements) state.unlockedAchievements = [];
+        if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
+        if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
+        if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+
+        // 3. Теперь безопасно сохраняем и рендерим
+        localStorage.setItem('rpg_os_session_hash', hash); // обновляем сессию на всякий случай
+        localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+
+        render();
+        updateSyncUI('online');
+        setTimeout(() => isSyncing = false, 500);
         } else if (myTime > incomingTime && !isLocalEmpty) {
-            pushState();
+        pushState();
         }
         }, (error) => {
-            console.error("Firebase Auth/Sync Error:", error);
-            alert("Критическая ошибка доступа к базе данных.");
+        console.error("Firebase Auth/Sync Error:", error);
+        alert("Критическая ошибка доступа к базе данных.");
         });
-    }
+        }
 
-    function pushState() {
+        function pushState() {
         if (!syncRef || isSyncing) return;
-        
-        syncRef.set(state)
-            .then(() => updateSyncUI('online'))
-            .catch((error) => {
-                console.error("Ошибка сохранения в облако:", error);
-                updateSyncUI('offline');
-            });
-    }
 
-    function updateSyncUI(status) {
+        syncRef.set(state)
+        .then(() => updateSyncUI('online'))
+        .catch((error) => {
+        console.error("Ошибка сохранения в облако:", error);
+        updateSyncUI('offline');
+        });
+        }
+
+        function updateSyncUI(status) {
         const badge = document.getElementById('sync-status-badge');
         const list = document.getElementById('device-list');
-        
-        if (badge) {
-            if (status === 'online') {
-                badge.innerText = "Online (Облако)";
-                badge.style.color = "var(--success)";
-                badge.style.background = "rgba(0,204,102,0.1)";
-            } else if (status === 'connecting') {
-                badge.innerText = "Подключение...";
-                badge.style.color = "var(--gold)";
-                badge.style.background = "rgba(255,184,0,0.1)";
-            } else {
-                badge.innerText = "Offline";
-                badge.style.color = "var(--danger)";
-                badge.style.background = "rgba(255,68,68,0.1)";
-            }
-        }
-        
-        if (list) {
-            list.innerHTML = `• Облако Firebase Realtime DB<br>• Локальный терминал`;
-        }
-    }
 
-    function forceSync() {
+        if (badge) {
+        if (status === 'online') {
+        badge.innerText = "Online (Облако)";
+        badge.style.color = "var(--success)";
+        badge.style.background = "rgba(0,204,102,0.1)";
+        } else if (status === 'connecting') {
+        badge.innerText = "Подключение...";
+        badge.style.color = "var(--gold)";
+        badge.style.background = "rgba(255,184,0,0.1)";
+        } else {
+        badge.innerText = "Offline";
+        badge.style.color = "var(--danger)";
+        badge.style.background = "rgba(255,68,68,0.1)";
+        }
+        }
+
+        if (list) {
+        list.innerHTML = `• Облако Firebase Realtime DB<br>• Локальный терминал`;
+        }
+        }
+
+        function forceSync() {
         state.global.lastUpdated = Date.now();
         pushState();
         alert("Данные принудительно отправлены в облако Firebase!");
-    }
+        }
 
-    // Вспомогательная функция для локального сохранения без пуша (нужна для логина)
-    function saveLocal() {
+        // Вспомогательная функция для локального сохранения без пуша (нужна для логина)
+        function saveLocal() {
         localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-    }
+        }
 
-    // ==========================================
-    // 3. ЕДИНАЯ ЧИСТАЯ ФУНКЦИЯ СОХРАНЕНИЯ
-    // ==========================================
-    function save() {
+        // ==========================================
+        // 3. ЕДИНАЯ ЧИСТАЯ ФУНКЦИЯ СОХРАНЕНИЯ
+        // ==========================================
+        function save() {
         state.global.lastUpdated = Date.now();
-        
+
         // Вычисляем достижения ДО сохранения, и без рекурсивного вызова
         if(typeof checkAutoAchievements === 'function') {
-            checkAutoAchievements(); // Теперь не вызывает save() внутри себя
+        checkAutoAchievements(); // Теперь не вызывает save() внутри себя
         }
 
         const stateStr = JSON.stringify(state);
         localStorage.setItem('rpg_os_final_v2', stateStr);
-        
+
         pushState();
         render();
-    }
-    /* =========================================
-       1. КОНФИГУРАЦИЯ БАЛАНСА И СОСТОЯНИЯ
-    ========================================= */
-    const REWARDS = {
+        }
+        /* =========================================
+        1. КОНФИГУРАЦИЯ БАЛАНСА И СОСТОЯНИЯ
+        ========================================= */
+        const REWARDS = {
         "Краткосрочная": { xp: 10, g: 5 },
         "Среднесрочная": { xp: 50, g: 25 },
         "Долгосрочная": { xp: 200, g: 100 },
         "Повторяющаяся": { xp: 5, g: 2 }
-    };
-
-    // ФАБРИКА: Создает гарантированно чистый и правильный объект состояния
-    function getDefaultState() {
-        return {
-            global: { level: 1, xp: 0, gold: 150 },
-            user: { tasksCompletedForLoot: 0, lootboxThreshold: 5 },
-            lootboxes: 2,
-            skills: [],
-            schedule: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] }, 
-            store: [],
-            notes: [],
-            network: { syncId: null, isHost: false, peers: [], sharedGoals: [] },
-            customAchievements: [],
-            unlockedAchievements: []
         };
-    }
 
-    // Умная загрузка из LocalStorage с защитой от ошибок
-    const savedState = localStorage.getItem('rpg_os_final_v2');
-    
-    // Используем фабрику, если кэш пуст
-    let state = savedState ? JSON.parse(savedState) : getDefaultState();
+        // ФАБРИКА: Создает гарантированно чистый и правильный объект состояния
+        function getDefaultState() {
+        return {
+        global: { level: 1, xp: 0, gold: 150, stamina: 100, maxStamina: 100 },
+        user: { tasksCompletedForLoot: 0, lootboxThreshold: 5 },
+        lootboxes: 2,
+        skills: [],
+        schedule: { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] },
+        store: [],
+        notes: [],
+        network: { syncId: null, isHost: false, peers: [], sharedGoals: [] },
+        customAchievements: [],
+        unlockedAchievements: []
+        };
+        }
 
-    // БРОНЕЖИЛЕТ ДЛЯ СТЕЙТА: Гарантируем, что массивы всегда существуют
-    if (!state.skills) state.skills = []; 
-    if (!state.store) state.store = [];
-    if (!state.notes) state.notes = [];
-    if (!state.customAchievements) state.customAchievements = [];
-    if (!state.unlockedAchievements) state.unlockedAchievements = [];
-    if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
-    if (!state.global) state.global = { level: 1, xp: 0, gold: 150 };
-    if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
-    if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+        // Умная загрузка из LocalStorage с защитой от ошибок
+        const savedState = localStorage.getItem('rpg_os_final_v2');
 
-    // Временные переменные (Не сохраняются при обновлении страницы)
-    let flow = { active: false, timeRemaining: 0, interval: null, tasks: [] };
-    let activeTreeSkillId = null; 
-    
-    // Переменные для перетаскивания узлов на графе
-    let dragNodeId = null;
-    let dragStartX = 0;
-    let dragStartY = 0;
-    let initX = 0;
-    let initY = 0;
+        // Используем фабрику, если кэш пуст
+        let state = savedState ? JSON.parse(savedState) : getDefaultState();
 
-    
-    
-    // Запускаем сеть при старте
-    // initNetwork(); // РАСКОММЕНТИРУЙ, когда поднимешь сервер
-    /* =========================================
-       2. НАВИГАЦИЯ И ИНТЕРФЕЙС
-    ========================================= */
-    function switchView(viewId) {
+        // БРОНЕЖИЛЕТ ДЛЯ СТЕЙТА: Гарантируем, что массивы всегда существуют
+        if (!state.skills) state.skills = [];
+        if (!state.store) state.store = [];
+        if (!state.notes) state.notes = [];
+        if (!state.customAchievements) state.customAchievements = [];
+        if (!state.unlockedAchievements) state.unlockedAchievements = [];
+        if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
+        if (!state.global) state.global = { level: 1, xp: 0, gold: 150, stamina: 100, maxStamina: 100 };
+        if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
+        if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+
+        // Временные переменные (Не сохраняются при обновлении страницы)
+        let flow = { active: false, timeRemaining: 0, interval: null, tasks: [] };
+        let activeTreeSkillId = null;
+
+        // Переменные для перетаскивания узлов на графе
+        let dragNodeId = null;
+        let dragStartX = 0;
+        let dragStartY = 0;
+        let initX = 0;
+        let initY = 0;
+
+
+
+        // Запускаем сеть при старте
+        // initNetwork(); // РАСКОММЕНТИРУЙ, когда поднимешь сервер
+        /* =========================================
+        2. НАВИГАЦИЯ И ИНТЕРФЕЙС
+        ========================================= */
+        function switchView(viewId) {
         // Скрываем все экраны
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         // Сбрасываем стили навигации
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        
+
         // Показываем нужный экран
         document.getElementById(viewId).classList.add('active');
-        
+
         // Подсвечиваем нужную кнопку
         const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
         if(activeLink) {
-            activeLink.classList.add('active');
+        activeLink.classList.add('active');
         }
-        
+
         // Сброс контекста при уходе с визуального дерева
         if(viewId !== 'skill-tree-view') {
-            activeTreeSkillId = null;
+        activeTreeSkillId = null;
         }
-        
+
         render();
-    }
+        }
 
-    function openModal(id) {
+        function openModal(id) {
         document.getElementById(id).style.display = 'flex';
-    }
+        }
 
-    function closeModals() {
+        function closeModals() {
         document.querySelectorAll('.modal').forEach(m => m.style.display = 'none');
-    }
-    function manualEvent() {
+        }
+        function manualEvent() {
         document.getElementById('manualDesc').value = '';
         openModal('manualEventModal');
-    }
+        }
 
-    function saveManualEvent() {
+        function saveManualEvent() {
         const desc = document.getElementById('manualDesc').value;
         const xp = parseInt(document.getElementById('manualXP').value) || 0;
         const gold = parseInt(document.getElementById('manualGold').value) || 0;
-        
+
         if (!desc) return;
-        
+
         // Античит: Лимит 3 ручных квеста в день
         const todayStr = new Date().toDateString();
         if (!state.user.manualEventsCache || state.user.manualEventsCache.date !== todayStr) {
-            state.user.manualEventsCache = { date: todayStr, count: 0 };
+        state.user.manualEventsCache = { date: todayStr, count: 0 };
         }
 
         if (state.user.manualEventsCache.count >= 3) {
-            alert("🛑 Лимит исчерпан! Мастер игры запрещает фармить случайные события чаще 3 раз в сутки.");
-            closeModals();
-            return;
+        alert("🛑 Лимит исчерпан! Мастер игры запрещает фармить случайные события чаще 3 раз в сутки.");
+        closeModals();
+        return;
         }
 
         state.user.manualEventsCache.count++;
-        
+
         // Выдача наград
         state.global.xp += xp;
         state.global.gold += gold;
-        
+
         if (state.global.xp >= 100) {
-            state.global.level += Math.floor(state.global.xp / 100);
-            state.global.xp = state.global.xp % 100;
-            if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]); // Победная вибрация
-            console.log("ГЛОБАЛЬНЫЙ LEVEL UP!"); 
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
+        if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]); // Победная вибрация
+        console.log("ГЛОБАЛЬНЫЙ LEVEL UP!");
         }
-        
+
         closeModals();
         save();
-        render(); 
-    }
-    /* =========================================
-       3. НАВЫКИ И ЦЕЛИ (УЗЛЫ)
-    ========================================= */
-    
-    function addMindmapNode() {
+        render();
+        }
+        /* =========================================
+        3. НАВЫКИ И ЦЕЛИ (УЗЛЫ)
+        ========================================= */
+
+        function addMindmapNode() {
         if (!activeTreeSkillId) { alert("Сначала выберите навык!"); return; }
         document.getElementById('graphNodeModalTitle').innerText = 'Новый свободный узел';
         document.getElementById('graphNodeAction').value = 'root';
         document.getElementById('graphNodeName').value = '';
         document.getElementById('graphNodeNotes').value = '';
         openModal('graphNodeModal');
-    }
-    function saveSkill() {
+        }
+        function saveSkill() {
         const name = document.getElementById('skillName').value;
         const color = document.getElementById('skillColor').value;
         const notes = document.getElementById('skillNotes').value || ''; // Читаем заметку
-        
+
         if (!name) return;
-        
+
         const skillId = Date.now().toString();
         state.skills.push({
-            id: skillId,
-            name: name,
-            color: color,
-            xp: 0,
-            level: 1,
-            goals: [],
-            graphNodes: [{
-                id: 'root_' + skillId,
-                name: name,
-                x: 500,
-                y: 300,
-                isRoot: true,
-                notes: notes, // Сохраняем заметку в главный узел
-                done: false
-            }]
+        id: skillId,
+        name: name,
+        color: color,
+        xp: 0,
+        level: 1,
+        goals: [],
+        graphNodes: [{
+        id: 'root_' + skillId,
+        name: name,
+        x: 500,
+        y: 300,
+        isRoot: true,
+        notes: notes, // Сохраняем заметку в главный узел
+        done: false
+        }]
         });
-        
+
         closeModals();
         save();
-    }
+        }
 
-    function openGoalModal(skillId, nodeId = null) {
+        function openGoalModal(skillId, nodeId = null) {
         document.getElementById('currentSkillId').value = skillId;
         const skill = state.skills.find(s => s.id === skillId);
-        
+
         const parentSelect = document.getElementById('goalParentSelect');
         parentSelect.innerHTML = '<option value="">-- В корень навыка --</option>';
-        
+
         // Защита: если целей нет, берем пустой массив
         (skill.goals || []).forEach(n => {
-            if (n.id !== nodeId) {
-                parentSelect.innerHTML += `<option value="${n.id}">${n.name}</option>`;
-            }
+        if (n.id !== nodeId) {
+        parentSelect.innerHTML += `<option value="${n.id}">${n.name}</option>`;
+        }
         });
 
         if (nodeId) {
-            const node = skill.goals.find(n => n.id === nodeId);
-            document.getElementById('goalModalTitle').innerText = 'Изменить цель';
-            document.getElementById('editGoalId').value = node.id;
-            document.getElementById('goalName').value = node.name;
-            document.getElementById('goalType').value = node.type || 'Краткосрочная';
-            document.getElementById('goalParentSelect').value = node.parentId || '';
-            document.getElementById('goalNotes').value = node.notes || ''; 
-            document.getElementById('btnDeleteGoal').style.display = 'block';
+        const node = skill.goals.find(n => n.id === nodeId);
+        document.getElementById('goalModalTitle').innerText = 'Изменить цель';
+        document.getElementById('editGoalId').value = node.id;
+        document.getElementById('goalName').value = node.name;
+        document.getElementById('goalType').value = node.type || 'Краткосрочная';
+        document.getElementById('goalParentSelect').value = node.parentId || '';
+        document.getElementById('goalNotes').value = node.notes || '';
+        document.getElementById('btnDeleteGoal').style.display = 'block';
         } else {
-            document.getElementById('goalModalTitle').innerText = 'Новая цель';
-            document.getElementById('editGoalId').value = '';
-            document.getElementById('goalName').value = '';
-            document.getElementById('goalParentSelect').value = '';
-            document.getElementById('goalNotes').value = ''; 
-            document.getElementById('btnDeleteGoal').style.display = 'none';
+        document.getElementById('goalModalTitle').innerText = 'Новая цель';
+        document.getElementById('editGoalId').value = '';
+        document.getElementById('goalName').value = '';
+        document.getElementById('goalParentSelect').value = '';
+        document.getElementById('goalNotes').value = '';
+        document.getElementById('btnDeleteGoal').style.display = 'none';
         }
         openModal('goalModal');
-    }
+        }
 
-    function saveGoal() {
+        function saveGoal() {
         const skillId = document.getElementById('currentSkillId').value;
         const editId = document.getElementById('editGoalId').value;
         const skill = state.skills.find(s => s.id === skillId);
         const goalName = document.getElementById('goalName').value;
-        const goalNotes = document.getElementById('goalNotes').value;   
-        
+        const goalNotes = document.getElementById('goalNotes').value;
+
         const goalData = {
-            name: document.getElementById('goalName').value,
-            type: document.getElementById('goalType').value,
-            notes: document.getElementById('goalNotes').value,
-            parentId: document.getElementById('goalParentSelect').value || null
+        name: document.getElementById('goalName').value,
+        type: document.getElementById('goalType').value,
+        notes: document.getElementById('goalNotes').value,
+        parentId: document.getElementById('goalParentSelect').value || null
         };
 
         if (!goalData.name) return;
@@ -1709,57 +1857,63 @@
         let finalId = editId;
 
         if (editId) {
-            const target = skill.goals.find(g => g.id === editId);
-            Object.assign(target, goalData);
+        const target = skill.goals.find(g => g.id === editId);
+        Object.assign(target, goalData);
         } else {
-            finalId = Date.now().toString();
-            skill.goals.push({
-                id: finalId,
-                ...goalData,
-                done: false,
-                rewardCollected: false
-            });
+        finalId = Date.now().toString();
+        skill.goals.push({
+        id: finalId,
+        ...goalData,
+        done: false,
+        rewardCollected: false
+        });
         }
 
         closeModals();
         syncNote(finalId, goalName, goalNotes, "Цель", skillId);
         save();
         render(); // Обновляем список на дашборде
-    }
+        }
 
-    function deleteGoal() {
+        function deleteGoal() {
         if(!confirm('Вы уверены, что хотите удалить эту цель?')) return;
-        
+
         const skillId = document.getElementById('currentSkillId').value;
         // ИСПРАВЛЕНО: берем из editGoalId
-        const editId = document.getElementById('editGoalId').value; 
+        const editId = document.getElementById('editGoalId').value;
         const skill = state.skills.find(s => s.id === skillId);
-        
+
         // ИСПРАВЛЕНО: skill.goals вместо skill.nodes
         skill.goals = skill.goals.filter(n => n.id !== editId);
-        
+
         skill.goals.forEach(n => {
-            if (n.parentId === editId) n.parentId = null;
+        if (n.parentId === editId) n.parentId = null;
         });
-        
+
         closeModals();
         save();
-    }
+        }
 
-    /* =========================================
-       4. СИСТЕМА ОПЫТА И ВЫПОЛНЕНИЯ
-    ========================================= */
-    function grantXP(skill, type) {
-        if (state.global.stamina === undefined) state.global.stamina = 100;
-        if (state.global.maxStamina === undefined) state.global.maxStamina = 100;
+        /* =========================================
+        4. СИСТЕМА ОПЫТА И ВЫПОЛНЕНИЯ
+        ========================================= */
+        function grantXP(skill, type) {
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        if (state.global.stamina === undefined) state.global.stamina = state.global.maxStamina;
 
-        // Расчет стоимости в энергии (например, половина от XP)
-        const staminaCost = REWARDS[type].xp / 2;
+        // Расчет стоимости в энергии (Фиксированный баланс)
+        const staminaCosts = {
+        "Краткосрочная": 5,
+        "Среднесрочная": 15,
+        "Долгосрочная": 30,
+        "Повторяющаяся": 2
+        };
+        const staminaCost = staminaCosts[type] || 5;
 
         // ПРОВЕРКА НА ВЫГОРАНИЕ
         if (state.global.stamina <= 0) {
-            alert("⚠️ ВЫГОРАНИЕ! Энергия на нуле. Вы слишком много работали. Задачи больше не приносят опыта и золота. Зайдите в Магазин и купите отдых!");
-            return; // Отменяем начисление наград
+        alert("⚠️ ВЫГОРАНИЕ! Энергия на нуле. Вы слишком много работали. Задачи больше не приносят опыта и золота. Зайдите в Магазин и купите отдых!");
+        return; // Отменяем начисление наград
         }
 
         // Тратим энергию
@@ -1767,333 +1921,335 @@
 
         let xpAmount = REWARDS[type].xp;
         let goldAmount = REWARDS[type].g;
-        
+
         if (flow.active) {
-            xpAmount *= 2;
-            goldAmount *= 2;
+        xpAmount *= 2;
+        goldAmount *= 2;
         }
 
         // Записываем в вечную аналитику
-        if(state.analytics) state.analytics.totalXpEarned += xpAmount; 
+        if(state.analytics) state.analytics.totalXpEarned += xpAmount;
 
         state.global.xp += xpAmount;
         state.global.gold += goldAmount;
-        
+
         if (state.global.xp >= 100) {
-            state.global.level += Math.floor(state.global.xp / 100);
-            state.global.xp = state.global.xp % 100;
-            alert("Поздравляем! ГЛОБАЛЬНЫЙ LEVEL UP!");
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina; // Полное восстановление при повышении уровня
+        alert("Поздравляем! ГЛОБАЛЬНЫЙ LEVEL UP! Максимальная энергия увеличена, а запас полностью восстановлен.");
         }
 
         if (skill) {
-            skill.xp += xpAmount;
-            if (skill.xp >= 100) {
-                skill.level += Math.floor(skill.xp / 100);
-                skill.xp = skill.xp % 100;
-            }
+        skill.xp += xpAmount;
+        if (skill.xp >= 100) {
+        skill.level += Math.floor(skill.xp / 100);
+        skill.xp = skill.xp % 100;
         }
-    }
-    function calculateDegradedReward(baseReward, creationDateStr) {
+        }
+        }
+        function calculateDegradedReward(baseReward, creationDateStr) {
         if (!creationDateStr) return baseReward;
         const creationDate = new Date(creationDateStr).getTime();
         const now = new Date().getTime();
         const daysOld = Math.floor((now - creationDate) / (1000 * 60 * 60 * 24));
-        
+
         // Каждый день простоя съедает 5% награды, но не больше 75%
         if (daysOld > 2) {
-            const penalty = Math.min(0.75, (daysOld - 2) * 0.05);
-            return Math.floor(baseReward * (1 - penalty));
+        const penalty = Math.min(0.75, (daysOld - 2) * 0.05);
+        return Math.floor(baseReward * (1 - penalty));
         }
         return baseReward;
-    }
-    function toggleNodeDone(skillId, nodeId) {
+        }
+        function toggleNodeDone(skillId, nodeId) {
         const skill = state.skills.find(s => s.id === skillId);
-        const node = skill.goals.find(n => n.id === nodeId); 
-        
+        const node = skill.goals.find(n => n.id === nodeId);
+
         // Античит: Кулдаун на клик (защита от макросов и даблкликов)
         const now = Date.now();
-        if (node.lastToggled && (now - node.lastToggled < 1000)) return; 
+        if (node.lastToggled && (now - node.lastToggled < 1000)) return;
         node.lastToggled = now;
 
         node.done = !node.done;
-        
+
         // Тактильная отдача при нажатии (только для мобилок)
         if ('vibrate' in navigator) {
-            node.done ? navigator.vibrate(50) : navigator.vibrate(20);
+        node.done ? navigator.vibrate(50) : navigator.vibrate(20);
         }
-        
+
         if (node.done) {
-            if (node.type === 'Повторяющаяся') {
-                const today = new Date().toDateString();
-                if (node.lastCompleted !== today) {
-                    node.streak = (node.streak || 0) + 1;
-                    node.lastCompleted = today;
-                    grantXP(skill, node.type);
-                }
-            } else if (!node.rewardCollected) {
-                grantXP(skill, node.type || 'Краткосрочная');
-                node.rewardCollected = true; // Защита от повторного фарма
-                
-                if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
-                state.user.tasksCompletedForLoot++;
-                if (state.user.tasksCompletedForLoot >= 5) {
-                    state.lootboxes = (state.lootboxes || 0) + 1;
-                    state.user.tasksCompletedForLoot = 0;
-                    if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]); // Вибрация лутбокса
-                }
-            }
+        if (node.type === 'Повторяющаяся') {
+        const today = new Date().toDateString();
+        if (node.lastCompleted !== today) {
+        node.streak = (node.streak || 0) + 1;
+        node.lastCompleted = today;
+        grantXP(skill, node.type);
+        }
+        } else if (!node.rewardCollected) {
+        grantXP(skill, node.type || 'Краткосрочная');
+        node.rewardCollected = true; // Защита от повторного фарма
+
+        if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
+        state.user.tasksCompletedForLoot++;
+        if (state.user.tasksCompletedForLoot >= 5) {
+        state.lootboxes = (state.lootboxes || 0) + 1;
+        state.user.tasksCompletedForLoot = 0;
+        if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]); // Вибрация лутбокса
+        }
+        }
         } else {
-            // Если сняли галочку с повторяющейся в тот же день - откатываем стрик
-            if (node.type === 'Повторяющаяся') {
-                const today = new Date().toDateString();
-                if (node.lastCompleted === today) {
-                    node.streak = Math.max(0, (node.streak || 1) - 1);
-                    node.lastCompleted = null;
-                    // Мы не отнимаем XP (чтобы не уйти в минус), но стрик сбрасываем
-                }
-            }
+        // Если сняли галочку с повторяющейся в тот же день - откатываем стрик
+        if (node.type === 'Повторяющаяся') {
+        const today = new Date().toDateString();
+        if (node.lastCompleted === today) {
+        node.streak = Math.max(0, (node.streak || 1) - 1);
+        node.lastCompleted = null;
+        // Мы не отнимаем XP (чтобы не уйти в минус), но стрик сбрасываем
+        }
+        }
         }
         save();
-    }
+        }
 
-    /* =========================================
-       5. РЕЖИМ ПОТОКА (FLOW)
-    ========================================= */
-    function addFlowGoal() {
+        /* =========================================
+        5. РЕЖИМ ПОТОКА (FLOW)
+        ========================================= */
+        function addFlowGoal() {
         const selectValue = document.getElementById('flowGoalSelect').value;
         if (!selectValue) return;
-        
+
         const [skillId, nodeId] = selectValue.split('|');
         const skill = state.skills.find(s => s.id === skillId);
         // ИСПРАВЛЕНО: skill.goals
-        const node = skill.goals.find(n => n.id === nodeId); 
-        
-        flow.tasks.push({
-            id: Date.now(),
-            skillId: skill.id,
-            nodeId: node.id,
-            text: node.name,
-            done: false
-        });
-        
-        renderFlow();
-    }
+        const node = skill.goals.find(n => n.id === nodeId);
 
-    function startFlow() {
-        if (flow.tasks.length === 0) {
-            alert("Выберите цели для фокуса из выпадающего списка!");
-            return;
+        flow.tasks.push({
+        id: Date.now(),
+        skillId: skill.id,
+        nodeId: node.id,
+        text: node.name,
+        done: false
+        });
+
+        renderFlow();
         }
-        
+
+        function startFlow() {
+        if (flow.tasks.length === 0) {
+        alert("Выберите цели для фокуса из выпадающего списка!");
+        return;
+        }
+
         const minutes = parseInt(document.getElementById('flowMinutes').value) || 60;
         flow.timeRemaining = minutes * 60;
         flow.active = true;
-        
+
         document.getElementById('flow-setup').style.display = 'none';
         document.getElementById('flow-active').style.display = 'block';
         document.getElementById('nav-flow').classList.add('flow-active');
-        
-        flow.interval = setInterval(() => {
-            flow.timeRemaining--;
-            renderFlowTimer();
-            
-            if (flow.timeRemaining <= 0) {
-                stopFlow();
-                alert("Время потока вышло! Отличная работа.");
-            }
-        }, 1000);
-        
-        renderFlow();
-    }
 
-    function stopFlow() {
+        flow.interval = setInterval(() => {
+        flow.timeRemaining--;
+        renderFlowTimer();
+
+        if (flow.timeRemaining <= 0) {
+        stopFlow();
+        alert("Время потока вышло! Отличная работа.");
+        }
+        }, 1000);
+
+        renderFlow();
+        }
+
+        function stopFlow() {
         clearInterval(flow.interval);
         flow.active = false;
         flow.tasks = []; // Очищаем список после остановки
-        
+
         document.getElementById('flow-setup').style.display = 'block';
         document.getElementById('flow-active').style.display = 'none';
         document.getElementById('nav-flow').classList.remove('flow-active');
-        
-        renderFlow();
-    }
 
-    function toggleFlowTask(taskId) {
-        if (!flow.active) return; 
-        
+        renderFlow();
+        }
+
+        function toggleFlowTask(taskId) {
+        if (!flow.active) return;
+
         const task = flow.tasks.find(t => t.id === taskId);
         task.done = !task.done;
-        
-        if (task.done) {
-            const skill = state.skills.find(s => s.id === task.skillId);
-            // ИСПРАВЛЕНО: skill.goals
-            const origNode = skill.goals.find(n => n.id === task.nodeId); 
-            
-            if (origNode && !origNode.done) {
-                origNode.done = true;
-                origNode.rewardCollected = true;
-                grantXP(skill, origNode.type || 'Краткосрочная');
-            }
-        }
-        
-        save(); 
-    }
 
-    function renderFlowTimer() {
+        if (task.done) {
+        const skill = state.skills.find(s => s.id === task.skillId);
+        // ИСПРАВЛЕНО: skill.goals
+        const origNode = skill.goals.find(n => n.id === task.nodeId);
+
+        if (origNode && !origNode.done) {
+        origNode.done = true;
+        origNode.rewardCollected = true;
+        grantXP(skill, origNode.type || 'Краткосрочная');
+        }
+        }
+
+        save();
+        }
+
+        function renderFlowTimer() {
         const m = Math.floor(flow.timeRemaining / 60).toString().padStart(2, '0');
         const s = (flow.timeRemaining % 60).toString().padStart(2, '0');
         document.getElementById('flow-timer').innerText = `${m}:${s}`;
-    }
+        }
 
-    function renderFlow() {
+        function renderFlow() {
         // Заполняем выпадающий список задач для потока
         const flowSelect = document.getElementById('flowGoalSelect');
         flowSelect.innerHTML = '<option value="">-- Выберите цель --</option>';
-        
+
         state.skills.forEach(skill => {
-            // ФИКС: Оборачиваем skill.goals в (skill.goals || [])
-            // Это спасет от краша, если Firebase удалил пустой массив целей
-            const validNodes = (skill.goals || []).filter(n => !n.done && (n.type === 'Краткосрочная' || n.type === 'Повторяющаяся'));
-            
-            if (validNodes.length > 0) {
-                let optGroup = `<optgroup label="${skill.name}">`;
-                validNodes.forEach(n => {
-                    optGroup += `<option value="${skill.id}|${n.id}">${n.name}</option>`;
-                });
-                optGroup += `</optgroup>`;
-                flowSelect.innerHTML += optGroup;
-            }
+        // ФИКС: Оборачиваем skill.goals в (skill.goals || [])
+        // Это спасет от краша, если Firebase удалил пустой массив целей
+        const validNodes = (skill.goals || []).filter(n => !n.done && (n.type === 'Краткосрочная' || n.type === 'Повторяющаяся'));
+
+        if (validNodes.length > 0) {
+        let optGroup = `<optgroup label="${skill.name}">`;
+        validNodes.forEach(n => {
+        optGroup += `<option value="${skill.id}|${n.id}">${n.name}</option>`;
         });
-        
+        optGroup += `</optgroup>`;
+        flowSelect.innerHTML += optGroup;
+        }
+        });
+
         // ... остальной код отрисовки очереди (flow.tasks.map...) оставляем без изменений
-        
+
         // Отрисовка списка задач в потоке
         const queueHtml = flow.tasks.map(t => {
-            const skill = state.skills.find(s => s.id === t.skillId);
-            const color = skill ? skill.color : '#fff';
-            return `
-                <div class="flow-task ${t.done ? 'done' : ''}" onclick="toggleFlowTask(${t.id})">
-                    <div>
-                        <span style="display:inline-block; width:25px; font-weight:bold;">${t.done ? '✔' : '☐'}</span> 
-                        <strong style="font-size:1.1em">${t.text}</strong>
-                    </div>
-                    ${skill ? `<span style="color:${color}; font-size:0.85em; border:1px solid ${color}; padding:3px 8px; border-radius:12px;">${skill.name}</span>` : ''}
-                </div>
-            `;
+        const skill = state.skills.find(s => s.id === t.skillId);
+        const color = skill ? skill.color : '#fff';
+        return `
+        <div class="flow-task ${t.done ? 'done' : ''}" onclick="toggleFlowTask(${t.id})">
+        <div>
+        <span style="display:inline-block; width:25px; font-weight:bold;">${t.done ? '✔' : '☐'}</span>
+        <strong style="font-size:1.1em">${t.text}</strong>
+        </div>
+        ${skill ? `<span style="color:${color}; font-size:0.85em; border:1px solid ${color}; padding:3px 8px; border-radius:12px;">${skill.name}</span>` : ''}
+        </div>
+        `;
         }).join('');
-        
+
         document.getElementById('flow-queue-setup').innerHTML = queueHtml;
         document.getElementById('flow-queue-active').innerHTML = queueHtml;
-        
+
         if (flow.active) {
-            renderFlowTimer();
+        renderFlowTimer();
         }
-    }
+        }
 
-    /* =========================================
-       6. РАСПИСАНИЕ (КАЛЕНДАРЬ + ШАБЛОНЫ)
-    ========================================= */
+        /* =========================================
+        6. РАСПИСАНИЕ (КАЛЕНДАРЬ + ШАБЛОНЫ)
+        ========================================= */
 
-    let currentScheduleTab = 'dynamic'; 
+        let currentScheduleTab = 'dynamic';
 
-    function switchScheduleTab(tab) {
+        function switchScheduleTab(tab) {
         currentScheduleTab = tab;
         document.getElementById('tab-dynamic').className = tab === 'dynamic' ? 'btn' : 'btn btn-outline';
         document.getElementById('tab-dynamic').style.background = tab === 'dynamic' ? 'var(--accent)' : 'transparent';
         document.getElementById('tab-dynamic').style.color = tab === 'dynamic' ? '#000' : 'var(--text)';
-        
+
         document.getElementById('tab-static').className = tab === 'static' ? 'btn' : 'btn btn-outline';
         document.getElementById('tab-static').style.background = tab === 'static' ? 'var(--accent)' : 'transparent';
         document.getElementById('tab-static').style.color = tab === 'static' ? '#000' : 'var(--text)';
         render();
-    }
+        }
 
-    function toggleTaskDone(type, key, id, dateStr = '') {
+        function toggleTaskDone(type, key, id, dateStr = '') {
         if (!state.completedTemplates) state.completedTemplates = {};
 
         if (dateStr && type === 'template') {
-            // Выполнение шаблона в динамическом виде (только на конкретный день)
-            if (!state.completedTemplates[dateStr]) state.completedTemplates[dateStr] = [];
-            
-            const index = state.completedTemplates[dateStr].indexOf(id);
-            if (index > -1) {
-                state.completedTemplates[dateStr].splice(index, 1); // Снимаем галочку
-            } else {
-                state.completedTemplates[dateStr].push(id); // Ставим галочку
-                // Добавляем немного опыта за выполнение задачи в расписании (по желанию)
-                const task = state.schedule[key].find(t => t.id === id);
-                const skill = state.skills.find(s => s.id === task.skillId);
-                if(skill) grantXP(skill, 'Повторяющаяся'); 
-            }
+        // Выполнение шаблона в динамическом виде (только на конкретный день)
+        if (!state.completedTemplates[dateStr]) state.completedTemplates[dateStr] = [];
+
+        const index = state.completedTemplates[dateStr].indexOf(id);
+        if (index > -1) {
+        state.completedTemplates[dateStr].splice(index, 1); // Снимаем галочку
         } else {
-            // Выполнение уникальной задачи
-            const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
-            const task = taskList.find(t => t.id === id);
-            if(task) task.done = !task.done;
+        state.completedTemplates[dateStr].push(id); // Ставим галочку
+        // Добавляем немного опыта за выполнение задачи в расписании (по желанию)
+        const task = state.schedule[key].find(t => t.id === id);
+        const skill = state.skills.find(s => s.id === task.skillId);
+        if(skill) grantXP(skill, 'Повторяющаяся');
+        }
+        } else {
+        // Выполнение уникальной задачи
+        const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
+        const task = taskList.find(t => t.id === id);
+        if(task) task.done = !task.done;
         }
         save();
-    }
+        }
 
-    function openTaskModal(type = null, key = null, taskId = null) {
+        function openTaskModal(type = null, key = null, taskId = null) {
         if (!state.calendar) state.calendar = {};
-        
+
         const skillSelect = document.getElementById('taskSkillId');
         skillSelect.innerHTML = '<option value="">Без навыка (Обычное дело)</option>';
         state.skills.forEach(s => skillSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`);
 
         if (taskId) {
-            // РЕДАКТИРОВАНИЕ
-            const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
-            const task = taskList.find(t => t.id === taskId);
-            
-            document.getElementById('taskModalTitle').innerText = 'Редактировать блок';
-            document.getElementById('editTaskId').value = task.id;
-            document.getElementById('editTaskOldType').value = type;
-            document.getElementById('editTaskOldKey').value = key;
-            document.getElementById('taskMode').value = type;
-            document.getElementById('taskTime').value = task.time;
-            document.getElementById('taskDuration').value = task.duration;
-            document.getElementById('taskTitle').value = task.title;
-            document.getElementById('taskSkillId').value = task.skillId || '';
-            
-            if (type === 'template') {
-                document.getElementById('taskDay').value = key;
-            } else {
-                document.getElementById('taskExactDate').value = key;
-                const d = new Date(key);
-                document.getElementById('displayExactDate').innerText = `${d.getDate()} ${d.toLocaleString('ru-RU', { month: 'short' })}`;
-            }
-            
-            document.getElementById('btnDeleteTask').style.display = 'block';
+        // РЕДАКТИРОВАНИЕ
+        const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
+        const task = taskList.find(t => t.id === taskId);
+
+        document.getElementById('taskModalTitle').innerText = 'Редактировать блок';
+        document.getElementById('editTaskId').value = task.id;
+        document.getElementById('editTaskOldType').value = type;
+        document.getElementById('editTaskOldKey').value = key;
+        document.getElementById('taskMode').value = type;
+        document.getElementById('taskTime').value = task.time;
+        document.getElementById('taskDuration').value = task.duration;
+        document.getElementById('taskTitle').value = task.title;
+        document.getElementById('taskSkillId').value = task.skillId || '';
+
+        if (type === 'template') {
+        document.getElementById('taskDay').value = key;
         } else {
-            // СОЗДАНИЕ НОВОГО
-            document.getElementById('taskModalTitle').innerText = 'Запланировать блок';
-            document.getElementById('editTaskId').value = '';
-            document.getElementById('editTaskOldType').value = '';
-            document.getElementById('editTaskOldKey').value = '';
-            document.getElementById('taskMode').value = 'template'; // По умолчанию открываем шаблон
-            
-            // Ставим текущий день недели
-            document.getElementById('taskDay').value = new Date().getDay();
-            
-            // Ставим сегодняшнюю дату для "Уникального события"
-            const offset = new Date().getTimezoneOffset() * 60000;
-            const todayStr = new Date(Date.now() - offset).toISOString().split('T')[0];
-            document.getElementById('taskExactDate').value = todayStr;
-            document.getElementById('displayExactDate').innerText = 'Сегодня';
-            
-            document.getElementById('taskTime').value = '09:00';
-            document.getElementById('taskDuration').value = '60';
-            document.getElementById('taskTitle').value = '';
-            document.getElementById('taskSkillId').value = '';
-            document.getElementById('btnDeleteTask').style.display = 'none';
+        document.getElementById('taskExactDate').value = key;
+        const d = new Date(key);
+        document.getElementById('displayExactDate').innerText = `${d.getDate()} ${d.toLocaleString('ru-RU', { month: 'short' })}`;
         }
-        
+
+        document.getElementById('btnDeleteTask').style.display = 'block';
+        } else {
+        // СОЗДАНИЕ НОВОГО
+        document.getElementById('taskModalTitle').innerText = 'Запланировать блок';
+        document.getElementById('editTaskId').value = '';
+        document.getElementById('editTaskOldType').value = '';
+        document.getElementById('editTaskOldKey').value = '';
+        document.getElementById('taskMode').value = 'template'; // По умолчанию открываем шаблон
+
+        // Ставим текущий день недели
+        document.getElementById('taskDay').value = new Date().getDay();
+
+        // Ставим сегодняшнюю дату для "Уникального события"
+        const offset = new Date().getTimezoneOffset() * 60000;
+        const todayStr = new Date(Date.now() - offset).toISOString().split('T')[0];
+        document.getElementById('taskExactDate').value = todayStr;
+        document.getElementById('displayExactDate').innerText = 'Сегодня';
+
+        document.getElementById('taskTime').value = '09:00';
+        document.getElementById('taskDuration').value = '60';
+        document.getElementById('taskTitle').value = '';
+        document.getElementById('taskSkillId').value = '';
+        document.getElementById('btnDeleteTask').style.display = 'none';
+        }
+
         toggleTaskModeUI();
         openModal('taskModal');
-    }
+        }
 
-    function saveTask() {
+        function saveTask() {
         const id = document.getElementById('editTaskId').value ? parseInt(document.getElementById('editTaskId').value) : Date.now();
         const mode = document.getElementById('taskMode').value;
         const time = document.getElementById('taskTime').value;
@@ -2104,29 +2260,29 @@
 
         // Проверка на прошедшее время (для динамики)
         if (mode === 'date') {
-            const selectedDate = new Date(document.getElementById('taskExactDate').value + 'T' + time);
-            if (selectedDate < new Date()) {
-                alert("⏳ Нельзя планировать задачи в прошлом. Время уже ушло!");
-                return;
-            }
+        const selectedDate = new Date(document.getElementById('taskExactDate').value + 'T' + time);
+        if (selectedDate < new Date()) {
+        alert("⏳ Нельзя планировать задачи в прошлом. Время уже ушло!");
+        return;
+        }
         }
 
         // Проверка наложений (Overlap)
         const key = mode === 'template' ? document.getElementById('taskDay').value : document.getElementById('taskExactDate').value;
         const tasksOnDay = (mode === 'template' ? state.schedule[key] : state.calendar[key]) || [];
-        
+
         const newStart = timeToMinutes(time);
         const newEnd = newStart + duration;
 
         const conflict = tasksOnDay.find(t => {
-            if (t.id === id) return false;
-            const tStart = timeToMinutes(t.time);
-            const tEnd = tStart + parseInt(t.duration);
-            return (newStart < tEnd && newEnd > tStart);
+        if (t.id === id) return false;
+        const tStart = timeToMinutes(t.time);
+        const tEnd = tStart + parseInt(t.duration);
+        return (newStart < tEnd && newEnd > tStart);
         });
 
         if (conflict) {
-            if (!confirm(`⚠️ Наложение! В это время у вас запланировано: "${conflict.title}". Всё равно сохранить?`)) return;
+        if (!confirm(`⚠️ Наложение! В это время у вас запланировано: "${conflict.title}". Всё равно сохранить?`)) return;
         }
 
         const taskObj = { id, time, duration, title, skillId: document.getElementById('taskSkillId').value, done: false };
@@ -2138,60 +2294,60 @@
         else if (oldType === 'date' && state.calendar[oldKey]) state.calendar[oldKey] = state.calendar[oldKey].filter(t => t.id !== id);
 
         if (mode === 'template') {
-            if (!state.schedule[key]) state.schedule[key] = [];
-            state.schedule[key].push(taskObj);
+        if (!state.schedule[key]) state.schedule[key] = [];
+        state.schedule[key].push(taskObj);
         } else {
-            if (!state.calendar[key]) state.calendar[key] = [];
-            state.calendar[key].push(taskObj);
+        if (!state.calendar[key]) state.calendar[key] = [];
+        state.calendar[key].push(taskObj);
         }
-        
+
         closeModals();
         save();
-    }
+        }
 
-    function timeToMinutes(timeStr) {
+        function timeToMinutes(timeStr) {
         const [h, m] = timeStr.split(':').map(Number);
         return h * 60 + m;
-    }
+        }
 
-    function deleteTask() {
+        function deleteTask() {
         const id = parseInt(document.getElementById('editTaskId').value);
         const type = document.getElementById('editTaskOldType').value;
         const key = document.getElementById('editTaskOldKey').value;
-        
+
         if (type === 'template') state.schedule[key] = state.schedule[key].filter(t => t.id !== id);
         else state.calendar[key] = state.calendar[key].filter(t => t.id !== id);
-        
+
         closeModals();
         save();
-    }
+        }
 
-    function toggleTaskDone(type, key, id) {
+        function toggleTaskDone(type, key, id) {
         const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
         const task = taskList.find(t => t.id === id);
         if(task) task.done = !task.done;
         save();
-    }
-    // ==========================================
-    // IOS КАЛЕНДАРЬ НАПОМИНАНИЙ
-    // ==========================================
-    let currentCalDate = new Date();
-    let selectedCalDate = new Date();
+        }
+        // ==========================================
+        // IOS КАЛЕНДАРЬ НАПОМИНАНИЙ
+        // ==========================================
+        let currentCalDate = new Date();
+        let selectedCalDate = new Date();
 
-    function openIOSCalendar() {
+        function openIOSCalendar() {
         const exactDateVal = document.getElementById('taskExactDate').value;
         if(exactDateVal) {
-            selectedCalDate = new Date(exactDateVal);
-            currentCalDate = new Date(exactDateVal);
+        selectedCalDate = new Date(exactDateVal);
+        currentCalDate = new Date(exactDateVal);
         } else {
-            selectedCalDate = new Date();
-            currentCalDate = new Date();
+        selectedCalDate = new Date();
+        currentCalDate = new Date();
         }
         renderIOSCalendar();
         document.getElementById('iosCalendarModal').style.display = 'flex';
-    }
+        }
 
-    function renderIOSCalendar() {
+        function renderIOSCalendar() {
         const monthNames = ["Январь", "Февраль", "Март", "Апрель", "Май", "Июнь", "Июль", "Август", "Сентябрь", "Октябрь", "Ноябрь", "Декабрь"];
         document.getElementById('calMonthYear').innerText = `${monthNames[currentCalDate.getMonth()]} ${currentCalDate.getFullYear()}`;
 
@@ -2210,269 +2366,289 @@
         for(let i = 0; i < startOffset; i++) html += `<div class="cal-day dim"></div>`;
 
         for(let d = 1; d <= daysInMonth; d++) {
-            const isSelected = selectedCalDate.getDate() === d && selectedCalDate.getMonth() === month && selectedCalDate.getFullYear() === year;
-            html += `<div class="cal-day ${isSelected ? 'active' : ''}" onclick="selectCalDay(${d}, ${month}, ${year})">${d}</div>`;
+        const isSelected = selectedCalDate.getDate() === d && selectedCalDate.getMonth() === month && selectedCalDate.getFullYear() === year;
+        html += `<div class="cal-day ${isSelected ? 'active' : ''}" onclick="selectCalDay(${d}, ${month}, ${year})">${d}</div>`;
         }
 
         grid.innerHTML += html;
-    }
+        }
 
-    function changeCalMonth(dir) {
+        function changeCalMonth(dir) {
         currentCalDate.setMonth(currentCalDate.getMonth() + dir);
         renderIOSCalendar();
-    }
+        }
 
-    function selectCalDay(day, month, year) {
+        function selectCalDay(day, month, year) {
         selectedCalDate = new Date(year, month, day);
         renderIOSCalendar();
-    }
+        }
 
-    function setQuickDate(type) {
+        function setQuickDate(type) {
         const today = new Date();
         selectedCalDate = new Date();
         if (type === 'tomorrow') {
-            selectedCalDate.setDate(today.getDate() + 1);
+        selectedCalDate.setDate(today.getDate() + 1);
         } else if (type === 'weekend') {
-            const day = today.getDay();
-            const diff = day === 0 ? 0 : 6 - day; // До субботы
-            selectedCalDate.setDate(today.getDate() + diff);
+        const day = today.getDay();
+        const diff = day === 0 ? 0 : 6 - day; // До субботы
+        selectedCalDate.setDate(today.getDate() + diff);
         }
         currentCalDate = new Date(selectedCalDate);
         renderIOSCalendar();
-    }
+        }
 
-    function applyIOSCalendar() {
+        function applyIOSCalendar() {
         // Учитываем часовой пояс
         const offset = selectedCalDate.getTimezoneOffset() * 60000;
         const dateStr = new Date(selectedCalDate - offset).toISOString().split('T')[0];
-        
+
         document.getElementById('taskExactDate').value = dateStr;
-        
+
         // Обновляем текст на кнопке
         const displayDate = `${selectedCalDate.getDate()} ${selectedCalDate.toLocaleString('ru-RU', { month: 'short' })}`;
         document.getElementById('displayExactDate').innerText = displayDate;
-        
+
         document.getElementById('iosCalendarModal').style.display = 'none';
-    }
-    /* =========================================
-       7. МАГАЗИН
-    ========================================= */
-    function saveStoreItem() {
+        }
+        /* =========================================
+        7. МАГАЗИН
+        ========================================= */
+        function saveStoreItem() {
         const name = document.getElementById('storeName').value;
         const price = parseInt(document.getElementById('storePrice').value);
         const staminaRestore = parseInt(document.getElementById('storeStamina').value) || 0;
-        
-        if (name && !isNaN(price)) {
-            state.store.push({ id: Date.now(), name: name, price: price, stamina: staminaRestore });
-            closeModals();
-            save();
-        }
-    }
 
-    function buyItem(id) {
+        if (name && !isNaN(price)) {
+        state.store.push({ id: Date.now(), name: name, price: price, stamina: staminaRestore });
+        closeModals();
+        save();
+        }
+        }
+
+        function buyItem(id) {
         const item = state.store.find(i => i.id === id);
         if (state.global.gold >= item.price) {
-            state.global.gold -= item.price;
-            
-            if (item.isSpecial && item.id === 'freeze') {
-                if (!state.inventory) state.inventory = { streakFreezes: 0 };
-                state.inventory.streakFreezes++;
-                alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
-            } else {
-                // Восстановление энергии при покупке обычного отдыха
-                const restoreAmount = item.stamina || 0;
-                if (restoreAmount > 0) {
-                    state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
-                    alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
-                } else {
-                    alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
-                }
-            }
-            save();
+        state.global.gold -= item.price;
+
+        if (item.isSpecial && item.id === 'freeze') {
+        if (!state.inventory) state.inventory = { streakFreezes: 0 };
+        state.inventory.streakFreezes++;
+        alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
         } else {
-            alert(`Не хватает золота! Нужно еще ${item.price - state.global.gold}. Идите выполнять цели.`);
+        // Восстановление энергии при покупке обычного отдыха
+        const restoreAmount = item.stamina || 0;
+        if (restoreAmount > 0) {
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
+        alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
+        } else {
+        alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
         }
-    }
+        }
 
-    function deleteStoreItem(id) {
+        // МЕХАНИКА GOLD SINK (ИНФЛЯЦИЯ)
+        // Повышаем цену отдыха на 15% после каждой покупки
+        item.price = Math.ceil(item.price * 1.15);
+
+        save();
+        } else {
+        alert(`Не хватает золота! Нужно еще ${item.price - state.global.gold}. Идите выполнять цели.`);
+        }
+        }
+
+        function deleteStoreItem(id) {
         if (confirm('Вы уверены, что хотите удалить эту награду?')) {
-            state.store = state.store.filter(i => i.id !== id);
-            save();
+        state.store = state.store.filter(i => i.id !== id);
+        save();
         }
-    }
+        }
 
-    /* =========================================
-       8. ВИЗУАЛЬНЫЙ РЕДАКТОР (КАНВАС)
-    ========================================= */
-    function openTreeCanvas(skillId) {
+        /* =========================================
+        8. ВИЗУАЛЬНЫЙ РЕДАКТОР (КАНВАС)
+        ========================================= */
+        function openTreeCanvas(skillId) {
         activeTreeSkillId = skillId;
         switchView('skill-tree-view');
-    }
-
-    const graphContainer = document.getElementById('graph-container');
-
-    graphContainer.addEventListener('mousemove', e => {
-        if (dragNodeId) {
-            const skill = state.skills.find(x => x.id === activeTreeSkillId);
-            // Ищем узел в правильном массиве graphNodes
-            const node = skill.graphNodes.find(x => x.id === dragNodeId);
-            
-            if (node) {
-                node.x = initX + (e.clientX - dragStartX);
-                node.y = initY + (e.clientY - dragStartY);
-                renderCanvas();
-            }
         }
-    });
 
-    graphContainer.addEventListener('mouseup', () => {
+        const graphContainer = document.getElementById('graph-container');
+
+        // Единый обработчик перемещения для мыши и тачей
+        const handleMove = (clientX, clientY, e) => {
         if (dragNodeId) {
-            dragNodeId = null;
-            save(); // Сохранение новых координат
-        }
-    });
+        if (e && e.cancelable) e.preventDefault(); // Блокирует скролл страницы на мобилках при перетаскивании
+        const skill = state.skills.find(x => x.id === activeTreeSkillId);
+        const node = skill.graphNodes.find(x => x.id === dragNodeId);
 
-    graphContainer.addEventListener('mouseleave', () => {
+        if (node) {
+        node.x = initX + (clientX - dragStartX);
+        node.y = initY + (clientY - dragStartY);
+        renderCanvas();
+        }
+        }
+        };
+
+        graphContainer.addEventListener('mousemove', e => handleMove(e.clientX, e.clientY, e));
+        graphContainer.addEventListener('touchmove', e => handleMove(e.touches[0].clientX, e.touches[0].clientY, e), { passive: false });
+
+        // Единый обработчик отпускания мыши и тачей
+        const handleEnd = () => {
         if (dragNodeId) {
-            dragNodeId = null;
-            save();
+        dragNodeId = null;
+        save(); // Сохранение новых координат
         }
-    });
+        };
 
-    function renderCanvas() {
+        graphContainer.addEventListener('mouseup', handleEnd);
+        graphContainer.addEventListener('mouseleave', handleEnd);
+        graphContainer.addEventListener('touchend', handleEnd);
+        graphContainer.addEventListener('touchcancel', handleEnd);
+
+
+        function renderCanvas() {
         const skill = state.skills.find(s => s.id === activeTreeSkillId);
         if (!skill) return;
-        
+
         const svg = document.getElementById('graph-svg');
-        svg.innerHTML = ''; 
-        
+        svg.innerHTML = '';
+
         document.querySelectorAll('.canvas-node-wrap').forEach(el => el.remove());
 
         // Внутри renderCanvas(), блок отрисовки связей:
         (skill.graphNodes || []).forEach(node => {
-            if (node.parentId) {
-                const parent = skill.graphNodes.find(p => p.id === node.parentId);
-                if (parent) {
-                    const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                    
-                    // Точки привязки
-                    const startX = (node.x > parent.x + 50) ? parent.x + 120 : (node.x < parent.x - 50 ? parent.x : parent.x + 60);
-                    const startY = parent.y + 25;
-                    const endX = (node.x > parent.x + 50) ? node.x : (node.x < parent.x - 50 ? node.x + 120 : node.x + 60);
-                    const endY = node.y + 25;
+        if (node.parentId) {
+        const parent = skill.graphNodes.find(p => p.id === node.parentId);
+        if (parent) {
+        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
 
-                    // Расчет кривой Безье (горизонтальное смещение для плавности)
-                    const cp1x = startX + (endX - startX) * 0.5;
-                    const cp2x = startX + (endX - startX) * 0.5;
-                    
-                    const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
-                    
-                    path.setAttribute("d", d);
-                    path.setAttribute("stroke", skill.color);
-                    path.setAttribute("stroke-width", "2");
-                    path.setAttribute("fill", "none");
-                    path.setAttribute("opacity", "0.5");
-                    svg.appendChild(path);
-                }
-            }
+        // Точки привязки
+        const startX = (node.x > parent.x + 50) ? parent.x + 120 : (node.x < parent.x - 50 ? parent.x : parent.x + 60);
+        const startY = parent.y + 25;
+        const endX = (node.x > parent.x + 50) ? node.x : (node.x < parent.x - 50 ? node.x + 120 : node.x + 60);
+        const endY = node.y + 25;
+
+        // Расчет кривой Безье (горизонтальное смещение для плавности)
+        const cp1x = startX + (endX - startX) * 0.5;
+        const cp2x = startX + (endX - startX) * 0.5;
+
+        const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
+
+        path.setAttribute("d", d);
+        path.setAttribute("stroke", skill.color);
+        path.setAttribute("stroke-width", "2");
+        path.setAttribute("fill", "none");
+        path.setAttribute("opacity", "0.5");
+        svg.appendChild(path);
+        }
+        }
         });
 
         // 2. Отрисовка узлов и кнопок
         (skill.graphNodes || []).forEach(node => {
-            const wrapper = document.createElement('div');
-            wrapper.className = 'canvas-node-wrap';
-            wrapper.style.left = node.x + 'px';
-            wrapper.style.top = node.y + 'px';
-            
-            const circle = document.createElement('div');
-            circle.className = `graph-node ${node.done ? 'done' : ''}`;
-            circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
-            circle.style.position = 'relative';
-            
-            circle.innerHTML = `
-                <div style="font-size: 0.9em; pointer-events: none;">${node.name}</div>
-                ${node.notes ? '<div style="font-size:0.6em; opacity:0.6; pointer-events: none;">📝</div>' : ''}
-            `;
+        const wrapper = document.createElement('div');
+        wrapper.className = 'canvas-node-wrap';
+        wrapper.style.left = node.x + 'px';
+        wrapper.style.top = node.y + 'px';
 
-            // КНОПКА СЛЕВА (+)
-            const btnLeft = document.createElement('div');
-            btnLeft.innerHTML = '+';
-            btnLeft.className = 'node-control-btn left';
-            btnLeft.onclick = (e) => { 
-                e.stopPropagation(); 
-                document.getElementById('graphNodeParentId').dataset.direction = 'left';
-                openGraphNodeModal('add', { parentId: node.id }); 
-            };
+        const circle = document.createElement('div');
+        circle.className = `graph-node ${node.done ? 'done' : ''}`;
+        circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
+        circle.style.position = 'relative';
 
-            // КНОПКА СПРАВА (+)
-            const btnRight = document.createElement('div');
-            btnRight.innerHTML = '+';
-            btnRight.className = 'node-control-btn right';
-            btnRight.onclick = (e) => { 
-                e.stopPropagation(); 
-                document.getElementById('graphNodeParentId').dataset.direction = 'right';
-                openGraphNodeModal('add', { parentId: node.id }); 
-            };
+        circle.innerHTML = `
+        <div style="font-size: 0.9em; pointer-events: none;">${node.name}</div>
+        ${node.notes ? '<div style="font-size:0.6em; opacity:0.6; pointer-events: none;">📝</div>' : ''}
+        `;
 
-            // КНОПКА СНИЗУ (V)
-            const btnCheck = document.createElement('div');
-            btnCheck.innerHTML = '✓';
-            btnCheck.className = `node-control-btn bottom ${node.done ? 'active' : ''}`;
-            btnCheck.onclick = (e) => { 
-                e.stopPropagation(); 
-                node.done = !node.done; 
-                save(); 
-                renderCanvas();
-            };
+        // КНОПКА СЛЕВА (+)
+        const btnLeft = document.createElement('div');
+        btnLeft.innerHTML = '+';
+        btnLeft.className = 'node-control-btn left';
+        btnLeft.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('graphNodeParentId').dataset.direction = 'left';
+        openGraphNodeModal('add', { parentId: node.id });
+        };
 
-            circle.onmousedown = e => {
-                // Игнорируем драг-энд-дроп, если кликнули по кнопкам управления
-                if (e.button === 0 && !e.target.classList.contains('node-control-btn')) {
-                    dragNodeId = node.id;
-                    dragStartX = e.clientX;
-                    dragStartY = e.clientY;
-                    initX = node.x;
-                    initY = node.y;
-                }
-            };
+        // КНОПКА СПРАВА (+)
+        const btnRight = document.createElement('div');
+        btnRight.innerHTML = '+';
+        btnRight.className = 'node-control-btn right';
+        btnRight.onclick = (e) => {
+        e.stopPropagation();
+        document.getElementById('graphNodeParentId').dataset.direction = 'right';
+        openGraphNodeModal('add', { parentId: node.id });
+        };
 
-            circle.ondblclick = (e) => {
-                e.stopPropagation();
-                openGraphNodeModal('edit', node);
-            };
+        // КНОПКА СНИЗУ (V)
+        const btnCheck = document.createElement('div');
+        btnCheck.innerHTML = '✓';
+        btnCheck.className = `node-control-btn bottom ${node.done ? 'active' : ''}`;
+        btnCheck.onclick = (e) => {
+        e.stopPropagation();
+        node.done = !node.done;
+        save();
+        renderCanvas();
+        };
 
-            circle.oncontextmenu = e => {
-                e.preventDefault();
-                if (!node.isRoot && confirm('Удалить узел?')) {
-                    skill.graphNodes = skill.graphNodes.filter(n => n.id !== node.id);
-                    save();
-                    renderCanvas();
-                }
-            };
+        const startDrag = (clientX, clientY) => {
+        dragNodeId = node.id;
+        dragStartX = clientX;
+        dragStartY = clientY;
+        initX = node.x;
+        initY = node.y;
+        };
 
-            circle.appendChild(btnLeft);
-            circle.appendChild(btnRight);
-            circle.appendChild(btnCheck);
-            wrapper.appendChild(circle);
-            graphContainer.appendChild(wrapper);
+        circle.onmousedown = e => {
+        // Игнорируем драг-энд-дроп, если кликнули по кнопкам управления
+        if (e.button === 0 && !e.target.classList.contains('node-control-btn')) {
+        startDrag(e.clientX, e.clientY);
+        }
+        };
+
+        circle.addEventListener('touchstart', e => {
+        if (!e.target.classList.contains('node-control-btn')) {
+        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+        }
+        }, { passive: false });
+
+        circle.ondblclick = (e) => {
+        e.stopPropagation();
+        openGraphNodeModal('edit', node);
+        };
+
+        circle.oncontextmenu = e => {
+        e.preventDefault();
+        if (!node.isRoot && confirm('Удалить узел?')) {
+        skill.graphNodes = skill.graphNodes.filter(n => n.id !== node.id);
+        save();
+        renderCanvas();
+        }
+        };
+
+        circle.appendChild(btnLeft);
+        circle.appendChild(btnRight);
+        circle.appendChild(btnCheck);
+        wrapper.appendChild(circle);
+        graphContainer.appendChild(wrapper);
         });
-    }
+        }
 
-    // Открытие модалки для добавления/редактирования узла графа
-    function openGraphNodeModal(action, params = {}) {
+        // Открытие модалки для добавления/редактирования узла графа
+        function openGraphNodeModal(action, params = {}) {
         document.getElementById('graphNodeAction').value = action;
         document.getElementById('graphNodeId').value = params.id || '';
         document.getElementById('graphNodeParentId').value = params.parentId || '';
         document.getElementById('graphNodeName').value = params.name || '';
         document.getElementById('graphNodeNotes').value = params.notes || '';
-        
-        document.getElementById('graphNodeModalTitle').innerText = 
-            action === 'edit' ? 'Редактировать тему' : 'Новая ветка обучения';
-        
-        openModal('graphNodeModal');
-    }
 
-    function saveGraphNode() {
+        document.getElementById('graphNodeModalTitle').innerText =
+        action === 'edit' ? 'Редактировать тему' : 'Новая ветка обучения';
+
+        openModal('graphNodeModal');
+        }
+
+        function saveGraphNode() {
         const skill = state.skills.find(s => s.id === activeTreeSkillId);
         const action = document.getElementById('graphNodeAction').value;
         const name = document.getElementById('graphNodeName').value;
@@ -2487,171 +2663,171 @@
         let finalId = id;
 
         if (action === 'edit') {
-            const node = skill.graphNodes.find(n => n.id === id);
-            if (node) { node.name = name; node.notes = notes; }
+        const node = skill.graphNodes.find(n => n.id === id);
+        if (node) { node.name = name; node.notes = notes; }
         } else {
-            const parent = skill.graphNodes.find(n => n.id === parentId);
-            
-            let newX = 500;
-            let newY = 300;
-            if (parent) {
-                newX = direction === 'left' ? parent.x - 180 : parent.x + 180;
-                newY = parent.y + (Math.random() * 40 - 20); 
-            }
-            
-            finalId = Date.now().toString();
-            skill.graphNodes.push({
-                id: finalId,
-                name: name,
-                notes: notes,
-                parentId: parentId || null,
-                x: newX,
-                y: newY,
-                done: false
-            });
+        const parent = skill.graphNodes.find(n => n.id === parentId);
+
+        let newX = 500;
+        let newY = 300;
+        if (parent) {
+        newX = direction === 'left' ? parent.x - 180 : parent.x + 180;
+        newY = parent.y + (Math.random() * 40 - 20);
+        }
+
+        finalId = Date.now().toString();
+        skill.graphNodes.push({
+        id: finalId,
+        name: name,
+        notes: notes,
+        parentId: parentId || null,
+        x: newX,
+        y: newY,
+        done: false
+        });
         }
 
         closeModals();
         syncNote(finalId, name, notes, "Узел графа", activeTreeSkillId);
         save();
         renderCanvas();
-    }
+        }
 
-    // Функции для кнопок внутри узла
-    function addChildFromGraph(parentId) {
+        // Функции для кнопок внутри узла
+        function addChildFromGraph(parentId) {
         openGraphNodeModal('add', { parentId: parentId });
-    }
+        }
 
-    function toggleGraphNodeDone(nodeId) {
+        function toggleGraphNodeDone(nodeId) {
         const skill = state.skills.find(s => s.id === activeTreeSkillId);
         const node = skill.graphNodes.find(n => n.id === nodeId);
         if (node) {
-            node.done = !node.done;
-            save();
-            renderCanvas();
+        node.done = !node.done;
+        save();
+        renderCanvas();
         }
-    }
-    // ==========================================
-    // СИСТЕМА АНАЛИТИКИ И АРХИВОВ
-    // ==========================================
-    
-    // Защита: инициализация структуры при запуске
-    if (!state.analytics) {
-        state.analytics = {
-            totalXpEarned: 0,
-            totalFlowMinutes: 0,
-            archive: [] // Массив для хранения выполненных целей
-        };
-    }
+        }
+        // ==========================================
+        // СИСТЕМА АНАЛИТИКИ И АРХИВОВ
+        // ==========================================
 
-    // Перехватываем начисление XP, чтобы записывать в статистику
-    const originalGrantXP = grantXP;
-    grantXP = function(skill, type) {
+        // Защита: инициализация структуры при запуске
+        if (!state.analytics) {
+        state.analytics = {
+        totalXpEarned: 0,
+        totalFlowMinutes: 0,
+        archive: [] // Массив для хранения выполненных целей
+        };
+        }
+
+        // Перехватываем начисление XP, чтобы записывать в статистику
+        const originalGrantXP = grantXP;
+        grantXP = function(skill, type) {
         let xpAmount = REWARDS[type].xp;
         if (flow.active) xpAmount *= 2;
-        
+
         state.analytics.totalXpEarned += xpAmount; // Записываем в вечную статистику
         originalGrantXP(skill, type);
-    };
+        };
 
-    function archiveGoal(skillId, goalId) {
+        function archiveGoal(skillId, goalId) {
         if(!confirm("Отправить выполненную цель в архив? Она исчезнет из текущего списка, но останется в истории.")) return;
 
         const skill = state.skills.find(s => s.id === skillId);
         const goalIndex = skill.goals.findIndex(n => n.id === goalId);
-        
+
         if (goalIndex > -1) {
-            const goalToArchive = skill.goals[goalIndex];
-            
-            // Сохраняем в архив с метаданными
-            state.analytics.archive.unshift({
-                name: goalToArchive.name,
-                skillName: skill.name,
-                skillColor: skill.color,
-                date: new Date().toLocaleDateString(),
-                type: goalToArchive.type
-            });
+        const goalToArchive = skill.goals[goalIndex];
 
-            // Удаляем из активного списка
-            skill.goals.splice(goalIndex, 1);
-            
-            // Очищаем привязки у дочерних целей (если они были)
-            skill.goals.forEach(n => {
-                if (n.parentId === goalId) n.parentId = null;
-            });
+        // Сохраняем в архив с метаданными
+        state.analytics.archive.unshift({
+        name: goalToArchive.name,
+        skillName: skill.name,
+        skillColor: skill.color,
+        date: new Date().toLocaleDateString(),
+        type: goalToArchive.type
+        });
 
-            save();
-            render();
-            alert("Цель перенесена в Зал Славы (Архив)!");
+        // Удаляем из активного списка
+        skill.goals.splice(goalIndex, 1);
+
+        // Очищаем привязки у дочерних целей (если они были)
+        skill.goals.forEach(n => {
+        if (n.parentId === goalId) n.parentId = null;
+        });
+
+        save();
+        render();
+        alert("Цель перенесена в Зал Славы (Архив)!");
         }
-    }
+        }
 
-    function renderAnalytics() {
+        function renderAnalytics() {
         document.getElementById('analytics-total-xp').innerText = state.analytics.totalXpEarned || 0;
         document.getElementById('analytics-total-goals').innerText = state.analytics.archive ? state.analytics.archive.length : 0;
-        
+
         const flowHours = ((state.analytics.totalFlowMinutes || 0) / 60).toFixed(1);
         document.getElementById('analytics-total-flow').innerText = flowHours;
 
         // Отрисовка списка архива
         const archiveList = document.getElementById('analytics-archive-list');
         if (state.analytics.archive && state.analytics.archive.length > 0) {
-            archiveList.innerHTML = state.analytics.archive.map(item => `
-                <div style="background: rgba(255,255,255,0.02); border-left: 3px solid ${item.skillColor}; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
-                    <div style="display:flex; justify-content:space-between;">
-                        <strong style="text-decoration: line-through; color: #888;">${item.name}</strong>
-                        <span style="font-size: 0.8em; color: var(--text-dim);">${item.date}</span>
-                    </div>
-                    <div style="font-size: 0.8em; margin-top: 5px; color: ${item.skillColor};">${item.skillName} (${item.type})</div>
-                </div>
-            `).join('');
+        archiveList.innerHTML = state.analytics.archive.map(item => `
+        <div style="background: rgba(255,255,255,0.02); border-left: 3px solid ${item.skillColor}; padding: 10px; margin-bottom: 10px; border-radius: 4px;">
+        <div style="display:flex; justify-content:space-between;">
+        <strong style="text-decoration: line-through; color: #888;">${item.name}</strong>
+        <span style="font-size: 0.8em; color: var(--text-dim);">${item.date}</span>
+        </div>
+        <div style="font-size: 0.8em; margin-top: 5px; color: ${item.skillColor};">${item.skillName} (${item.type})</div>
+        </div>
+        `).join('');
         } else {
-            archiveList.innerHTML = '<div style="color: var(--text-dim);">Архив пуст. Выполняйте цели и отправляйте их сюда.</div>';
+        archiveList.innerHTML = '<div style="color: var(--text-dim);">Архив пуст. Выполняйте цели и отправляйте их сюда.</div>';
         }
 
         // Отрисовка простого графика навыков (CSS bars)
         const sortedSkills = [...state.skills].sort((a, b) => b.level - a.level).slice(0, 5);
         const maxLevel = sortedSkills.length > 0 ? sortedSkills[0].level : 1;
-        
+
         const chartContainer = document.getElementById('analytics-skills-chart');
         chartContainer.innerHTML = sortedSkills.map(s => {
-            const width = Math.max(10, (s.level / maxLevel) * 100);
-            return `
-                <div style="margin-bottom: 15px;">
-                    <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px;">
-                        <span>${s.name}</span>
-                        <span>Ур. ${s.level}</span>
-                    </div>
-                    <div style="height: 8px; background: #222; border-radius: 4px;">
-                        <div style="width: ${width}%; height: 100%; background: ${s.color}; border-radius: 4px; transition: 0.5s;"></div>
-                    </div>
-                </div>
-            `;
+        const width = Math.max(10, (s.level / maxLevel) * 100);
+        return `
+        <div style="margin-bottom: 15px;">
+        <div style="display: flex; justify-content: space-between; font-size: 0.9em; margin-bottom: 5px;">
+        <span>${s.name}</span>
+        <span>Ур. ${s.level}</span>
+        </div>
+        <div style="height: 8px; background: #222; border-radius: 4px;">
+        <div style="width: ${width}%; height: 100%; background: ${s.color}; border-radius: 4px; transition: 0.5s;"></div>
+        </div>
+        </div>
+        `;
         }).join('') || '<div style="color: var(--text-dim);">Добавьте навыки, чтобы увидеть статистику.</div>';
-    }
-    // ==========================================
-    // СИСТЕМА ДОСТИЖЕНИЙ (АЧИВКИ)
-    // ==========================================
-    if (!state.customAchievements) state.customAchievements = [];
-    if (!state.unlockedAchievements) state.unlockedAchievements = [];
+        }
+        // ==========================================
+        // СИСТЕМА ДОСТИЖЕНИЙ (АЧИВКИ)
+        // ==========================================
+        if (!state.customAchievements) state.customAchievements = [];
+        if (!state.unlockedAchievements) state.unlockedAchievements = [];
 
-    // Только автоматическая статистика
-    const AUTO_ACHIEVEMENTS = [
+        // Только автоматическая статистика
+        const AUTO_ACHIEVEMENTS = [
         { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
         { id: 'lvl_10', icon: '🌟', title: 'Уровень Босс', desc: 'Достичь 10-го глобального уровня.', auto: true, condition: () => state.global.level >= 10 },
         { id: 'flow_novice', icon: '⏱', title: 'Вхождение в реку', desc: 'Провести в Потоке суммарно 60 минут.', auto: true, condition: () => (state.analytics?.totalFlowMinutes || 0) >= 60 },
         { id: 'flow_master', icon: '🌊', title: 'Повелитель Потока', desc: 'Провести в Потоке 20 часов.', auto: true, condition: () => (state.analytics?.totalFlowMinutes || 0) >= 1200 },
         { id: 'shopaholic', icon: '🛍', title: 'Шопоголик', desc: 'Потратить суммарно 1000 золота в магазине.', auto: true, condition: () => {
-            const spent = (state.global.level - 1) * 100 + state.global.xp + (state.analytics?.totalXpEarned || 0) / 2 - state.global.gold; 
-            return spent >= 1000;
+        const spent = (state.global.level - 1) * 100 + state.global.xp + (state.analytics?.totalXpEarned || 0) / 2 - state.global.gold;
+        return spent >= 1000;
         }},
         { id: 'burnout', icon: '🔥', title: 'Трудоголик', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
         { id: 'archivist', icon: '📚', title: 'Архивариус', desc: 'Отправить 10 целей в архив.', auto: true, condition: () => (state.analytics?.archive?.length || 0) >= 10 },
         { id: 'rich_kid', icon: '💰', title: 'Скрудж Макдак', desc: 'Накопить 1000 золота единовременно.', auto: true, condition: () => state.global.gold >= 1000 },
         { id: 'planner', icon: '📅', title: 'Тактический гений', desc: 'Иметь 10 задач в расписании.', auto: true, condition: () => Object.values(state.schedule).flat().length >= 10 }
-    ];
+        ];
 
-    function saveCustomAchievement() {
+        function saveCustomAchievement() {
         const icon = document.getElementById('achIcon').value || '🏆';
         const title = document.getElementById('achTitle').value;
         const desc = document.getElementById('achDesc').value;
@@ -2661,136 +2837,142 @@
         if (!title) return;
 
         state.customAchievements.push({
-            id: 'custom_' + Date.now(),
-            icon: icon,
-            title: title,
-            desc: desc,
-            xp: xp,
-            gold: gold,
-            auto: false
+        id: 'custom_' + Date.now(),
+        icon: icon,
+        title: title,
+        desc: desc,
+        xp: xp,
+        gold: gold,
+        auto: false
         });
 
         closeModals();
         save();
         renderAchievements();
-    }
+        }
 
-    function deleteCustomAchievement(id) {
+        function deleteCustomAchievement(id) {
         if(confirm('Удалить это кастомное достижение?')) {
-            state.customAchievements = state.customAchievements.filter(a => a.id !== id);
-            // Если оно было разблокировано, убираем и из разблокированных (без снятия наград, они уже потрачены)
-            state.unlockedAchievements = state.unlockedAchievements.filter(achId => achId !== id);
-            save();
-            renderAchievements();
+        state.customAchievements = state.customAchievements.filter(a => a.id !== id);
+        // Если оно было разблокировано, убираем и из разблокированных (без снятия наград, они уже потрачены)
+        state.unlockedAchievements = state.unlockedAchievements.filter(achId => achId !== id);
+        save();
+        renderAchievements();
         }
-    }
+        }
 
-    function unlockManualAchievement(id) {
+        function unlockManualAchievement(id) {
         if (!state.unlockedAchievements.includes(id)) {
-            const ach = state.customAchievements.find(a => a.id === id);
-            if (ach && confirm(`Подтверждаешь выполнение: ${ach.title}?`)) {
-                state.unlockedAchievements.push(id);
-                state.global.gold += ach.gold;
-                state.global.xp += ach.xp;
-                
-                if (state.global.xp >= 100) {
-                    state.global.level += Math.floor(state.global.xp / 100);
-                    state.global.xp = state.global.xp % 100;
-                }
+        const ach = state.customAchievements.find(a => a.id === id);
+        if (ach && confirm(`Подтверждаешь выполнение: ${ach.title}?`)) {
+        state.unlockedAchievements.push(id);
+        state.global.gold += ach.gold;
+        state.global.xp += ach.xp;
 
-                save();
-                renderAchievements();
-                alert(`🏆 ДОСТИЖЕНИЕ ПОЛУЧЕНО!\nНаграда: ${ach.gold} Золота и ${ach.xp} XP.`);
-            }
+        if (state.global.xp >= 100) {
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
         }
-    }
 
-    function checkAutoAchievements() {
+        save();
+        renderAchievements();
+        alert(`🏆 ДОСТИЖЕНИЕ ПОЛУЧЕНО!\nНаграда: ${ach.gold} Золота и ${ach.xp} XP.`);
+        }
+        }
+        }
+
+        function checkAutoAchievements() {
         let changed = false;
         AUTO_ACHIEVEMENTS.forEach(ach => {
-            if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
-                state.unlockedAchievements.push(ach.id);
-                state.global.gold += 50; 
-                state.global.xp += 100;
-                changed = true;
-                alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
-            }
-        });
-        
-        if (changed) {
-            if (state.global.xp >= 100) {
-                state.global.level += Math.floor(state.global.xp / 100);
-                state.global.xp = state.global.xp % 100;
-            }
-            // УБРАН ВЫЗОВ save();!
-            renderAchievements();
+        if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
+        state.unlockedAchievements.push(ach.id);
+        state.global.gold += 50;
+        state.global.xp += 100;
+        changed = true;
+        alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
         }
-    }
+        });
 
-    function renderAchievements() {
+        if (changed) {
+        if (state.global.xp >= 100) {
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
+        }
+        // УБРАН ВЫЗОВ save();!
+        renderAchievements();
+        }
+        }
+
+        function renderAchievements() {
         if (!state.customAchievements) state.customAchievements = [];
-        
+
         const allAchievements = [...AUTO_ACHIEVEMENTS, ...state.customAchievements];
         document.getElementById('achievements-count').innerText = `${state.unlockedAchievements.length} / ${allAchievements.length}`;
-        
+
         const grid = document.getElementById('achievements-grid');
         grid.innerHTML = allAchievements.map(ach => {
-            const isUnlocked = state.unlockedAchievements.includes(ach.id);
-            const borderCol = isUnlocked ? 'var(--gold)' : 'var(--border)';
-            const bg = isUnlocked ? 'rgba(255, 184, 0, 0.05)' : 'transparent';
-            const opacity = isUnlocked ? '1' : '0.4';
-            
-            return `
-                <div class="card" style="border-color: ${borderCol}; background: ${bg}; opacity: ${opacity}; margin-bottom: 0; display: flex; align-items: center; gap: 15px; padding: 15px; position: relative;">
-                    ${(!ach.auto && !isUnlocked) ? `<div style="position: absolute; top: 5px; right: 10px; cursor: pointer; color: var(--danger); font-size: 0.8em;" onclick="deleteCustomAchievement('${ach.id}')">✖</div>` : ''}
-                    
-                    <div style="font-size: 2.5em; filter: ${isUnlocked ? 'none' : 'grayscale(100%)'};">${ach.icon}</div>
-                    <div style="flex: 1;">
-                        <h4 style="margin: 0 0 5px 0; color: ${isUnlocked ? 'var(--gold)' : 'var(--text)'};">${ach.title}</h4>
-                        <div style="font-size: 0.8em; color: var(--text-dim); line-height: 1.3;">${ach.desc}</div>
-                        ${!ach.auto ? `<div style="font-size: 0.7em; color: var(--xp-color); margin-top: 5px;">Награда: 🪙 ${ach.gold} | ✨ ${ach.xp}</div>` : ''}
-                    </div>
-                    ${(!isUnlocked && !ach.auto) ? `<button class="btn-outline" style="padding: 5px 10px; font-size: 0.8em;" onclick="unlockManualAchievement('${ach.id}')">Выполнено!</button>` : ''}
-                    ${isUnlocked ? `<div style="color: var(--success); font-weight: bold;">✓</div>` : ''}
-                </div>
-            `;
+        const isUnlocked = state.unlockedAchievements.includes(ach.id);
+        const borderCol = isUnlocked ? 'var(--gold)' : 'var(--border)';
+        const bg = isUnlocked ? 'rgba(255, 184, 0, 0.05)' : 'transparent';
+        const opacity = isUnlocked ? '1' : '0.4';
+
+        return `
+        <div class="card" style="border-color: ${borderCol}; background: ${bg}; opacity: ${opacity}; margin-bottom: 0; display: flex; align-items: center; gap: 15px; padding: 15px; position: relative;">
+        ${(!ach.auto && !isUnlocked) ? `<div style="position: absolute; top: 5px; right: 10px; cursor: pointer; color: var(--danger); font-size: 0.8em;" onclick="deleteCustomAchievement('${ach.id}')">✖</div>` : ''}
+
+        <div style="font-size: 2.5em; filter: ${isUnlocked ? 'none' : 'grayscale(100%)'};">${ach.icon}</div>
+        <div style="flex: 1;">
+        <h4 style="margin: 0 0 5px 0; color: ${isUnlocked ? 'var(--gold)' : 'var(--text)'};">${ach.title}</h4>
+        <div style="font-size: 0.8em; color: var(--text-dim); line-height: 1.3;">${ach.desc}</div>
+        ${!ach.auto ? `<div style="font-size: 0.7em; color: var(--xp-color); margin-top: 5px;">Награда: 🪙 ${ach.gold} | ✨ ${ach.xp}</div>` : ''}
+        </div>
+        ${(!isUnlocked && !ach.auto) ? `<button class="btn-outline" style="padding: 5px 10px; font-size: 0.8em;" onclick="unlockManualAchievement('${ach.id}')">Выполнено!</button>` : ''}
+        ${isUnlocked ? `<div style="color: var(--success); font-weight: bold;">✓</div>` : ''}
+        </div>
+        `;
         }).join('');
-    }
-    /* =========================================
-       9. ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
-    ========================================= */
-    function render() {
+        }
+        /* =========================================
+        9. ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
+        ========================================= */
+        function render() {
         if (!state.inventory) state.inventory = { streakFreezes: 0 }; // Инициализация инвентаря
 
         // Ежедневный сброс энергии и проверка стрейков
         const todayStr = new Date().toDateString();
         if (state.global.lastLoginDate !== todayStr) {
-            
-            // Проверяем все повторяющиеся задачи
-            state.skills.forEach(s => {
-                (s.goals || []).filter(g => g.type === 'Повторяющаяся').forEach(g => {
-                    const yesterday = new Date();
-                    yesterday.setDate(yesterday.getDate() - 1);
-                    
-                    if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                        if (state.inventory.streakFreezes > 0) {
-                            state.inventory.streakFreezes--;
-                            console.log(`Использована заморозка для: ${g.name}`);
-                        } else {
-                            g.streak = 0; // Сгорает :(
-                        }
-                    }
-                });
-            });
 
-            state.global.stamina = state.global.maxStamina || 100;
-            state.global.lastLoginDate = todayStr;
-            localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+        // Проверяем все повторяющиеся задачи
+        state.skills.forEach(s => {
+        (s.goals || []).filter(g => g.type === 'Повторяющаяся').forEach(g => {
+        const yesterday = new Date();
+        yesterday.setDate(yesterday.getDate() - 1);
+
+        if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+        if (state.inventory.streakFreezes > 0) {
+        state.inventory.streakFreezes--;
+        console.log(`Использована заморозка для: ${g.name}`);
+        } else {
+        g.streak = 0; // Сгорает :(
+        }
+        }
+        });
+        });
+
+        // Восстановление энергии
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
+        state.global.lastLoginDate = todayStr;
+        localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
         }
 
-        if (state.global.stamina === undefined) state.global.stamina = 100;
-        if (state.global.maxStamina === undefined) state.global.maxStamina = 100;
-        
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        if (state.global.stamina === undefined) state.global.stamina = state.global.maxStamina;
+
         document.getElementById('global-stamina-text').innerText = `${Math.floor(state.global.stamina)} / ${state.global.maxStamina}`;
         document.getElementById('global-stamina-bar').style.width = `${(state.global.stamina / state.global.maxStamina) * 100}%`;
         // --- ДАШБОРД ---
@@ -2799,101 +2981,101 @@
         document.getElementById('global-xp-bar').style.width = `${state.global.xp}%`;
         document.getElementById('global-gold').innerText = state.global.gold;
         document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
-        
+
         document.getElementById('dash-summary').innerHTML = state.skills.map(s => `
-            <div class="card" style="border-top: 3px solid ${s.color}; margin-bottom: 0;">
-                <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-                    <strong style="font-size: 1.1em;">${s.name}</strong>
-                    <span style="background:#222; padding:3px 8px; border-radius:4px; font-size:0.8em;">Ур. ${s.level}</span>
-                </div>
-                <div style="font-size:0.8em; color:var(--text-dim); margin-bottom:6px;">XP: ${s.xp} / 100</div>
-                <div style="height:6px; background:#000; border-radius: 3px; overflow: hidden;">
-                    <div style="width:${s.xp}%; height:100%; background:${s.color};"></div>
-                </div>
-            </div>
+        <div class="card" style="border-top: 3px solid ${s.color}; margin-bottom: 0;">
+        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+        <strong style="font-size: 1.1em;">${s.name}</strong>
+        <span style="background:#222; padding:3px 8px; border-radius:4px; font-size:0.8em;">Ур. ${s.level}</span>
+        </div>
+        <div style="font-size:0.8em; color:var(--text-dim); margin-bottom:6px;">XP: ${s.xp} / 100</div>
+        <div style="height:6px; background:#000; border-radius: 3px; overflow: hidden;">
+        <div style="width:${s.xp}%; height:100%; background:${s.color};"></div>
+        </div>
+        </div>
         `).join('') || '<div style="color:var(--text-dim);">Добавьте первый навык.</div>';
-        
+
         // --- СПИСКИ НАВЫКОВ ---
         document.getElementById('skills-list').innerHTML = state.skills.map(s => {
 
-            const buildListHtml = (parentId) => {
-                const children = (s.goals || []).filter(n => (n.parentId || null) == (parentId || null));
-                if (children.length === 0) return '';
+        const buildListHtml = (parentId) => {
+        const children = (s.goals || []).filter(n => (n.parentId || null) == (parentId || null));
+        if (children.length === 0) return '';
 
-                return children.map(n => {
-                    let extraContent = '';
-                    
-                    // ЛОГИКА ПРОЕКТА (Долгосрочная)
-                    if (n.type === 'Долгосрочная') {
-                        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
-                        const doneCount = subTasks.filter(sub => sub.done).length;
-                        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
-                        extraContent = `
-                            <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
-                            <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
-                        `;
-                    }
+        return children.map(n => {
+        let extraContent = '';
 
-                    // ЛОГИКА ПРИВЫЧКИ (Повторяющаяся)
-                    if (n.type === 'Повторяющаяся') {
-                        extraContent = `<div class="habit-grid-mini">`;
-                        for(let i=0; i<7; i++) {
-                            const isActive = (n.streak || 0) > i; // Упрощенная визуализация стрейка
-                            extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
-                        }
-                        extraContent += `</div>`;
-                    }
+        // ЛОГИКА ПРОЕКТА (Долгосрочная)
+        if (n.type === 'Долгосрочная') {
+        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
+        const doneCount = subTasks.filter(sub => sub.done).length;
+        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
+        extraContent = `
+        <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
+        <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
+        `;
+        }
 
-                    return `
-                        <div class="goal-list-node">
-                            <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
-                                <div style="display:flex; justify-content:space-between; align-items:center;">
-                                    <div style="flex: 1;">
-                                        <div style="display:flex; align-items:center; gap:10px;">
-                                            <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
-                                            <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
-                                        </div>
-                                        ${extraContent}
-                                    </div>
-                                    <div style="display:flex; gap:8px;">
-                                        ${n.done ? `<button class="btn-outline" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-                                        <button class="btn-outline" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
-                                    </div>
-                                </div>
-                            </div>
-                            ${buildListHtml(n.id)}
-                        </div>
-                    `;
-                }).join('');
-            };
-            return `
-                <div class="card">
-                    <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom:15px;">
-                        <div>
-                            <h3 style="margin:0; color:${s.color}">${s.name}</h3>
-                            <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
-                        </div>
-                        <div style="display:flex; gap:10px;">
-                            <button class="btn-outline" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
-                            <button class="btn" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
-                        </div>
-                    </div>
-                    <div style="margin-top:15px;">
-                        ${buildListHtml(null) || '<div style="color:var(--text-dim);">У этого навыка пока нет целей.</div>'}
-                    </div>
-                </div>
-            `;
+        // ЛОГИКА ПРИВЫЧКИ (Повторяющаяся)
+        if (n.type === 'Повторяющаяся') {
+        extraContent = `<div class="habit-grid-mini">`;
+        for(let i=0; i<7; i++) {
+        const isActive = (n.streak || 0) > i; // Упрощенная визуализация стрейка
+        extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
+        }
+        extraContent += `</div>`;
+        }
+
+        return `
+        <div class="goal-list-node">
+        <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
+        <div style="display:flex; justify-content:space-between; align-items:center;">
+        <div style="flex: 1;">
+        <div style="display:flex; align-items:center; gap:10px;">
+        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
+        <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+        </div>
+        ${extraContent}
+        </div>
+        <div style="display:flex; gap:8px;">
+        ${n.done ? `<button class="btn-outline" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
+        <button class="btn-outline" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
+        </div>
+        </div>
+        </div>
+        ${buildListHtml(n.id)}
+        </div>
+        `;
+        }).join('');
+        };
+        return `
+        <div class="card">
+        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom:15px;">
+        <div>
+        <h3 style="margin:0; color:${s.color}">${s.name}</h3>
+        <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
+        </div>
+        <div style="display:flex; gap:10px;">
+        <button class="btn-outline" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
+        <button class="btn" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
+        </div>
+        </div>
+        <div style="margin-top:15px;">
+        ${buildListHtml(null) || '<div style="color:var(--text-dim);">У этого навыка пока нет целей.</div>'}
+        </div>
+        </div>
+        `;
         }).join('');
 
         // Если активен граф, обновляем его
         if (activeTreeSkillId) {
-            renderCanvas();
+        renderCanvas();
         }
 
         // Обновляем Поток
         renderFlow();
 
-        
+
 
         // --- РАСПИСАНИЕ ---
         if (!state.calendar) state.calendar = {};
@@ -2905,111 +3087,111 @@
 
         const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
         let weekHtml = '';
-        
+
         const today = new Date();
         const offset = today.getTimezoneOffset() * 60000;
 
         // Вспомогательная функция для рендера карточек задач
         const renderTaskCard = (t, isDynamic, dateStr) => {
-            const skill = state.skills.find(x => x.id === t.skillId);
-            const colorBorder = skill ? skill.color : '#555';
-            const styleDate = t._type === 'date' ? 'background: rgba(255, 255, 255, 0.08); border-style: dashed;' : '';
-            
-            let isDone = t.done;
-            if (isDynamic && t._type === 'template') {
-                isDone = state.completedTemplates[dateStr] && state.completedTemplates[dateStr].includes(t.id);
-            }
-            
-            return `
-                <div class="task-block ${isDone ? 'done' : ''}" 
-                     style="border-left: 4px solid ${colorBorder}; ${styleDate}" 
-                     onclick="toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${isDynamic ? dateStr : ''}')" 
-                     oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id})">
-                    <div class="task-time">🕒 ${t.time} (${t.duration}м)</div>
-                    <div class="task-title">${t.title}</div>
-                    ${skill ? `<div style="font-size:0.75em; color:${colorBorder}; margin-top:6px; font-weight:bold;">${skill.name}</div>` : ''}
-                </div>
-            `;
+        const skill = state.skills.find(x => x.id === t.skillId);
+        const colorBorder = skill ? skill.color : '#555';
+        const styleDate = t._type === 'date' ? 'background: rgba(255, 255, 255, 0.08); border-style: dashed;' : '';
+
+        let isDone = t.done;
+        if (isDynamic && t._type === 'template') {
+        isDone = state.completedTemplates[dateStr] && state.completedTemplates[dateStr].includes(t.id);
+        }
+
+        return `
+        <div class="task-block ${isDone ? 'done' : ''}"
+        style="border-left: 4px solid ${colorBorder}; ${styleDate}"
+        onclick="toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${isDynamic ? dateStr : ''}')"
+        oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id})">
+        <div class="task-time">🕒 ${t.time} (${t.duration}м)</div>
+        <div class="task-title">${t.title}</div>
+        ${skill ? `<div style="font-size:0.75em; color:${colorBorder}; margin-top:6px; font-weight:bold;">${skill.name}</div>` : ''}
+        </div>
+        `;
         };
 
         if (currentScheduleTab === 'static') {
-            // === ШАБЛОН (Редактор базы) ===
-            const staticDays = [1, 2, 3, 4, 5, 6, 0]; // Пн - Вс
-            
-            staticDays.forEach(dayOfWeek => {
-                const templateTasks = (state.schedule[dayOfWeek] || []).map(t => ({...t, _type: 'template', _key: dayOfWeek}));
-                templateTasks.sort((a,b) => a.time.localeCompare(b.time));
-                
-                const tasksHtml = templateTasks.map(t => renderTaskCard(t, false, null)).join('');
-                weekHtml += `
-                    <div class="day-col" style="border-style: dashed;">
-                        <div class="day-title">${dayNames[dayOfWeek]} <br><span style="font-size:0.8em; color:var(--text-dim);">Абстрактный шаблон</span></div>
-                        ${tasksHtml}
-                    </div>
-                `;
-            });
-        } else {
-            // === ДИНАМИКА (Конвейер реального времени) ===
-            for(let i = 0; i < 7; i++) {
-                const currentDate = new Date(today);
-                currentDate.setDate(today.getDate() + i);
-                
-                const dateStr = new Date(currentDate - offset).toISOString().split('T')[0];
-                const currentDayOfWeek = currentDate.getDay();
-                const isToday = (i === 0);
+        // === ШАБЛОН (Редактор базы) ===
+        const staticDays = [1, 2, 3, 4, 5, 6, 0]; // Пн - Вс
 
-                const templateTasks = (state.schedule[currentDayOfWeek] || []).map(t => ({...t, _type: 'template', _key: currentDayOfWeek}));
-                const exactTasks = (state.calendar[dateStr] || []).map(t => ({...t, _type: 'date', _key: dateStr}));
-                const combinedTasks = [...templateTasks, ...exactTasks].sort((a,b) => a.time.localeCompare(b.time));
-                
-                const tasksHtml = combinedTasks.map(t => renderTaskCard(t, true, dateStr)).join('');
-                const displayDate = `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' })}`;
-                
-                weekHtml += `
-                    <div class="day-col" style="${isToday ? 'border-color:var(--accent); background:rgba(0,242,255,0.03);' : ''}">
-                        <div class="day-title" style="${isToday ? 'color:var(--accent);' : ''}">
-                            ${dayNames[currentDayOfWeek]}, ${displayDate} ${isToday ? '<br><span style="font-size:0.8em">(Сегодня)</span>' : ''}
-                        </div>
-                        ${tasksHtml}
-                    </div>
-                `;
-            }
+        staticDays.forEach(dayOfWeek => {
+        const templateTasks = (state.schedule[dayOfWeek] || []).map(t => ({...t, _type: 'template', _key: dayOfWeek}));
+        templateTasks.sort((a,b) => a.time.localeCompare(b.time));
+
+        const tasksHtml = templateTasks.map(t => renderTaskCard(t, false, null)).join('');
+        weekHtml += `
+        <div class="day-col" style="border-style: dashed;">
+        <div class="day-title">${dayNames[dayOfWeek]} <br><span style="font-size:0.8em; color:var(--text-dim);">Абстрактный шаблон</span></div>
+        ${tasksHtml}
+        </div>
+        `;
+        });
+        } else {
+        // === ДИНАМИКА (Конвейер реального времени) ===
+        for(let i = 0; i < 7; i++) {
+        const currentDate = new Date(today);
+        currentDate.setDate(today.getDate() + i);
+
+        const dateStr = new Date(currentDate - offset).toISOString().split('T')[0];
+        const currentDayOfWeek = currentDate.getDay();
+        const isToday = (i === 0);
+
+        const templateTasks = (state.schedule[currentDayOfWeek] || []).map(t => ({...t, _type: 'template', _key: currentDayOfWeek}));
+        const exactTasks = (state.calendar[dateStr] || []).map(t => ({...t, _type: 'date', _key: dateStr}));
+        const combinedTasks = [...templateTasks, ...exactTasks].sort((a,b) => a.time.localeCompare(b.time));
+
+        const tasksHtml = combinedTasks.map(t => renderTaskCard(t, true, dateStr)).join('');
+        const displayDate = `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' })}`;
+
+        weekHtml += `
+        <div class="day-col" style="${isToday ? 'border-color:var(--accent); background:rgba(0,242,255,0.03);' : ''}">
+        <div class="day-title" style="${isToday ? 'color:var(--accent);' : ''}">
+        ${dayNames[currentDayOfWeek]}, ${displayDate} ${isToday ? '<br><span style="font-size:0.8em">(Сегодня)</span>' : ''}
+        </div>
+        ${tasksHtml}
+        </div>
+        `;
+        }
         }
         document.getElementById('week-display').innerHTML = weekHtml;
 
         // --- МАГАЗИН ---
         document.getElementById('store-gold-balance').innerText = state.global.gold;
         document.getElementById('store-container').innerHTML = state.store.map(i => `
-            <div class="store-item">
-                <h3 style="margin:5px 0;">${i.name}</h3>
-                <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
-                ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
-                <div style="display:flex; gap:10px; margin-top:auto;">
-                    <button class="btn" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
-                    <button class="btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
-                </div>
-            </div>
+        <div class="store-item">
+        <h3 style="margin:5px 0;">${i.name}</h3>
+        <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
+        ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
+        <div style="display:flex; gap:10px; margin-top:auto;">
+        <button class="btn" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
+        <button class="btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
+        </div>
+        </div>
         `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
         renderLootList();
         updateLootboxUI();
-    }
+        }
 
-    // Инициализация при первой загрузке страницы
-    if (!state.store.find(i => i.id === 'freeze')) {
+        // Инициализация при первой загрузке страницы
+        if (!state.store.find(i => i.id === 'freeze')) {
         state.store.push({ id: 'freeze', name: 'Заморозка стрейка ❄️', price: 200, stamina: 0, isSpecial: true });
-    }
-    render();
-    // ==========================================
-    // ЛОГИКА ЛУТБОКСОВ (Интегрировано из React)
-    // ==========================================
-    function updateLootboxUI() {
+        }
+        render();
+        // ==========================================
+        // ЛОГИКА ЛУТБОКСОВ (Интегрировано из React)
+        // ==========================================
+        function updateLootboxUI() {
         const progressEl = document.getElementById('lootbox-progress');
         const statusEl = document.getElementById('lootbox-status');
         if (progressEl) progressEl.innerText = `Прогресс: ${state.user.tasksCompletedForLoot || 0} / ${state.user.lootboxThreshold || 5}`;
         if (statusEl) statusEl.innerText = `Доступно: ${state.lootboxes || 0} 🎁`;
-    }
+        }
 
-    function addCustomLoot() {
+        function addCustomLoot() {
         const name = document.getElementById('customLootName').value;
         const gold = parseInt(document.getElementById('customLootGold').value) || 0;
         const xp = parseInt(document.getElementById('customLootXP').value) || 0;
@@ -3018,135 +3200,135 @@
 
         if (!state.lootTable) state.lootTable = [];
         state.lootTable.push({ name, gold, xp });
-        
+
         document.getElementById('customLootName').value = '';
         save();
-    }
+        }
 
-    function renderLootList() {
+        function renderLootList() {
         const list = document.getElementById('custom-loot-list');
         if (!list) return;
         const table = state.lootTable || [];
         list.innerHTML = table.map((item, idx) => `
-            <div style="display:flex; justify-content:space-between; padding: 5px; border-bottom: 1px solid var(--border);">
-                <span>${item.name} (🪙${item.gold} / ✨${item.xp})</span>
-                <span style="color:var(--danger); cursor:pointer;" onclick="deleteLoot(${idx})">✖</span>
-            </div>
+        <div style="display:flex; justify-content:space-between; padding: 5px; border-bottom: 1px solid var(--border);">
+        <span>${item.name} (🪙${item.gold} / ✨${item.xp})</span>
+        <span style="color:var(--danger); cursor:pointer;" onclick="deleteLoot(${idx})">✖</span>
+        </div>
         `).join('') || 'Список пуст. Добавьте награды!';
-    }
+        }
 
-    function deleteLoot(index) {
+        function deleteLoot(index) {
         state.lootTable.splice(index, 1);
         save();
-    }
+        }
 
-    function openLootbox() {
+        function openLootbox() {
         if (state.lootboxes <= 0) {
-            alert("Нет доступных коробок!");
-            return;
+        alert("Нет доступных коробок!");
+        return;
         }
         if (!state.lootTable || state.lootTable.length === 0) {
-            alert("Сначала добавьте хотя бы одну награду в список справа!");
-            return;
+        alert("Сначала добавьте хотя бы одну награду в список справа!");
+        return;
         }
 
         state.lootboxes--;
         const reward = state.lootTable[Math.floor(Math.random() * state.lootTable.length)];
-        
+
         state.global.gold += reward.gold;
         state.global.xp += reward.xp;
-        
-        document.getElementById('lootbox-reward').innerText = `Выпало: ${reward.name}!`;
-        save(); 
-    }
 
-    // ==========================================
-    // ЛОГИКА ЗАМЕТОК (Интегрировано из React)
-    // ==========================================
-    function renderNotes() {
+        document.getElementById('lootbox-reward').innerText = `Выпало: ${reward.name}!`;
+        save();
+        }
+
+        // ==========================================
+        // ЛОГИКА ЗАМЕТОК (Интегрировано из React)
+        // ==========================================
+        function renderNotes() {
         const container = document.getElementById('notes-container');
         if (!container) return;
 
         container.innerHTML = (state.notes || []).map((note, idx) => `
-            <div class="card" style="border-left: 3px solid ${note.sourceId ? 'var(--accent)' : 'var(--border)'}">
-                <div style="display:flex; justify-content:space-between;">
-                    <h3 style="margin:0; font-size:1em;">${note.title}</h3>
-                    <span style="font-size:0.7em; color:var(--text-dim);">${note.date}</span>
-                </div>
-                <p style="font-size:0.9em; margin:15px 0; color:var(--text-dim); white-space:pre-wrap;">${note.content}</p>
-                <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
-                    ${note.sourceId ? `
-                        <button class="btn-outline" style="font-size:0.7em; padding:5px 10px;" 
-                            onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
-                    ` : ''}
-                    <button class="btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
-                </div>
-            </div>
+        <div class="card" style="border-left: 3px solid ${note.sourceId ? 'var(--accent)' : 'var(--border)'}">
+        <div style="display:flex; justify-content:space-between;">
+        <h3 style="margin:0; font-size:1em;">${note.title}</h3>
+        <span style="font-size:0.7em; color:var(--text-dim);">${note.date}</span>
+        </div>
+        <p style="font-size:0.9em; margin:15px 0; color:var(--text-dim); white-space:pre-wrap;">${note.content}</p>
+        <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
+        ${note.sourceId ? `
+        <button class="btn-outline" style="font-size:0.7em; padding:5px 10px;"
+        onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
+        ` : ''}
+        <button class="btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
+        </div>
+        </div>
         `).join('') || '<p>Заметок пока нет.</p>';
-    }
-
-    function goToNoteSource(type, skillId) {
-        if (type === "Цель" || type === "Навык") {
-            switchView('skills');
-        } else if (type === "Узел графа") {
-            openTreeCanvas(skillId);
         }
-    }
 
-    function createNewNote() {
+        function goToNoteSource(type, skillId) {
+        if (type === "Цель" || type === "Навык") {
+        switchView('skills');
+        } else if (type === "Узел графа") {
+        openTreeCanvas(skillId);
+        }
+        }
+
+        function createNewNote() {
         document.getElementById('newNoteTitle').value = '';
         document.getElementById('newNoteContent').value = '';
         openModal('createNoteModal');
-    }
+        }
 
-    function saveNewNote() {
+        function saveNewNote() {
         const title = document.getElementById('newNoteTitle').value;
         const content = document.getElementById('newNoteContent').value;
         if(!title || !content) return;
-        
+
         if(!state.notes) state.notes = [];
         state.notes.push({
-            title: title,
-            content: content,
-            date: new Date().toLocaleDateString()
+        title: title,
+        content: content,
+        date: new Date().toLocaleDateString()
         });
         closeModals();
         renderNotes();
         save();
-    }
-
-    function deleteNote(index) {
-        if(confirm("Удалить эту заметку?")) {
-            state.notes.splice(index, 1);
-            renderNotes();
         }
-    }
 
-    // Найди этот блок и замени на новый:
-    const originalSwitchView = switchView;
-    switchView = function(viewId) {
+        function deleteNote(index) {
+        if(confirm("Удалить эту заметку?")) {
+        state.notes.splice(index, 1);
+        renderNotes();
+        }
+        }
+
+        // Найди этот блок и замени на новый:
+        const originalSwitchView = switchView;
+        switchView = function(viewId) {
         originalSwitchView(viewId);
         if(viewId === 'lootbox') updateLootboxUI();
         if(viewId === 'notes') renderNotes();
         if(viewId === 'analytics') renderAnalytics();
-        if(viewId === 'achievements') renderAchievements(); 
-    };
-    
-    // ==========================================
-    // СИСТЕМА ДАННЫХ И СЕТЬ (ФУНДАМЕНТ)
-    // ==========================================
-    
-    // Структура для будущего кооператива
-    if (!state.network) {
-        state.network = {
-            syncId: null,      // Идентификатор сессии
-            isHost: false,
-            peers: [],         // Список друзей/соперников
-            sharedGoals: []    // Общие квесты
+        if(viewId === 'achievements') renderAchievements();
         };
-    }
 
-    function exportData() {
+        // ==========================================
+        // СИСТЕМА ДАННЫХ И СЕТЬ (ФУНДАМЕНТ)
+        // ==========================================
+
+        // Структура для будущего кооператива
+        if (!state.network) {
+        state.network = {
+        syncId: null,      // Идентификатор сессии
+        isHost: false,
+        peers: [],         // Список друзей/соперников
+        sharedGoals: []    // Общие квесты
+        };
+        }
+
+        function exportData() {
         const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state));
         const downloadAnchorNode = document.createElement('a');
         downloadAnchorNode.setAttribute("href", dataStr);
@@ -3154,62 +3336,62 @@
         document.body.appendChild(downloadAnchorNode);
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
-    }
+        }
 
-    function importData() {
+        function importData() {
         const input = document.createElement('input');
         input.type = 'file';
         input.accept = '.json';
         input.onchange = e => {
-            const file = e.target.files[0];
-            const reader = new FileReader();
-            reader.readAsText(file, 'UTF-8');
-            reader.onload = readerEvent => {
-                try {
-                    const content = readerEvent.target.result;
-                    const parsed = JSON.parse(content);
-                    if (parsed && parsed.global) {
-                        state = parsed;
-                        save();
-                        alert("Данные успешно импортированы!");
-                        location.reload(); // Перезагрузка для чистого рендера
-                    } else {
-                        alert("Неверный формат файла.");
-                    }
-                } catch (err) {
-                    alert("Ошибка чтения файла: " + err);
-                }
-            }
+        const file = e.target.files[0];
+        const reader = new FileReader();
+        reader.readAsText(file, 'UTF-8');
+        reader.onload = readerEvent => {
+        try {
+        const content = readerEvent.target.result;
+        const parsed = JSON.parse(content);
+        if (parsed && parsed.global) {
+        state = parsed;
+        save();
+        alert("Данные успешно импортированы!");
+        location.reload(); // Перезагрузка для чистого рендера
+        } else {
+        alert("Неверный формат файла.");
+        }
+        } catch (err) {
+        alert("Ошибка чтения файла: " + err);
+        }
+        }
         };
         input.click();
-    }
-    function syncNote(sourceId, title, content, type, skillId = null) {
+        }
+        function syncNote(sourceId, title, content, type, skillId = null) {
         if (!state.notes) state.notes = [];
         const index = state.notes.findIndex(n => n.sourceId === sourceId);
-        
+
         if (!content || content.trim() === "") {
-            if (index !== -1) state.notes.splice(index, 1);
-            return;
+        if (index !== -1) state.notes.splice(index, 1);
+        return;
         }
 
         const noteData = {
-            title: `[${type}] ${title}`,
-            content: content,
-            date: new Date().toLocaleDateString(),
-            sourceId: sourceId,
-            sourceType: type,
-            skillId: skillId
+        title: `[${type}] ${title}`,
+        content: content,
+        date: new Date().toLocaleDateString(),
+        sourceId: sourceId,
+        sourceType: type,
+        skillId: skillId
         };
 
         if (index !== -1) state.notes[index] = noteData;
         else state.notes.push(noteData);
-    }
-    function toggleTaskModeUI() {
+        }
+        function toggleTaskModeUI() {
         const mode = document.getElementById('taskMode').value;
         document.getElementById('taskDayContainer').style.display = (mode === 'template') ? 'block' : 'none';
         document.getElementById('taskDateContainer').style.display = (mode === 'date') ? 'block' : 'none';
-    }
-   
-</script>
+        }
+
+    </script>
 </body>
 </html>
