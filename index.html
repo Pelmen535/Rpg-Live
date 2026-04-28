@@ -86,6 +86,11 @@
                 border-bottom-color: var(--accent);
             }
 
+            /* Прячем гамбургер на ПК, так как там влезают все 11 вкладок */
+            .nav-link.mobile-more {
+                display: none; 
+            }
+
             .nav-link.flow-active {
                 color: var(--flow);
                 border-bottom-color: var(--flow);
@@ -607,17 +612,41 @@
             nav {
                 position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
                 background-color: rgba(22, 22, 26, 0.95); backdrop-filter: blur(10px);
-                border-top: 1px solid var(--border); padding: 5px 0;
+                border-top: 1px solid var(--border); border-bottom: none; padding: 5px 0;
                 display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
                 padding-bottom: env(safe-area-inset-bottom);
+                overflow: visible; /* Чтобы всплывающее меню не обрезалось */
             }
-            .nav-link { display: none; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65em; padding: 10px 2px; white-space: normal; text-align: center; border-bottom: none; border-top: 2px solid transparent; }
-            .nav-link.active { border-bottom: none; border-top-color: var(--accent); }
-            /* Оставляем только 4 главные + гамбургер (добавить в HTML <div class="nav-link mobile-more">Ещё ≡</div>) */
-            .nav-link[onclick*="dashboard"], .nav-link[onclick*="skills"], .nav-link[onclick*="schedule"], .nav-link[onclick*="network"], .nav-link.mobile-more { display: flex; }
-            body { padding-bottom: 70px; } /* Отступ для контента под Bottom Bar */
-            .mobile-menu-expanded { position: fixed; bottom: 70px; background: var(--panel); width: 100%; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); z-index: 999; }
-            .mobile-menu-expanded .nav-link { display: flex; border: 1px solid var(--border); padding: 15px; }
+            
+            .nav-link { 
+                display: none; /* На мобилке прячем вообще ВСЁ */
+                flex-direction: column; align-items: center; justify-content: center; 
+                font-size: 0.65em; padding: 10px 2px; white-space: normal; text-align: center; 
+                border-bottom: none; border-top: 2px solid transparent; 
+            }
+            .nav-link.active { border-bottom: none; border-top-color: var(--accent); color: var(--accent); }
+            
+            /* Включаем обратно ТОЛЬКО 4 главные + гамбургер */
+            .nav-link[onclick*="dashboard"], 
+            .nav-link[onclick*="skills"], 
+            .nav-link[onclick*="schedule"], 
+            .nav-link[onclick*="network"], 
+            .nav-link.mobile-more { 
+                display: flex; 
+            }
+            
+            body { padding-bottom: 70px; } /* Отступ контента от Bottom Bar */
+            
+            /* Стили для всплывающего меню "Ещё" */
+            .mobile-menu-expanded { 
+                position: fixed; bottom: 70px; background: var(--panel); width: 100%; 
+                display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); 
+                z-index: 999; box-shadow: 0 -10px 20px rgba(0,0,0,0.5); 
+            }
+            .mobile-menu-expanded .nav-link { 
+                display: flex; flex-direction: row; border: 1px solid var(--border); 
+                padding: 15px; border-top: none; font-size: 0.85em; 
+            }
 
             #dash-summary, .store-grid {
                 grid-template-columns: 1fr;
