@@ -605,18 +605,19 @@
             }
 
             nav {
-                padding: 10px;
-                scrollbar-width: none; /* Прячем скроллбар в меню на Android */
+                position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
+                background-color: rgba(22, 22, 26, 0.95); backdrop-filter: blur(10px);
+                border-top: 1px solid var(--border); padding: 5px 0;
+                display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
+                padding-bottom: env(safe-area-inset-bottom);
             }
-
-                nav::-webkit-scrollbar {
-                    display: none; /* Прячем скроллбар в меню на iOS */
-                }
-
-            .nav-link {
-                padding: 10px;
-                font-size: 0.8em;
-            }
+            .nav-link { display: none; flex-direction: column; align-items: center; justify-content: center; font-size: 0.65em; padding: 10px 2px; white-space: normal; text-align: center; border-bottom: none; border-top: 2px solid transparent; }
+            .nav-link.active { border-bottom: none; border-top-color: var(--accent); }
+            /* Оставляем только 4 главные + гамбургер (добавить в HTML <div class="nav-link mobile-more">Ещё ≡</div>) */
+            .nav-link[onclick*="dashboard"], .nav-link[onclick*="skills"], .nav-link[onclick*="schedule"], .nav-link[onclick*="network"], .nav-link.mobile-more { display: flex; }
+            body { padding-bottom: 70px; } /* Отступ для контента под Bottom Bar */
+            .mobile-menu-expanded { position: fixed; bottom: 70px; background: var(--panel); width: 100%; display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); z-index: 999; }
+            .mobile-menu-expanded .nav-link { display: flex; border: 1px solid var(--border); padding: 15px; }
 
             #dash-summary, .store-grid {
                 grid-template-columns: 1fr;
@@ -635,6 +636,13 @@
             .modal-buttons {
                 flex-direction: column;
             }
+        }
+        @media (max-height: 500px) and (orientation: landscape) {
+            .hero-stats { flex-direction: row; flex-wrap: nowrap; padding: 10px; }
+            .week-grid { grid-template-columns: repeat(7, 1fr); gap: 5px; } /* Возвращаем сетку в горизонте */
+            .day-col { min-height: 200px; padding: 10px; }
+            .modal-content { max-height: 85vh; overflow-y: auto; display: grid; grid-template-columns: 1fr 1fr; gap: 15px; } /* 2 колонки для форм в модалках */
+            .modal-content h3, .modal-buttons { grid-column: 1 / -1; }
         }
         /* =========================================
            IOS КАЛЕНДАРЬ (НАПОМИНАНИЯ)
@@ -875,6 +883,7 @@
         <div class="nav-link" onclick="switchView('notes')">Заметки</div>
         <div class="nav-link" onclick="switchView('network')">Сеть 🌐</div>
         <div class="nav-link" onclick="switchView('info')">Справка</div>
+        <div class="nav-link mobile-more" onclick="toggleMobileMenu()">Ещё ≡</div>
     </nav>
 
     <main>
@@ -894,8 +903,8 @@
                 </div>
 
                 <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                    <button type="button" class="btn" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
-                    <button type="button" class="btn btn-outline" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
+                    <button class="btn" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
+                    <button class="btn btn-outline" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
                 </div>
 
                 <div id="auth-error" style="color: var(--danger); font-size: 0.85em; display: none;"></div>
@@ -1826,7 +1835,32 @@
 
         render();
         }
-
+        function toggleMobileMenu() {
+            let menu = document.querySelector('.mobile-menu-expanded');
+            if (menu) {
+                menu.remove();
+                return;
+            }
+            menu = document.createElement('div');
+            menu.className = 'mobile-menu-expanded';
+            
+            // Клонируем скрытые ссылки (те, что не отображаются в Bottom Bar)
+            const links = Array.from(document.querySelectorAll('#main-nav .nav-link:not(.mobile-more)'));
+            links.forEach(link => {
+                if (window.getComputedStyle(link).display === 'none') {
+                    let clone = link.cloneNode(true);
+                    clone.style.display = 'flex';
+                    clone.onclick = (e) => { 
+                        // Вытягиваем оригинальный onclick атрибут
+                        const action = link.getAttribute('onclick');
+                        if(action) eval(action);
+                        menu.remove(); 
+                    };
+                    menu.appendChild(clone);
+                }
+            });
+            document.body.appendChild(menu);
+        }
         function openModal(id) {
         document.getElementById(id).style.display = 'flex';
         }
@@ -1862,14 +1896,7 @@
         state.global.xp += xp;
         state.global.gold += gold;
 
-        if (state.global.xp >= 100) {
-        state.global.level += Math.floor(state.global.xp / 100);
-        state.global.xp = state.global.xp % 100;
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = state.global.maxStamina;
-        if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
-        console.log("ГЛОБАЛЬНЫЙ LEVEL UP!");
-        }
+        checkGlobalLevelUp();
 
         closeModals();
         save();
@@ -2016,7 +2043,7 @@
         4. СИСТЕМА ОПЫТА И ВЫПОЛНЕНИЯ
         ========================================= */
         function grantXP(skill, type) {
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.maxStamina = Math.min(300, 100 + ((state.global.level - 1) * 10));
         if (state.global.stamina === undefined) state.global.stamina = state.global.maxStamina;
 
         const staminaCosts = {
@@ -2047,13 +2074,8 @@
         state.global.xp += xpAmount;
         state.global.gold += goldAmount;
 
-        if (state.global.xp >= 100) {
-        state.global.level += Math.floor(state.global.xp / 100);
-        state.global.xp = state.global.xp % 100;
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = state.global.maxStamina;
-        alert("Поздравляем! ГЛОБАЛЬНЫЙ LEVEL UP! Максимальная энергия увеличена, а запас полностью восстановлен.");
-        }
+        checkGlobalLevelUp();
+        
 
         if (skill) {
         skill.xp += xpAmount;
@@ -2063,7 +2085,22 @@
         }
         }
         }
-
+        function checkGlobalLevelUp() {
+            let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
+            let leveledUp = false;
+            while (state.global.xp >= neededXP) {
+                state.global.xp -= neededXP;
+                state.global.level++;
+                neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
+                leveledUp = true;
+            }
+            if (leveledUp) {
+                state.global.maxStamina = Math.min(300, 100 + ((state.global.level - 1) * 10));
+                state.global.stamina = state.global.maxStamina;
+                if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
+                alert(`УРОВЕНЬ ПОВЫШЕН ДО ${state.global.level}! Энергия восстановлена.`);
+            }
+        }
         function calculateDegradedReward(baseReward, creationDateStr) {
         if (!creationDateStr) return baseReward;
         const creationDate = new Date(creationDateStr).getTime();
@@ -2077,72 +2114,81 @@
         return baseReward;
         }
 
+        function processNodeReward(skill, node) {
+            let rewardGiven = false;
+
+            if (node.type === 'Повторяющаяся') {
+                const today = new Date().toDateString();
+                if (node.lastCompleted !== today) {
+                    node.streak = (node.streak || 0) + 1;
+                    node.lastCompleted = today;
+                    grantXP(skill, node.type);
+                    rewardGiven = true;
+                }
+            } else if (!node.rewardCollected) {
+                grantXP(skill, node.type || 'Краткосрочная');
+                node.rewardCollected = true;
+                rewardGiven = true;
+
+                if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
+                state.user.tasksCompletedForLoot++;
+                if (state.user.tasksCompletedForLoot >= 5) {
+                    state.lootboxes = (state.lootboxes || 0) + 1;
+                    state.user.tasksCompletedForLoot = 0;
+                    if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]);
+                }
+            }
+
+            if (rewardGiven && node.type !== 'Босс') {
+                const activeBoss = skill.goals.find(g => g.type === 'Босс' && !g.done);
+                if (activeBoss) {
+                    const damage = REWARDS[node.type]?.xp || 10;
+                    activeBoss.hp -= (flow.active ? damage * 2 : damage);
+                    if (activeBoss.hp <= 0) {
+                        activeBoss.hp = 0;
+                        activeBoss.done = true;
+                        grantXP(skill, 'Долгосрочная');
+                        grantXP(skill, 'Долгосрочная');
+                        alert(`⚔️ БОСС "${activeBoss.name}" ПОВЕРЖЕН! Огромная награда получена!`);
+                    } else {
+                        console.log(`Нанесен урон боссу! Осталось: ${activeBoss.hp}`);
+                    }
+                }
+            }
+        }
+
         function toggleNodeDone(skillId, nodeId) {
-        const skill = state.skills.find(s => s.id === skillId);
-        const node = skill.goals.find(n => n.id === nodeId);
+            const skill = state.skills.find(s => s.id === skillId);
+            const node = skill.goals.find(n => n.id === nodeId);
 
-        const now = Date.now();
-        if (node.lastToggled && (now - node.lastToggled < 1000)) return;
-        node.lastToggled = now;
-
-        node.done = !node.done;
-
-        if ('vibrate' in navigator) {
-        node.done ? navigator.vibrate(50) : navigator.vibrate(20);
-        }
-
-        if (node.done) {
-        let rewardGiven = false;
-
-        if (node.type === 'Повторяющаяся') {
-        const today = new Date().toDateString();
-        if (node.lastCompleted !== today) {
-        node.streak = (node.streak || 0) + 1;
-        node.lastCompleted = today;
-        grantXP(skill, node.type);
-        rewardGiven = true;
-        }
-        } else if (!node.rewardCollected) {
-        grantXP(skill, node.type || 'Краткосрочная');
-        node.rewardCollected = true;
-        rewardGiven = true;
-
-        if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
-        state.user.tasksCompletedForLoot++;
-        if (state.user.tasksCompletedForLoot >= 5) {
-        state.lootboxes = (state.lootboxes || 0) + 1;
-        state.user.tasksCompletedForLoot = 0;
-        if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]);
-        }
-        }
-
-        if (rewardGiven && node.type !== 'Босс') {
-        const activeBoss = skill.goals.find(g => g.type === 'Босс' && !g.done);
-        if (activeBoss) {
-        const damage = REWARDS[node.type]?.xp || 10;
-        activeBoss.hp -= (flow.active ? damage * 2 : damage);
-        if (activeBoss.hp <= 0) {
-        activeBoss.hp = 0;
-        activeBoss.done = true;
-        grantXP(skill, 'Долгосрочная');
-        grantXP(skill, 'Долгосрочная');
-        alert(`⚔️ БОСС "${activeBoss.name}" ПОВЕРЖЕН! Огромная награда получена!`);
-        } else {
-        console.log(`Нанесен урон боссу! Осталось: ${activeBoss.hp}`);
-        }
-        }
-        }
-
-        } else {
-        if (node.type === 'Повторяющаяся') {
-        const today = new Date().toDateString();
-        if (node.lastCompleted === today) {
-        node.streak = Math.max(0, (node.streak || 1) - 1);
-        node.lastCompleted = null;
-        }
-        }
-        }
-        save();
+            if (node.isCompleting) { clearTimeout(node.timer); node.isCompleting = false; render(); return; } 
+            
+            if (!node.done) {
+                node.isCompleting = true;
+                render(); 
+                node.timer = setTimeout(() => {
+                    node.isCompleting = false;
+                    node.done = true;
+                    if ('vibrate' in navigator) navigator.vibrate(50);
+                    processNodeReward(skill, node); 
+                    save(); 
+                    render();
+                }, 3000); // 3 секунды на отмену
+                return;
+            }
+            
+            // Откат выполнения
+            node.done = false;
+            if ('vibrate' in navigator) navigator.vibrate(20);
+            if (node.type === 'Повторяющаяся') {
+                const today = new Date().toDateString();
+                if (node.lastCompleted === today) {
+                    node.streak = Math.max(0, (node.streak || 1) - 1);
+                    node.lastCompleted = null;
+                }
+            }
+            save();
+            render();
         }
 
         /* =========================================
@@ -3012,12 +3058,8 @@
         state.global.gold += ach.gold;
         state.global.xp += ach.xp;
 
-        if (state.global.xp >= 100) {
-        state.global.level += Math.floor(state.global.xp / 100);
-        state.global.xp = state.global.xp % 100;
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = state.global.maxStamina;
-        }
+        checkGlobalLevelUp();
+       
 
         save();
         renderAchievements();
@@ -3045,12 +3087,7 @@
         });
 
         if (changed) {
-        if (state.global.xp >= 100) {
-        state.global.level += Math.floor(state.global.xp / 100);
-        state.global.xp = state.global.xp % 100;
-        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-        state.global.stamina = state.global.maxStamina;
-        }
+        checkGlobalLevelUp();
         renderAchievements();
         }
         }
@@ -3297,6 +3334,7 @@
         </div>
         <div style="display:flex; gap:8px;">
         ${n.done ? `<button class="btn-outline" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
+        <button class="btn-outline" style="padding:4px 8px; font-size:0.8em; border-color: var(--accent); color: var(--accent);" onclick="openTaskModal('date', new Date().toISOString().split('T')[0]); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
         <button class="btn-outline" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
         </div>
         </div>
@@ -3806,6 +3844,12 @@
         `).join('');
         });
         }
+        // Закрытие модалок по клику на фон
+        document.querySelectorAll('.modal').forEach(modal => {
+            modal.addEventListener('click', function(e) {
+                if (e.target === this) closeModals();
+            });
+        });
     </script>
     <script>
         if ('serviceWorker' in navigator) {
