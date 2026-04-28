@@ -1356,6 +1356,7 @@
             <input type="hidden" id="editTaskId">
             <input type="hidden" id="editTaskOldType">
             <input type="hidden" id="editTaskOldKey">
+            <input type="hidden" id="taskGoalId">
 
             <label>Тип события</label>
             <select id="taskMode" onchange="toggleTaskModeUI()">
@@ -2336,30 +2337,26 @@
         }
 
         function toggleTaskDone(type, key, id, dateStr = '') {
-        if (!state.completedTemplates) state.completedTemplates = {};
+            const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
+            const task = taskList.find(t => t.id === id);
+            if(!task) return;
 
-        if (dateStr && type === 'template') {
-        if (!state.completedTemplates[dateStr]) state.completedTemplates[dateStr] = [];
+            task.done = !task.done;
 
-        const index = state.completedTemplates[dateStr].indexOf(id);
-        if (index > -1) {
-        state.completedTemplates[dateStr].splice(index, 1);
-        } else {
-        state.completedTemplates[dateStr].push(id);
-        const task = state.schedule[key].find(t => t.id === id);
-        const skill = state.skills.find(s => s.id === task.skillId);
-        if(skill) grantXP(skill, 'Повторяющаяся');
-        }
-        } else {
-        const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
-        const task = taskList.find(t => t.id === id);
-        if(task) task.done = !task.done;
-        }
-        save();
+            // Если задача привязана к цели — выполняем/отменяем и цель тоже
+            if (task.goalId && task.skillId) {
+                const skill = state.skills.find(s => s.id === task.skillId);
+                const node = skill.goals.find(g => g.id === task.goalId);
+                if (node && node.done !== task.done) {
+                    toggleNodeDone(task.skillId, task.goalId);
+                }
+            }
+            save();
         }
 
-        function openTaskModal(type = null, key = null, taskId = null) {
-        if (!state.calendar) state.calendar = {};
+        function openTaskModal(type = null, key = null, taskId = null, goalId = null) {
+            if (!state.calendar) state.calendar = {};
+            document.getElementById('taskGoalId').value = goalId || ''; // Сохраняем связь
 
         const skillSelect = document.getElementById('taskSkillId');
         skillSelect.innerHTML = '<option value="">Без навыка (Обычное дело)</option>';
@@ -2447,7 +2444,12 @@
         if (!confirm(`⚠️ Наложение! В это время у вас запланировано: "${conflict.title}". Всё равно сохранить?`)) return;
         }
 
-        const taskObj = { id, time, duration, title, skillId: document.getElementById('taskSkillId').value, done: false };
+        const taskObj = { 
+            id, time, duration, title, 
+            skillId: document.getElementById('taskSkillId').value, 
+            goalId: document.getElementById('taskGoalId').value, // Привязываем ID цели
+            done: false 
+        };
 
         const oldType = document.getElementById('editTaskOldType').value;
         const oldKey = document.getElementById('editTaskOldKey').value;
@@ -3334,7 +3336,7 @@
         </div>
         <div style="display:flex; gap:8px;">
         ${n.done ? `<button class="btn-outline" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-        <button class="btn-outline" style="padding:4px 8px; font-size:0.8em; border-color: var(--accent); color: var(--accent);" onclick="openTaskModal('date', new Date().toISOString().split('T')[0]); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
+        <button class="btn-outline" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
         <button class="btn-outline" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
         </div>
         </div>
