@@ -4,6 +4,10 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RPG-Life OS | Focus & Flow</title>
+    <link rel="manifest" href="manifest.json">
+    <meta name="theme-color" content="#0d0d0f">
+    <link rel="apple-touch-icon" href="icon-192.png">
+    <meta name="apple-mobile-web-app-status-bar" content="#0d0d0f">
     <meta name="mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-capable" content="yes">
     <meta name="apple-mobile-web-app-status-bar-style" content="black-translucent">
@@ -1783,37 +1787,37 @@
         2. НАВИГАЦИЯ И ИНТЕРФЕЙС
         ========================================= */
         function switchView(viewId) {
-            document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
-            document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-            document.getElementById(viewId).classList.add('active');
+        document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
+        document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
+        document.getElementById(viewId).classList.add('active');
 
-            const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
-            if(activeLink) {
-                activeLink.classList.add('active');
-            }
+        const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
+        if(activeLink) {
+        activeLink.classList.add('active');
+        }
 
-            if(viewId !== 'skill-tree-view') {
-                activeTreeSkillId = null;
-            }
+        if(viewId !== 'skill-tree-view') {
+        activeTreeSkillId = null;
+        }
 
-            // === ТРИГГЕРЫ ОТРИСОВКИ ДЛЯ ВКЛАДОК ===
-            if(viewId === 'network') {
-                loadLeaderboard();
-                renderSharedHabits();
-            }
-            if(viewId === 'achievements') renderAchievements(); // Починит пустой список
-            if(viewId === 'analytics') renderAnalytics();
-            if(viewId === 'notes') renderNotes();
-            if(viewId === 'lootbox') updateLootboxUI();
+        // === ТРИГГЕРЫ ОТРИСОВКИ ДЛЯ ВКЛАДОК ===
+        if(viewId === 'network') {
+        loadLeaderboard();
+        renderSharedHabits();
+        }
+        if(viewId === 'achievements') renderAchievements(); // Починит пустой список
+        if(viewId === 'analytics') renderAnalytics();
+        if(viewId === 'notes') renderNotes();
+        if(viewId === 'lootbox') updateLootboxUI();
 
-            if (document.getElementById('userNickname') && state.user?.nickname) {
-                document.getElementById('userNickname').value = state.user.nickname;
-            }
-            if (document.getElementById('my-sync-id') && state.network?.syncId) {
-                document.getElementById('my-sync-id').innerText = state.network.syncId.slice(0, 8) + '...';
-            }
+        if (document.getElementById('userNickname') && state.user?.nickname) {
+        document.getElementById('userNickname').value = state.user.nickname;
+        }
+        if (document.getElementById('my-sync-id') && state.network?.syncId) {
+        document.getElementById('my-sync-id').innerText = state.network.syncId.slice(0, 8) + '...';
+        }
 
-            render();
+        render();
         }
 
         function openModal(id) {
@@ -2900,44 +2904,44 @@
 
         // Базовые уникальные ачивки
         const AUTO_ACHIEVEMENTS = [
-            { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
-            { id: 'burnout', icon: '🔥', title: 'Испытание пределов', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
-            { id: 'first_boss', icon: '👹', title: 'Убийца Чудовищ', desc: 'Победить своего первого Рейдового Босса.', auto: true, condition: () => state.analytics?.archive?.some(a => a.type === 'Босс') }
+        { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
+        { id: 'burnout', icon: '🔥', title: 'Испытание пределов', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
+        { id: 'first_boss', icon: '👹', title: 'Убийца Чудовищ', desc: 'Победить своего первого Рейдового Босса.', auto: true, condition: () => state.analytics?.archive?.some(a => a.type === 'Босс') }
         ];
 
         // Генерация: Уровни (20 ачивок)
         for (let i = 5; i <= 100; i += 5) {
-            AUTO_ACHIEVEMENTS.push({
-                id: `lvl_${i}`, icon: '🌟', title: `Пробуждение Силы: Ур. ${i}`, desc: `Достичь ${i}-го глобального уровня.`, auto: true,
-                condition: () => state.global.level >= i
-            });
+        AUTO_ACHIEVEMENTS.push({
+        id: `lvl_${i}`, icon: '🌟', title: `Пробуждение Силы: Ур. ${i}`, desc: `Достичь ${i}-го глобального уровня.`, auto: true,
+        condition: () => state.global.level >= i
+        });
         }
 
         // Генерация: Богатство (10 ачивок)
         const goldTiers = [500, 1000, 5000, 10000, 50000, 100000, 500000, 1000000];
         goldTiers.forEach(t => {
-            AUTO_ACHIEVEMENTS.push({
-                id: `gold_${t}`, icon: '💰', title: `Магнат x${t}`, desc: `Накопить ${t} золота единовременно.`, auto: true,
-                condition: () => state.global.gold >= t
-            });
+        AUTO_ACHIEVEMENTS.push({
+        id: `gold_${t}`, icon: '💰', title: `Магнат x${t}`, desc: `Накопить ${t} золота единовременно.`, auto: true,
+        condition: () => state.global.gold >= t
+        });
         });
 
         // Генерация: Выполненные задачи (15 ачивок)
         const taskTiers = [10, 50, 100, 250, 500, 1000, 2500, 5000, 10000];
         taskTiers.forEach(t => {
-            AUTO_ACHIEVEMENTS.push({
-                id: `tasks_${t}`, icon: '🎯', title: `Палач Задач x${t}`, desc: `Отправить ${t} целей в Архив (Зал Славы).`, auto: true,
-                condition: () => (state.analytics?.archive?.length || 0) >= t
-            });
+        AUTO_ACHIEVEMENTS.push({
+        id: `tasks_${t}`, icon: '🎯', title: `Палач Задач x${t}`, desc: `Отправить ${t} целей в Архив (Зал Славы).`, auto: true,
+        condition: () => (state.analytics?.archive?.length || 0) >= t
+        });
         });
 
         // Генерация: Часы в Потоке (10 ачивок)
         const flowHoursTiers = [1, 5, 10, 50, 100, 250, 500, 1000];
         flowHoursTiers.forEach(t => {
-            AUTO_ACHIEVEMENTS.push({
-                id: `flow_${t}`, icon: '🌊', title: `Повелитель Времени (${t} ч.)`, desc: `Провести в состоянии Потока ${t} часов.`, auto: true,
-                condition: () => (state.analytics?.totalFlowMinutes || 0) >= (t * 60)
-            });
+        AUTO_ACHIEVEMENTS.push({
+        id: `flow_${t}`, icon: '🌊', title: `Повелитель Времени (${t} ч.)`, desc: `Провести в состоянии Потока ${t} часов.`, auto: true,
+        condition: () => (state.analytics?.totalFlowMinutes || 0) >= (t * 60)
+        });
         });
 
         function saveCustomAchievement() {
@@ -2974,54 +2978,54 @@
         }
 
         function unlockManualAchievement(id) {
-            if (!state.unlockedAchievements.includes(id)) {
-                const ach = state.customAchievements.find(a => a.id === id);
-                if (ach && confirm(`Подтверждаешь выполнение: ${ach.title}?`)) {
-                    state.unlockedAchievements.push(id);
-                    state.global.gold += ach.gold;
-                    state.global.xp += ach.xp;
+        if (!state.unlockedAchievements.includes(id)) {
+        const ach = state.customAchievements.find(a => a.id === id);
+        if (ach && confirm(`Подтверждаешь выполнение: ${ach.title}?`)) {
+        state.unlockedAchievements.push(id);
+        state.global.gold += ach.gold;
+        state.global.xp += ach.xp;
 
-                    if (state.global.xp >= 100) {
-                        state.global.level += Math.floor(state.global.xp / 100);
-                        state.global.xp = state.global.xp % 100;
-                        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-                        state.global.stamina = state.global.maxStamina;
-                    }
+        if (state.global.xp >= 100) {
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
+        }
 
-                    save();
-                    renderAchievements();
-                    alert(`🏆 ДОСТИЖЕНИЕ ПОЛУЧЕНО!\nНаграда: ${ach.gold} Золота и ${ach.xp} XP.`);
-                    
-                    // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
-                    broadcastAchievement(ach.title, ach.icon); 
-                }
-            }
+        save();
+        renderAchievements();
+        alert(`🏆 ДОСТИЖЕНИЕ ПОЛУЧЕНО!\nНаграда: ${ach.gold} Золота и ${ach.xp} XP.`);
+
+        // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
+        broadcastAchievement(ach.title, ach.icon);
+        }
+        }
         }
 
         function checkAutoAchievements() {
-            let changed = false;
-            AUTO_ACHIEVEMENTS.forEach(ach => {
-                if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
-                    state.unlockedAchievements.push(ach.id);
-                    state.global.gold += 50;
-                    state.global.xp += 100;
-                    changed = true;
-                    alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
-                    
-                    // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
-                    broadcastAchievement(ach.title, ach.icon);
-                }
-            });
+        let changed = false;
+        AUTO_ACHIEVEMENTS.forEach(ach => {
+        if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
+        state.unlockedAchievements.push(ach.id);
+        state.global.gold += 50;
+        state.global.xp += 100;
+        changed = true;
+        alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
 
-            if (changed) {
-                if (state.global.xp >= 100) {
-                    state.global.level += Math.floor(state.global.xp / 100);
-                    state.global.xp = state.global.xp % 100;
-                    state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-                    state.global.stamina = state.global.maxStamina;
-                }
-                renderAchievements();
-            }
+        // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
+        broadcastAchievement(ach.title, ach.icon);
+        }
+        });
+
+        if (changed) {
+        if (state.global.xp >= 100) {
+        state.global.level += Math.floor(state.global.xp / 100);
+        state.global.xp = state.global.xp % 100;
+        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+        state.global.stamina = state.global.maxStamina;
+        }
+        renderAchievements();
+        }
         }
 
         function renderAchievements() {
@@ -3059,47 +3063,47 @@
         const APP_BOOT_TIME = Date.now(); // Чтобы не показывать старые ачивки при загрузке
 
         function listenToGlobalEvents() {
-            if (!document.getElementById('toast-container')) {
-                const tc = document.createElement('div');
-                tc.id = 'toast-container';
-                document.body.appendChild(tc);
-            }
+        if (!document.getElementById('toast-container')) {
+        const tc = document.createElement('div');
+        tc.id = 'toast-container';
+        document.body.appendChild(tc);
+        }
 
-            // Слушаем сервер на предмет новых событий (только тех, что произошли после запуска)
-            database.ref('global_events').orderByChild('timestamp').startAt(APP_BOOT_TIME).on('child_added', snap => {
-                const event = snap.val();
-                if (event) {
-                    showGlobalToast(event.playerName, event.achievementName, event.icon);
-                }
-            });
+        // Слушаем сервер на предмет новых событий (только тех, что произошли после запуска)
+        database.ref('global_events').orderByChild('timestamp').startAt(APP_BOOT_TIME).on('child_added', snap => {
+        const event = snap.val();
+        if (event) {
+        showGlobalToast(event.playerName, event.achievementName, event.icon);
+        }
+        });
         }
 
         function showGlobalToast(playerName, achievementName, icon) {
-            const container = document.getElementById('toast-container');
-            const toast = document.createElement('div');
-            toast.className = 'global-toast';
-            toast.innerHTML = `
-                <div class="icon">${icon}</div>
-                <div>
-                    <div class="meta">Глобальное достижение</div>
-                    <div><span class="player">${playerName}</span> получает: <br><span class="ach-name">${achievementName}</span>!</div>
-                </div>
-            `;
-            container.appendChild(toast);
-            setTimeout(() => toast.remove(), 6000); // Автоудаление из DOM
+        const container = document.getElementById('toast-container');
+        const toast = document.createElement('div');
+        toast.className = 'global-toast';
+        toast.innerHTML = `
+        <div class="icon">${icon}</div>
+        <div>
+        <div class="meta">Глобальное достижение</div>
+        <div><span class="player">${playerName}</span> получает: <br><span class="ach-name">${achievementName}</span>!</div>
+        </div>
+        `;
+        container.appendChild(toast);
+        setTimeout(() => toast.remove(), 6000); // Автоудаление из DOM
         }
 
         function broadcastAchievement(achTitle, icon) {
-            if (!state.network || !state.network.syncId) return;
-            const myName = state.user?.nickname || 'Анонимный Сталкер';
-            
-            // Отправляем событие всем игрокам
-            database.ref('global_events').push({
-                playerName: myName,
-                achievementName: achTitle,
-                icon: icon,
-                timestamp: firebase.database.ServerValue.TIMESTAMP
-            });
+        if (!state.network || !state.network.syncId) return;
+        const myName = state.user?.nickname || 'Анонимный Сталкер';
+
+        // Отправляем событие всем игрокам
+        database.ref('global_events').push({
+        playerName: myName,
+        achievementName: achTitle,
+        icon: icon,
+        timestamp: firebase.database.ServerValue.TIMESTAMP
+        });
         }
         /* =========================================
         ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
@@ -3736,6 +3740,19 @@
         <span style="flex: 1; text-align: right;">${p.xp} / 100</span>
         </div>
         `).join('');
+        });
+        }
+    </script>
+    <script>
+        if ('serviceWorker' in navigator) {
+        window.addEventListener('load', () => {
+        navigator.serviceWorker.register('sw.js')
+        .then(registration => {
+        console.log('ServiceWorker успешно зарегистрирован с областью видимости: ', registration.scope);
+        })
+        .catch(error => {
+        console.log('Ошибка регистрации ServiceWorker: ', error);
+        });
         });
         }
     </script>
