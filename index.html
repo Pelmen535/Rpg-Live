@@ -245,11 +245,74 @@
             }
             
             /* Контейнеры с кнопками (особенно модалки) */
-            .modal-buttons, .flex-gap-mobile {
-                display: flex;
-                flex-direction: column;
-                gap: 12px !important; /* Безопасное расстояние между touch-мишенями */
+            
+        }
+        /* =========================================
+        LAYOUT SYSTEM: BUTTON CONTAINERS
+        ========================================= */
+
+        /* Универсальный класс для всех групп кнопок. 
+        Замени им инлайн стили style="display: flex; gap: 10px;"
+        */
+        .btn-group, 
+        .modal-buttons, 
+        .auth-actions, 
+        .store-actions {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 12px;
+            margin-bottom: 24px; /* Отступ от кнопок до следующего блока контента */
+            width: 100%;
+        }
+
+        /* Специальный разделитель, если группы кнопок идут подряд */
+        .btn-group + .btn-group {
+            border-top: 1px solid var(--border);
+            padding-top: 16px;
+        }
+
+        /* === МОБИЛЬНАЯ ВЕРСИЯ (до 768px) === */
+        @media (max-width: 768px) {
+            .btn-group, 
+            .modal-buttons, 
+            .auth-actions, 
+            .store-actions {
+                flex-direction: column; /* Кнопки встают друг под другом */
+                gap: 12px; /* Расстояние, чтобы не слипались */
             }
+
+            /* Кнопки в группе на мобилке всегда на всю ширину для удобства тапа */
+            .btn-group .btn, 
+            .modal-buttons .btn, 
+            .auth-actions .btn, 
+            .store-actions .btn {
+                width: 100%;
+                min-width: 44px; /* Защита от схлопывания */
+            }
+        }
+
+        /* === ДЕСКТОП ВЕРСИЯ (от 1024px) === */
+        @media (min-width: 1024px) {
+            .btn-group, 
+            .modal-buttons, 
+            .auth-actions, 
+            .store-actions {
+                flex-direction: row; /* Кнопки в ряд */
+                justify-content: flex-start;
+                align-items: center;
+                gap: 16px; /* Больше пространства на широком экране */
+                width: auto;
+            }
+
+            .btn-group .btn, 
+            .modal-buttons .btn, 
+            .auth-actions .btn, 
+            .store-actions .btn {
+                width: auto; /* Кнопки принимают размер контента */
+            }
+
+            /* Исправление сетки: использование gap вместо margin 
+            гарантирует отсутствие лишних отступов у последнего элемента */
         }
         .canvas-node-wrap {
             position: absolute;
@@ -990,7 +1053,7 @@
                     <input type="password" id="auth-password" placeholder="••••••••" style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
                 </div>
 
-                <div style="display: flex; gap: 10px; margin-bottom: 15px;">
+                <div class="auth-actions">
                     <button class="btn btn-primary" style="flex: 1;" onclick="loginUser()" id="btnLogin">Войти</button>
                     <button class="btn btn-secondary" style="flex: 1;" onclick="registerUser()" id="btnRegister">Регистрация</button>
                 </div>
@@ -1035,7 +1098,7 @@
                     </div>
                 </div>
             </div>
-            <div style="display: flex; gap: 15px; margin-bottom: 30px;">
+            <div class="btn-group">
                 <button class="btn btn-secondary" onclick="manualEvent()">✨ Добавить опыт за событие</button>
                 <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт данных</button>
                 <button class="btn btn-secondary" onclick="importData()">📂 Импорт данных</button>
@@ -1079,7 +1142,7 @@
 
             <div style="display: flex; justify-content: space-between; align-items: center; margin-top: 40px; margin-bottom: 20px;">
                 <h3 style="color: var(--flow); margin: 0;">Кровные договоры (Групповые стрики)</h3>
-                <div style="display: flex; gap: 10px;">
+                <div class="btn-group">
                     <button class="btn btn-flow-action" onclick="createSharedHabit()">+ Создать</button>
                     <button class="btn btn-secondary" onclick="joinSharedHabit()">Присоединиться</button>
                 </div>
@@ -1152,7 +1215,7 @@
                     <button class="btn btn-secondary" style="padding: 5px 15px; margin-right: 15px;" onclick="switchView('skills')">← Назад</button>
                     <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция: Навык</span>
                 </div>
-                <div style="display: flex; gap: 10px;">
+                <div class="btn-group">
                     <button class="btn btn-primary" onclick="addMindmapNode()">+ Создать узел</button>
                 </div>
             </div>
@@ -1401,7 +1464,7 @@
             </label>
             <label>Заметки</label>
             <textarea id="goalNotes" placeholder="Детали, ссылки, шаги..."></textarea>
-            <div class="modal-buttons" style="display:flex; gap:10px; margin-top:20px;">
+            <div class="modal-buttons" style="margin-top:20px;">
                 <button class="btn btn-primary" onclick="saveGoal()">Сохранить</button>
                 <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
                 <button class="btn btn-danger" onclick="deleteGoal()">Удалить</button>
@@ -1431,7 +1494,7 @@
             <input type="text" id="newNoteTitle" placeholder="Тема заметки">
             <label>Текст заметки</label>
             <textarea id="newNoteContent" placeholder="Пишите сюда..."></textarea>
-            <div style="display:flex; gap:15px; margin-top:25px;">
+            <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:1" onclick="saveNewNote()">Сохранить</button>
                 <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
@@ -1489,7 +1552,7 @@
             </select>
             <label>Название / Описание</label>
             <input type="text" id="taskTitle" placeholder="Например: Пара в университете">
-            <div style="display:flex; gap:15px; margin-top:25px;">
+            <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:2" onclick="saveTask()">Сохранить</button>
                 <button class="btn btn-danger" style="flex:1" id="btnDeleteTask" onclick="deleteTask()">Удалить</button>
                 <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
@@ -1512,7 +1575,7 @@
                     <input type="number" id="storeStamina" value="30" title="Сколько стамины вернет этот отдых (от 0 до 100)">
                 </div>
             </div>
-            <div style="display:flex; gap:15px; margin-top:25px;">
+            <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:1" onclick="saveStoreItem()">Добавить</button>
                 <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
@@ -1533,7 +1596,7 @@
                     <input type="number" id="manualGold" value="5">
                 </div>
             </div>
-            <div style="display:flex; gap:15px; margin-top:25px;">
+            <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:1" onclick="saveManualEvent()">Начислить</button>
                 <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
@@ -1578,7 +1641,7 @@
                     <input type="number" id="achGold" value="200">
                 </div>
             </div>
-            <div style="display:flex; gap:15px; margin-top:25px;">
+            <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:1" onclick="saveCustomAchievement()">Создать</button>
                 <button class="btn btn-secondary" style="flex:1" onclick="closeModals()">Отмена</button>
             </div>
@@ -3546,7 +3609,7 @@
         <h3 style="margin:5px 0;">${i.name}</h3>
         <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
         ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
-        <div style="display:flex; gap:10px; margin-top:auto;">
+        <div class="store-actions">
         <button class="btn btn-primary" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
         <button class="btn btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
         </div>
@@ -3831,7 +3894,7 @@
         <div style="font-size: 1.2em; font-weight: bold; color: var(--flow);">🔥 ${habit.streak || 0}</div>
         </div>
         <div style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">${membersHtml}</div>
-        <div style="display: flex; gap: 10px;">
+        <div class="btn-group">
         ${iDidIt ?
         `<button class="btn btn-secondary" disabled style="flex: 2; opacity: 0.5; color: var(--success); border-color: var(--success);">Выполнено</button>` :
         `<button class="btn btn-flow-action" style="flex: 2;" onclick="toggleSharedHabit('${habit.id}')">Отметиться</button>`
