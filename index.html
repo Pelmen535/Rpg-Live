@@ -444,7 +444,20 @@
             text-transform: uppercase;
             letter-spacing: 2px;
         }
-
+        /* Цвета для типов целей */
+        .type-badge {
+            font-size: 0.7em;
+            padding: 2px 8px;
+            border-radius: 4px;
+            text-transform: uppercase;
+            font-weight: bold;
+            margin-right: 8px;
+        }
+        .type-short { background: rgba(0, 242, 255, 0.1); color: var(--accent); border: 1px solid var(--accent); }
+        .type-mid { background: rgba(187, 134, 252, 0.1); color: var(--xp-color); border: 1px solid var(--xp-color); }
+        .type-long { background: rgba(255, 184, 0, 0.1); color: var(--gold); border: 1px solid var(--gold); }
+        .type-habit { background: rgba(0, 204, 102, 0.1); color: var(--success); border: 1px solid var(--success); }
+        .type-boss { background: rgba(255, 68, 68, 0.1); color: var(--danger); border: 1px solid var(--danger); }
         .hero-xp-bar {
             width: 100%;
             height: 16px;
@@ -2378,34 +2391,40 @@
             const skill = state.skills.find(s => s.id === skillId);
             const node = skill.goals.find(n => n.id === nodeId);
 
-            if (node.isCompleting) { clearTimeout(node.timer); node.isCompleting = false; render(); return; } 
-            
-            if (!node.done) {
-                node.isCompleting = true;
-                render(); 
-                node.timer = setTimeout(() => {
-                    node.isCompleting = false;
-                    node.done = true;
-                    if ('vibrate' in navigator) navigator.vibrate(50);
-                    processNodeReward(skill, node); 
-                    save(); 
-                    render();
-                }, 3000); // 3 секунды на отмену
+            // Если это Босс — урон наносится автоматически другими задачами, 
+            // прямой клик обычно не требуется, но оставим стандартную логику без подтверждения.
+            if (node.type === 'Босс') {
+                node.done = !node.done;
+                save();
                 return;
             }
-            
-            // Откат выполнения
-            node.done = false;
-            if ('vibrate' in navigator) navigator.vibrate(20);
-            if (node.type === 'Повторяющаяся') {
-                const today = new Date().toDateString();
-                if (node.lastCompleted === today) {
-                    node.streak = Math.max(0, (node.streak || 1) - 1);
-                    node.lastCompleted = null;
+
+            // Если мы снимаем галочку — подтверждение не нужно
+            if (node.done) {
+                node.done = false;
+                if (node.type === 'Повторяющаяся') {
+                    const today = new Date().toDateString();
+                    if (node.lastCompleted === today) {
+                        node.streak = Math.max(0, (node.streak || 1) - 1);
+                        node.lastCompleted = null;
+                    }
                 }
+                save();
+                return;
             }
-            save();
-            render();
+
+            // Если ставим галочку — вызываем КРАСИВОЕ подтверждение
+            let confirmMsg = `Вы действительно выполнили цель: "${node.name}"?`;
+            if (node.type === 'Долгосрочная') {
+                confirmMsg = `Внимание! Это долгосрочная цель. Вы подтверждаете, что достигли финального результата (например, исправление до 15°)?`;
+            }
+
+            customConfirm("Подтверждение выполнения", confirmMsg, () => {
+                node.done = true;
+                if ('vibrate' in navigator) navigator.vibrate(50);
+                processNodeReward(skill, node); 
+                save(); 
+            });
         }
 
         /* =========================================
@@ -3642,7 +3661,10 @@
                                 <div style="flex: 1 1 200px;">
                                     <div style="display:flex; align-items:center; gap:10px;">
                                         <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
-                                        <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+                                        <div>
+                                            <span class="type-badge ${getTypeClass(n.type)}">${n.type}</span>
+                                            <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+                                        </div>
                                     </div>
                                     ${extraContent}
                                 </div>
@@ -4423,6 +4445,16 @@
         }
         function exportSkillTemplate() {
             if (activeTreeSkillId) exportSkillById(activeTreeSkillId);
+        }
+        function getTypeClass(type) {
+            switch(type) {
+                case 'Краткосрочная': return 'type-short';
+                case 'Среднесрочная': return 'type-mid';
+                case 'Долгосрочная': return 'type-long';
+                case 'Повторяющаяся': return 'type-habit';
+                case 'Босс': return 'type-boss';
+                default: return '';
+            }
         }
     </script>
     <script>
