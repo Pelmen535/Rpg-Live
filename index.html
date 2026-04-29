@@ -327,10 +327,10 @@
         }
         .node-control-btn {
             position: absolute;
-            width: 20px;
-            height: 20px;
-            background: #222;
-            border: 1px solid #444;
+            width: 26px; /* Сделали их чуть больше для удобства */
+            height: 26px;
+            background: #2a2a35;
+            border: 2px solid #444;
             border-radius: 50%;
             display: flex;
             justify-content: center;
@@ -338,44 +338,72 @@
             font-size: 12px;
             cursor: pointer;
             color: white;
-            transition: 0.2s;
-            opacity: 0; /* Прячем по умолчанию */
+            opacity: 0;
+            /* Пружинистая анимация выезда */
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275); 
+            z-index: 10;
         }
 
         .graph-node:hover .node-control-btn {
-            opacity: 1; /* Показываем при наведении на узел */
+            opacity: 1; /* Показываем при наведении */
         }
 
         .node-control-btn:hover {
             background: var(--accent);
+            border-color: #fff;
             color: black;
+            transform: scale(1.2) !important; /* Увеличивается при наведении мыши на саму кнопку */
         }
 
+        /* Позиции: сначала спрятаны (scale 0.5), при ховере выезжают (scale 1) */
         .node-control-btn.left {
-            left: -10px;
-            top: 15px;
+            top: 50%;
+            left: 0;
+            transform: translate(0, -50%) scale(0.5);
+        }
+        .graph-node:hover .node-control-btn.left {
+            transform: translate(-60%, -50%) scale(1);
         }
 
         .node-control-btn.right {
-            right: -10px;
-            top: 15px;
+            top: 50%;
+            right: 0;
+            transform: translate(0, -50%) scale(0.5);
+        }
+        .graph-node:hover .node-control-btn.right {
+            transform: translate(60%, -50%) scale(1);
+        }
+
+        .node-control-btn.top {
+            left: 50%;
+            top: 0;
+            transform: translate(-50%, 0) scale(0.5);
+        }
+        .graph-node:hover .node-control-btn.top {
+            transform: translate(-50%, -60%) scale(1);
         }
 
         .node-control-btn.bottom {
-            bottom: -10px;
             left: 50%;
-            transform: translateX(-50%);
+            bottom: 0;
+            transform: translate(-50%, 0) scale(0.5);
+        }
+        .graph-node:hover .node-control-btn.bottom {
+            transform: translate(-50%, 60%) scale(1);
         }
 
-            .node-control-btn.bottom.active {
-                background: var(--success);
-                border-color: white;
-                opacity: 1;
-            }
+        /* Выполненный узел */
+        .node-control-btn.bottom.active {
+            background: var(--success);
+            border-color: white;
+            opacity: 1;
+            /* Галочка выполненного узла торчит всегда */
+            transform: translate(-50%, 60%) scale(1); 
+        }
 
         .graph-node.done {
             background: rgba(0, 204, 102, 0.1);
-            border-style: solid;
+            border-style: dashed;
         }
 
         
@@ -517,15 +545,15 @@
             color: #ffffff;
             font-weight: bold;
             text-align: center;
-            transition: border-color 0.2s ease;
+            transition: border-color 0.2s ease, transform 0.2s ease;
             touch-action: none;
-            overflow: hidden; 
+            /* УБРАЛИ overflow: hidden, чтобы кнопки могли выезжать за края */
         }
 
-            .graph-node:hover {
-                border-color: #ffffff;
-            }
-
+        .graph-node:hover {
+            border-color: #ffffff;
+            transform: scale(1.02); /* Сам узел тоже слегка увеличивается */
+        }
         /* =========================================
            РЕЖИМ ПОТОКА (FLOW)
         ========================================= */
@@ -2944,7 +2972,7 @@
                 circle.className = `graph-node ${node.done ? 'done' : ''}`;
                 circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
                 
-                circle.innerHTML = `<div style="font-size: 0.8em; padding: 5px;">${node.name}</div>`;
+                circle.innerHTML = `<div style="font-size: 0.8em; padding: 10px; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;">${node.name}</div>`;
 
                 const startDrag = (clientX, clientY) => {
                     dragNodeId = node.id;
