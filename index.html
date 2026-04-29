@@ -1253,12 +1253,15 @@
             </div>
         </div>
         <div id="skills" class="view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                 <div>
                     <h2 style="margin:0;">Архитектура Навыков</h2>
-                    <div style="color: var(--text-dim); font-size: 0.9em; margin-top:5px;">Декомпозируйте навыки на визуальном графе, а затем ставьте цели здесь для получения опыта.</div>
+                    <div style="color: var(--text-dim); font-size: 0.9em; margin-top:5px;">Декомпозируйте навыки на визуальном графе, а затем ставьте цели.</div>
                 </div>
-                <button class="btn btn-primary" onclick="openModal('skillModal')">+ Создать Навык</button>
+                <div class="btn-group" style="width: auto; margin-bottom: 0;">
+                    <button class="btn btn-secondary" onclick="importSkillTemplate()">📂 Импорт шаблона</button>
+                    <button class="btn btn-primary" onclick="openModal('skillModal')">+ Создать Навык</button>
+                </div>
             </div>
             <div id="skills-list"></div>
         </div>
@@ -1269,7 +1272,8 @@
                     <button class="btn btn-secondary" style="padding: 5px 15px; margin-right: 15px;" onclick="switchView('skills')">← Назад</button>
                     <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция</span>
                 </div>
-                <div class="btn-group">
+                <div class="btn-group" style="margin-bottom: 0;">
+                    <button class="btn btn-secondary" style="padding: 0 15px; height: 44px;" onclick="exportSkillTemplate()" title="Скачать этот граф как шаблон">💾 Экспорт</button>
                     <select id="graphOrientationSelect" class="btn btn-secondary" style="padding: 0 10px; height: 44px; width: auto;" onchange="changeGraphOrientation(this.value)">
                         <option value="horizontal">Слева направо</option>
                         <option value="vertical">Сверху вниз</option>
@@ -4190,6 +4194,112 @@
             `;
             container.appendChild(toast);
             setTimeout(() => toast.remove(), 6000);
+        }
+        /* =========================================
+           ЭКСПОРТ И ИМПОРТ ШАБЛОНОВ НАВЫКОВ
+        ========================================= */
+        function exportSkillTemplate() {
+            if (!activeTreeSkillId) return;
+            const skill = state.skills.find(s => s.id === activeTreeSkillId);
+            if (!skill) return;
+
+            // Клонируем навык, чтобы не испортить текущий прогресс при чистке
+            const template = JSON.parse(JSON.stringify(skill));
+            
+            // Ставим специальную метку, что это именно шаблон навыка
+            template._isTemplate = true; 
+
+            // Сбрасываем прогресс для чистоты шаблона
+            template.level = 1;
+            template.xp = 0;
+            
+            if (template.goals) {
+                template.goals.forEach(g => {
+                    g.done = false;
+                    g.rewardCollected = false;
+                    if (g.type === 'Повторяющаяся') g.streak = 0;
+                    if (g.type === 'Босс') g.hp = g.maxHp || 1000;
+                });
+            }
+            if (template.graphNodes) {
+                template.graphNodes.forEach(n => n.done = false);
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(template, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `Blueprint_${skill.name}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importSkillTemplate() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const parsed = JSON.parse(content);
+                        
+                        // Проверяем, что это наш шаблон навыка, а не глобальное сохранение
+                        if (parsed && parsed._isTemplate) {
+                            
+                            // Карта замены старых ID на новые (чтобы избежать конфликтов в базе)
+                            const idMap = {};
+                            
+                            // Генерируем новый ID для навыка
+                            const newSkillId = 'skill_' + Date.now();
+                            parsed.id = newSkillId;
+                            
+                            // Переписываем ID узлов графа
+                            if (parsed.graphNodes) {
+                                parsed.graphNodes.forEach(node => {
+                                    const newId = 'node_' + Math.random().toString(36).substr(2, 9);
+                                    idMap[node.id] = newId;
+                                    node.id = newId;
+                                });
+                                // Восстанавливаем связи parentId
+                                parsed.graphNodes.forEach(node => {
+                                    if (node.parentId && idMap[node.parentId]) {
+                                        node.parentId = idMap[node.parentId];
+                                    }
+                                });
+                            }
+
+                            // Переписываем ID целей
+                            if (parsed.goals) {
+                                parsed.goals.forEach(goal => {
+                                    const newId = 'goal_' + Math.random().toString(36).substr(2, 9);
+                                    idMap[goal.id] = newId;
+                                    goal.id = newId;
+                                });
+                                // Восстанавливаем связи parentId
+                                parsed.goals.forEach(goal => {
+                                    if (goal.parentId && idMap[goal.parentId]) {
+                                        goal.parentId = idMap[goal.parentId];
+                                    }
+                                });
+                            }
+
+                            state.skills.push(parsed);
+                            save();
+                            render();
+                            alert(`Шаблон "${parsed.name}" успешно загружен!`);
+                        } else {
+                            alert("Этот файл не является шаблоном навыка (Возможно, это глобальное сохранение).");
+                        }
+                    } catch (err) {
+                        alert("Ошибка чтения файла: " + err);
+                    }
+                }
+            };
+            input.click();
         }
     </script>
     <script>
