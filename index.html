@@ -732,21 +732,39 @@
             }
 
             nav {
-                position: fixed; bottom: 0; left: 0; width: 100%; z-index: 1000;
-                background-color: rgba(22, 22, 26, 0.95); backdrop-filter: blur(10px);
-                border-top: 1px solid var(--border); border-bottom: none; padding: 5px 0;
-                display: grid; grid-template-columns: repeat(5, 1fr); gap: 2px;
-                padding-bottom: env(safe-area-inset-bottom);
-                overflow: visible; /* Чтобы всплывающее меню не обрезалось */
+                position: fixed; 
+                top: 0; /* Переместили наверх */
+                bottom: auto; 
+                left: 0; 
+                width: 100%; 
+                z-index: 1000;
+                background-color: rgba(22, 22, 26, 0.98); 
+                backdrop-filter: blur(15px);
+                border-bottom: 1px solid var(--border); 
+                border-top: none; 
+                padding: 8px 0; /* Чуть увеличили высоту */
+                display: grid; 
+                grid-template-columns: repeat(5, 1fr); 
+                gap: 2px;
+                box-shadow: 0 4px 20px rgba(0,0,0,0.6);
             }
             
             .nav-link { 
-                display: none; /* На мобилке прячем вообще ВСЁ */
-                flex-direction: column; align-items: center; justify-content: center; 
-                font-size: 0.65em; padding: 10px 2px; white-space: normal; text-align: center; 
-                border-bottom: none; border-top: 2px solid transparent; 
+                display: none; 
+                flex-direction: column; 
+                align-items: center; 
+                justify-content: center; 
+                font-size: 0.85em; /* Сделали шрифт КРУПНЕЕ (было 0.65) */
+                padding: 14px 2px; /* Увеличили область нажатия */
+                white-space: normal; 
+                text-align: center; 
+                border-top: 3px solid transparent; /* Акцентная полоса теперь сверху */
+                border-bottom: none;
             }
-            .nav-link.active { border-bottom: none; border-top-color: var(--accent); color: var(--accent); }
+            .nav-link.active { 
+                border-top-color: var(--accent); 
+                color: var(--accent); 
+            }
             
             /* Включаем обратно ТОЛЬКО 4 главные + гамбургер */
             .nav-link[onclick*="dashboard"], 
@@ -757,13 +775,24 @@
                 display: flex; 
             }
             
-            body { padding-bottom: 70px; } /* Отступ контента от Bottom Bar */
+            body { 
+                padding-bottom: 0; 
+                padding-top: 85px; 
+            }
             
             /* Стили для всплывающего меню "Ещё" */
             .mobile-menu-expanded { 
-                position: fixed; bottom: 70px; background: var(--panel); width: 100%; 
-                display: grid; grid-template-columns: 1fr 1fr; border-top: 1px solid var(--border); 
-                z-index: 999; box-shadow: 0 -10px 20px rgba(0,0,0,0.5); 
+                position: fixed; 
+                top: 75px; /* Появляется сразу под навигацией */
+                bottom: auto; 
+                background: var(--panel); 
+                width: 100%; 
+                display: grid; 
+                grid-template-columns: 1fr 1fr; 
+                border-bottom: 1px solid var(--border); 
+                border-top: none;
+                z-index: 999; 
+                box-shadow: 0 10px 20px rgba(0,0,0,0.5); 
             }
             .mobile-menu-expanded .nav-link { 
                 display: flex; flex-direction: row; border: 1px solid var(--border); 
