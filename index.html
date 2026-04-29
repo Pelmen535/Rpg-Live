@@ -1273,12 +1273,13 @@
                     <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция</span>
                 </div>
                 <div class="btn-group" style="margin-bottom: 0;">
-                    <button class="btn btn-secondary" style="padding: 0 15px; height: 44px;" onclick="exportSkillTemplate()" title="Скачать этот граф как шаблон">💾 Экспорт</button>
+                    <button class="btn btn-secondary" style="padding: 0 15px; height: 44px;" onclick="importTemplateIntoExistingSkill()">📂 Импорт</button>
+                    <button class="btn btn-secondary" style="padding: 0 15px; height: 44px;" onclick="exportSkillTemplate()">💾 Экспорт</button>
                     <select id="graphOrientationSelect" class="btn btn-secondary" style="padding: 0 10px; height: 44px; width: auto;" onchange="changeGraphOrientation(this.value)">
                         <option value="horizontal">Слева направо</option>
                         <option value="vertical">Сверху вниз</option>
                     </select>
-                    <button class="btn btn-primary" onclick="addMindmapNode()">+ Создать узел</button>
+                    <button class="btn btn-primary" onclick="addMindmapNode()">+ Узел</button>
                 </div>
             </div>
             <div style="padding: 10px 30px; background: #000000; color: #888888; font-size: 0.85em;">
@@ -3655,8 +3656,9 @@
         <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
         </div>
         <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
-        <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
-        <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
+            <button class="btn btn-secondary" onclick="exportSkillById('${s.id}')">💾 Экспорт</button>
+            <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Цель</button>
+            <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
         </div>
         </div>
         <div style="margin-top:15px;">
@@ -4300,6 +4302,102 @@
                 }
             };
             input.click();
+        }
+        function exportSkillById(skillId) {
+            const skill = state.skills.find(s => s.id === skillId);
+            if (!skill) return;
+
+            const template = JSON.parse(JSON.stringify(skill));
+            template._isTemplate = true; 
+            template.level = 1;
+            template.xp = 0;
+            
+            if (template.goals) {
+                template.goals.forEach(g => {
+                    g.done = false;
+                    g.rewardCollected = false;
+                    if (g.type === 'Повторяющаяся') g.streak = 0;
+                    if (g.type === 'Босс') g.hp = g.maxHp || 1000;
+                });
+            }
+            if (template.graphNodes) {
+                template.graphNodes.forEach(n => n.done = false);
+            }
+
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(template, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", `Skill_${skill.name}.json`);
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
+
+        function importTemplateIntoExistingSkill() {
+            if (!activeTreeSkillId) return;
+            
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const parsed = JSON.parse(content);
+                        
+                        if (parsed && parsed._isTemplate) {
+                            if (!confirm("Внимание! Импорт шаблона заменит все текущие узлы и цели в этом навыке. Продолжить?")) return;
+
+                            const skill = state.skills.find(s => s.id === activeTreeSkillId);
+                            const idMap = {};
+
+                            if (parsed.graphNodes) {
+                                parsed.graphNodes.forEach(node => {
+                                    const newId = 'node_' + Math.random().toString(36).substr(2, 9);
+                                    idMap[node.id] = newId;
+                                    node.id = newId;
+                                });
+                                parsed.graphNodes.forEach(node => {
+                                    if (node.parentId && idMap[node.parentId]) {
+                                        node.parentId = idMap[node.parentId];
+                                    }
+                                });
+                                skill.graphNodes = parsed.graphNodes;
+                            }
+
+                            if (parsed.goals) {
+                                parsed.goals.forEach(goal => {
+                                    const newId = 'goal_' + Math.random().toString(36).substr(2, 9);
+                                    idMap[goal.id] = newId;
+                                    goal.id = newId;
+                                });
+                                parsed.goals.forEach(goal => {
+                                    if (goal.parentId && idMap[goal.parentId]) {
+                                        goal.parentId = idMap[goal.parentId];
+                                    }
+                                });
+                                skill.goals = parsed.goals;
+                            }
+
+                            save();
+                            renderCanvas();
+                            alert("Граф обновлен из шаблона!");
+                        } else {
+                            alert("Файл не является валидным шаблоном навыка.");
+                        }
+                    } catch (err) {
+                        alert("Ошибка: " + err);
+                    }
+                }
+            };
+            input.click();
+        }
+
+        function exportSkillTemplate() {
+            if (activeTreeSkillId) exportSkillById(activeTreeSkillId);
         }
     </script>
     <script>
