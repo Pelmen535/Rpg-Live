@@ -3588,84 +3588,97 @@
         `).join('') || '<div style="color:var(--text-dim);">Добавьте первый навык.</div>';
 
         document.getElementById('skills-list').innerHTML = state.skills.map(s => {
-        const buildListHtml = (parentId) => {
-        const children = (s.goals || []).filter(n => (n.parentId || null) == (parentId || null));
-        if (children.length === 0) return '';
+            const buildListHtml = (parentId) => {
+                // --- ИСПРАВЛЕНИЕ ОТОБРАЖЕНИЯ ЦЕЛЕЙ ---
+                const children = (s.goals || []).filter(n => {
+                    if (parentId === null) {
+                        // Показываем в корне: если нет родителя ИЛИ если родитель - это узел графа (не другая цель)
+                        const parentIsAnotherGoal = s.goals.some(g => g.id === n.parentId);
+                        return !n.parentId || !parentIsAnotherGoal;
+                    }
+                    return n.parentId === parentId;
+                });
+                // ------------------------------------
+                
+                if (children.length === 0) return '';
 
-        return children.map(n => {
-        let extraContent = '';
+                return children.map(n => {
+                    let extraContent = '';
 
-        if (n.type === 'Долгосрочная') {
-        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
-        const doneCount = subTasks.filter(sub => sub.done).length;
-        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
-        extraContent = `
-        <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
-        <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
-        `;
-        }
+                    if (n.type === 'Долгосрочная') {
+                        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
+                        const doneCount = subTasks.filter(sub => sub.done).length;
+                        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
+                        extraContent = `
+                        <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
+                        <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
+                        `;
+                    }
 
-        if (n.type === 'Босс') {
-        const hpPercent = Math.max(0, (n.hp / n.maxHp) * 100);
-        extraContent = `
-        <div style="font-size: 0.8em; color: var(--danger); margin-top: 10px; font-weight: bold;">👿 БОСС: ${n.hp} / ${n.maxHp} HP</div>
-        <div class="project-progress-container" style="border-color: var(--danger); height: 10px; background: #222;">
-        <div class="project-progress-fill" style="width: ${hpPercent}%; background: var(--danger);"></div>
-        </div>
-        ${n.deadline ? `<div style="font-size: 0.7em; color: var(--text-dim); margin-top: 4px;">⏳ Убить до: ${n.deadline}</div>` : ''}
-        `;
-        }
+                    if (n.type === 'Босс') {
+                        const hpPercent = Math.max(0, (n.hp / n.maxHp) * 100);
+                        extraContent = `
+                        <div style="font-size: 0.8em; color: var(--danger); margin-top: 10px; font-weight: bold;">👿 БОСС: ${n.hp} / ${n.maxHp} HP</div>
+                        <div class="project-progress-container" style="border-color: var(--danger); height: 10px; background: #222;">
+                        <div class="project-progress-fill" style="width: ${hpPercent}%; background: var(--danger);"></div>
+                        </div>
+                        ${n.deadline ? `<div style="font-size: 0.7em; color: var(--text-dim); margin-top: 4px;">⏳ Убить до: ${n.deadline}</div>` : ''}
+                        `;
+                    }
 
-        if (n.type === 'Повторяющаяся') {
-        extraContent = `<div class="habit-grid-mini">`;
-        for(let i=0; i<7; i++) {
-        const isActive = (n.streak || 0) > i;
-        extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
-        }
-        extraContent += `</div>`;
-        }
+                    if (n.type === 'Повторяющаяся') {
+                        extraContent = `<div class="habit-grid-mini">`;
+                        for(let i=0; i<7; i++) {
+                            const isActive = (n.streak || 0) > i;
+                            extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
+                        }
+                        extraContent += `</div>`;
+                    }
 
-        return `
-        <div class="goal-list-node">
-        <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
-        <div style="flex: 1 1 200px;">
-        <div style="display:flex; align-items:center; gap:10px;">
-        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
-        <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
-        </div>
-        ${extraContent}
-        </div>
-        <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
-        ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-        <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
-        <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
-        </div>
-        </div>
-        </div>
-        ${buildListHtml(n.id)}
-        </div>
-        `;
-        }).join('');
-        };
-        return `
-        <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
-        <div style="flex: 1 1 200px;">
-        <h3 style="margin:0; color:${s.color}">${s.name}</h3>
-        <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
-        </div>
-        <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
-            <button class="btn btn-secondary" onclick="exportSkillById('${s.id}')">💾 Экспорт</button>
-            <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Цель</button>
-            <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
-        </div>
-        </div>
-        <div style="margin-top:15px;">
-        ${buildListHtml(null) || '<div style="color:var(--text-dim);">У этого навыка пока нет целей.</div>'}
-        </div>
-        </div>
-        `;
+                    return `
+                    <div class="goal-list-node">
+                        <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
+                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
+                                <div style="flex: 1 1 200px;">
+                                    <div style="display:flex; align-items:center; gap:10px;">
+                                        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
+                                        <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+                                    </div>
+                                    ${extraContent}
+                                </div>
+                                <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
+                                    ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
+                                    <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
+                                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
+                                </div>
+                            </div>
+                        </div>
+                        ${buildListHtml(n.id)}
+                    </div>
+                    `;
+                }).join('');
+            };
+
+            return `
+            <div class="card">
+                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
+                    <div style="flex: 1 1 200px;">
+                        <h3 style="margin:0; color:${s.color}">${s.name}</h3>
+                        <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
+                    </div>
+                    
+                    <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
+                        <button class="btn btn-secondary" onclick="exportSkillById('${s.id}')">💾 Экспорт</button>
+                        <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Цель</button>
+                        <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
+                        <button class="btn btn-danger" style="padding: 8px 12px;" onclick="deleteSkill('${s.id}')" title="Удалить навык">✖</button>
+                    </div>
+                </div>
+                <div style="margin-top:15px;">
+                    ${buildListHtml(null) || '<div style="color:var(--text-dim);">У этого навыка пока нет целей.</div>'}
+                </div>
+            </div>
+            `;
         }).join('');
 
         if (activeTreeSkillId) {
@@ -4395,7 +4408,19 @@
             };
             input.click();
         }
-
+        function deleteSkill(skillId) {
+            if (confirm("Удалить этот навык навсегда? Вместе с ним будут безвозвратно уничтожены все цели, визуальный граф и текущий прогресс (кроме архивных данных)!")) {
+                state.skills = state.skills.filter(s => s.id !== skillId);
+                
+                // Если мы случайно удалили навык, в графе которого сейчас находимся
+                if (activeTreeSkillId === skillId) {
+                    activeTreeSkillId = null;
+                }
+                
+                save();
+                render();
+            }
+        }
         function exportSkillTemplate() {
             if (activeTreeSkillId) exportSkillById(activeTreeSkillId);
         }
