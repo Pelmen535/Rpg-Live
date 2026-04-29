@@ -502,13 +502,13 @@
 
         .graph-node {
             position: absolute;
-            width: auto;
-            min-width: 120px;
-            padding: 12px 20px;
+            width: 100px;
+            height: 100px;
             background-color: #1a1a20;
             border: 2px solid var(--accent);
-            border-radius: 25px;
+            border-radius: 50%; 
             display: flex;
+            flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
@@ -518,7 +518,8 @@
             font-weight: bold;
             text-align: center;
             transition: border-color 0.2s ease;
-            touch-action: none; /* Предотвращает стандартное поведение браузера при тапах */
+            touch-action: none;
+            overflow: hidden; 
         }
 
             .graph-node:hover {
@@ -1143,11 +1144,13 @@
                 </div>
             </div>
             
-            <div style="display: flex; justify-content: space-between; align-items: center; border-left: 2px solid var(--accent); padding-left: 15px; margin-bottom: 30px;">
-                <input type="text" id="userNickname" placeholder="Твой никнейм" onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 4px; min-width: 200px;">
-                
-                <div id="sync-status-badge" style="padding: 6px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: rgba(255,184,0,0.1); color: var(--gold); border: 1px solid var(--gold); text-align: center;">
-                    Подключение...
+            <div style="display: flex; flex-direction: column; gap: 10px; border-left: 2px solid var(--accent); padding-left: 15px; margin-bottom: 30px; margin-top: 20px;">
+                <label style="font-size: 0.8em; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Сетевой идентификатор (Никнейм)</label>
+                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
+                    <input type="text" id="userNickname" placeholder="Введите имя..." onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 4px; min-width: 250px;">
+                    <div id="sync-status-badge" style="padding: 6px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: rgba(255,184,0,0.1); color: var(--gold); border: 1px solid var(--gold); text-align: center;">
+                        Подключение...
+                    </div>
                 </div>
             </div>
             <h2>Сводка по навыкам</h2>
@@ -1157,9 +1160,8 @@
             <h2 style="color: var(--accent);">Глобальная Таблица Лидеров</h2>
             <div class="card" style="border-color: var(--accent);">
                 <div style="display: flex; justify-content: space-between; border-bottom: 1px solid var(--border); padding-bottom: 10px; margin-bottom: 15px; color: var(--text-dim); font-weight: bold;">
-                    <span style="flex: 2;">Игрок</span>
-                    <span style="flex: 1; text-align: center;">Уровень</span>
-                    <span style="flex: 1; text-align: right;">Опыт</span>
+                    <span style="flex: 3;">Игрок</span>
+                    <span style="flex: 1; text-align: right;">Уровень</span>
                 </div>
                 <div id="leaderboard-list">Загрузка данных из матрицы...</div>
             </div>
@@ -1237,9 +1239,13 @@
             <div class="tree-header">
                 <div>
                     <button class="btn btn-secondary" style="padding: 5px 15px; margin-right: 15px;" onclick="switchView('skills')">← Назад</button>
-                    <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция: Навык</span>
+                    <span style="font-size: 1.2em; font-weight: bold;" id="tree-title">Декомпозиция</span>
                 </div>
                 <div class="btn-group">
+                    <select id="graphOrientationSelect" class="btn btn-secondary" style="padding: 0 10px; height: 44px; width: auto;" onchange="changeGraphOrientation(this.value)">
+                        <option value="horizontal">Слева направо</option>
+                        <option value="vertical">Сверху вниз</option>
+                    </select>
                     <button class="btn btn-primary" onclick="addMindmapNode()">+ Создать узел</button>
                 </div>
             </div>
@@ -1493,7 +1499,7 @@
             <div class="modal-buttons" style="margin-top:20px;">
                 <button class="btn btn-primary" onclick="saveGoal()">Сохранить</button>
                 <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
-                <button class="btn btn-danger" onclick="deleteGoal()">Удалить</button>
+                <button class="btn btn-danger" id="btnDeleteGoal" onclick="deleteGoal()">Удалить</button>
             </div>
         </div>
     </div>
@@ -2910,6 +2916,12 @@
         graphContainer.addEventListener('touchend', handleEnd);
         graphContainer.addEventListener('touchcancel', handleEnd);
 
+        let graphOrientation = 'horizontal';
+
+        function changeGraphOrientation(val) {
+            graphOrientation = val;
+            renderCanvas();
+        }
         function renderCanvas() {
             const skill = state.skills.find(s => s.id === activeTreeSkillId);
             if (!skill) return;
@@ -2917,27 +2929,60 @@
             const svg = document.getElementById('graph-svg');
             const graphWrapper = document.getElementById('graph-wrapper'); 
             svg.innerHTML = '';
-
             document.querySelectorAll('.canvas-node-wrap').forEach(el => el.remove());
 
-            // ШАГ 1: Сначала рендерим сами узлы, чтобы браузер мог высчитать их ширину
-            (skill.graphNodes || []).forEach(node => {
+            const nodeSize = 100;
+
+            skill.graphNodes.forEach(node => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'canvas-node-wrap';
-                wrapper.id = `graph-node-${node.id}`; // Добавляем ID для поиска
+                wrapper.id = `graph-node-${node.id}`;
                 wrapper.style.left = node.x + 'px';
                 wrapper.style.top = node.y + 'px';
 
                 const circle = document.createElement('div');
                 circle.className = `graph-node ${node.done ? 'done' : ''}`;
                 circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
-                circle.style.position = 'relative';
+                
+                circle.innerHTML = `<div style="font-size: 0.8em; padding: 5px;">${node.name}</div>`;
 
-                circle.innerHTML = `
-                    <div style="font-size: 0.9em; pointer-events: none;">${node.name}</div>
-                    ${node.notes ? '<div style="font-size:0.6em; opacity:0.6; pointer-events: none;">📝</div>' : ''}
-                `;
+                const startDrag = (clientX, clientY) => {
+                    dragNodeId = node.id;
+                    dragStartX = clientX;
+                    dragStartY = clientY;
+                    initX = node.x;
+                    initY = node.y;
+                };
 
+                circle.onmousedown = e => {
+                    if (e.button === 0 && !e.target.classList.contains('node-control-btn')) {
+                        e.stopPropagation();
+                        startDrag(e.clientX, e.clientY);
+                    }
+                };
+
+                circle.addEventListener('touchstart', e => {
+                    if (!e.target.classList.contains('node-control-btn')) {
+                        e.stopPropagation(); 
+                        startDrag(e.touches[0].clientX, e.touches[0].clientY);
+                    }
+                }, { passive: false });
+
+                circle.ondblclick = (e) => {
+                    e.stopPropagation();
+                    openGraphNodeModal('edit', node);
+                };
+
+                circle.oncontextmenu = e => {
+                    e.preventDefault();
+                    if (!node.isRoot && confirm('Удалить узел?')) {
+                        skill.graphNodes = skill.graphNodes.filter(n => n.id !== node.id);
+                        save();
+                        renderCanvas();
+                    }
+                };
+
+                // ВСТАВЬ ЭТОТ БЛОК НАЗАД:
                 const btnLeft = document.createElement('div');
                 btnLeft.innerHTML = '+';
                 btnLeft.className = 'node-control-btn left';
@@ -2973,43 +3018,9 @@
                     save();
                     renderCanvas();
                 };
+                // ========================
 
-                const startDrag = (clientX, clientY) => {
-                    dragNodeId = node.id;
-                    dragStartX = clientX;
-                    dragStartY = clientY;
-                    initX = node.x;
-                    initY = node.y;
-                };
-
-                circle.onmousedown = e => {
-                    if (e.button === 0 && !e.target.classList.contains('node-control-btn')) {
-                        e.stopPropagation(); 
-                        startDrag(e.clientX, e.clientY);
-                    }
-                };
-
-                circle.addEventListener('touchstart', e => {
-                    if (!e.target.classList.contains('node-control-btn')) {
-                        e.stopPropagation(); 
-                        startDrag(e.touches[0].clientX, e.touches[0].clientY);
-                    }
-                }, { passive: false });
-
-                circle.ondblclick = (e) => {
-                    e.stopPropagation();
-                    openGraphNodeModal('edit', node);
-                };
-
-                circle.oncontextmenu = e => {
-                    e.preventDefault();
-                    if (!node.isRoot && confirm('Удалить узел?')) {
-                        skill.graphNodes = skill.graphNodes.filter(n => n.id !== node.id);
-                        save();
-                        renderCanvas();
-                    }
-                };
-
+                // Эти строки у тебя уже есть, они идут следом:
                 circle.appendChild(btnLeft);
                 circle.appendChild(btnRight);
                 circle.appendChild(btnCheck);
@@ -3019,48 +3030,47 @@
             });
 
             // ШАГ 2: Теперь рисуем связи, получая точный размер каждого узла из DOM
-            (skill.graphNodes || []).forEach(node => {
+            skill.graphNodes.forEach(node => {
                 if (node.parentId) {
                     const parent = skill.graphNodes.find(p => p.id === node.parentId);
                     if (parent) {
-                        const nodeEl = document.getElementById(`graph-node-${node.id}`);
-                        const parentEl = document.getElementById(`graph-node-${parent.id}`);
-
-                        // Получаем реальную ширину и высоту отрендеренных узлов (fallback - 120x50)
-                        const nodeWidth = nodeEl ? nodeEl.offsetWidth : 120;
-                        const nodeHeight = nodeEl ? nodeEl.offsetHeight : 50;
-                        const parentWidth = parentEl ? parentEl.offsetWidth : 120;
-                        const parentHeight = parentEl ? parentEl.offsetHeight : 50;
-
                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        let startX, endX, startY, endY;
 
-                        let startX, endX;
-                        // Y-координата - это ровно середина высоты узла
-                        const startY = parent.y + (parentHeight / 2);
-                        const endY = node.y + (nodeHeight / 2);
-
-                        // Если ребенок справа: линия выходит из правого края родителя и входит в левый край ребенка
-                        if (node.x >= parent.x) {
-                            startX = parent.x + parentWidth; 
-                            endX = node.x;          
-                        } 
-                        // Если ребенка перетащили влево: линия выходит из левого края родителя и входит в правый край ребенка
-                        else {
-                            startX = parent.x;      
-                            endX = node.x + nodeWidth;     
+                        if (graphOrientation === 'horizontal') {
+                            startY = parent.y + (nodeSize / 2);
+                            endY = node.y + (nodeSize / 2);
+                            if (node.x >= parent.x) {
+                                startX = parent.x + nodeSize;
+                                endX = node.x;
+                            } else {
+                                startX = parent.x;
+                                endX = node.x + nodeSize;
+                            }
+                        } else {
+                            startX = parent.x + (nodeSize / 2);
+                            endX = node.x + (nodeSize / 2);
+                            if (node.y >= parent.y) {
+                                startY = parent.y + nodeSize;
+                                endY = node.y;
+                            } else {
+                                startY = parent.y;
+                                endY = node.y + nodeSize;
+                            }
                         }
 
-                        // Математика кривой Безье для плавного изгиба
-                        const cp1x = startX + (endX - startX) * 0.5;
-                        const cp2x = startX + (endX - startX) * 0.5;
+                        const cp1x = graphOrientation === 'horizontal' ? startX + (endX - startX) * 0.5 : startX;
+                        const cp1y = graphOrientation === 'horizontal' ? startY : startY + (endY - startY) * 0.5;
+                        const cp2x = graphOrientation === 'horizontal' ? startX + (endX - startX) * 0.5 : endX;
+                        const cp2y = graphOrientation === 'horizontal' ? endY : startY + (endY - startY) * 0.5;
 
-                        const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
+                        const d = `M ${startX} ${startY} C ${cp1x} ${cp1y}, ${cp2x} ${cp2y}, ${endX} ${endY}`;
 
                         path.setAttribute("d", d);
                         path.setAttribute("stroke", skill.color);
                         path.setAttribute("stroke-width", "2");
                         path.setAttribute("fill", "none");
-                        path.setAttribute("opacity", "0.5");
+                        path.setAttribute("opacity", "0.4");
                         svg.appendChild(path);
                     }
                 }
@@ -4090,27 +4100,20 @@
         }
 
         function loadLeaderboard() {
-        database.ref('leaderboard').orderByChild('level').limitToLast(20).once('value', snapshot => {
-        const data = snapshot.val();
-        if (!data) return;
+            database.ref('leaderboard').orderByChild('level').limitToLast(20).once('value', snapshot => {
+                const data = snapshot.val();
+                if (!data) return;
 
-        const players = Object.values(data).sort((a, b) => b.level - a.level || b.xp - a.xp);
+                const players = Object.values(data).sort((a, b) => b.level - a.level);
 
-        document.getElementById('leaderboard-list').innerHTML = players.map((p, index) => `
-        <div style="display: flex; justify-content: space-between; padding: 10px 0; border-bottom: 1px solid #222; ${index === 0 ? 'color: var(--gold); font-size: 1.1em; font-weight: bold;' : ''}">
-        <span style="flex: 2;">${index === 0 ? '👑 ' : ''}${index + 1}. ${p.name}</span>
-        <span style="flex: 1; text-align: center;">${p.level}</span>
-        <span style="flex: 1; text-align: right;">${p.xp} / 100</span>
-        </div>
-        `).join('');
-        });
-        }
-        // Закрытие модалок по клику на фон
-        document.querySelectorAll('.modal').forEach(modal => {
-            modal.addEventListener('click', function(e) {
-                if (e.target === this) closeModals();
+                document.getElementById('leaderboard-list').innerHTML = players.map((p, index) => `
+                    <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; ${index === 0 ? 'color: var(--gold); font-size: 1.1em; font-weight: bold;' : ''}">
+                        <span style="flex: 3;">${index === 0 ? '👑 ' : ''}${index + 1}. ${p.name}</span>
+                        <span style="flex: 1; text-align: right;">${p.level} LVL</span>
+                    </div>
+                `).join('');
             });
-        });
+        }
         function customConfirm(title, text, onConfirm) {
             let modal = document.getElementById('customConfirmModal');
             if (!modal) {
