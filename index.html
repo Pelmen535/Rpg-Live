@@ -1103,26 +1103,11 @@
                 </div>
             </div>
             
-            <div style="display: flex; gap: 10px; align-items: center; border-left: 1px solid var(--border); padding-left: 15px;">
-                <input type="text" id="userNickname" placeholder="Твой никнейм" onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 4px;">
-            </div>
-            <div class="card" style="border-color: var(--accent); margin-bottom: 30px;">
-                <div style="display: flex; justify-content: space-between; align-items: center;">
-                    <h3 style="margin:0;">Сетвой узел (P2P)</h3>
-                    <div id="sync-status-badge" style="padding: 5px 12px; border-radius: 20px; font-size: 0.8em; background: rgba(255,68,68,0.1); color: var(--danger);">
-                        Offline
-                    </div>
-                </div>
-
-                <div style="margin-top: 15px; display: flex; gap: 10px; align-items: center;">
-                    <div style="flex: 1; font-size: 0.9em; color: var(--text-dim);">
-                        Подключенные терминалы:
-                        <div id="device-list" style="margin-top: 5px; color: #fff; font-family: monospace;">
-                            • Локальный хост (Вы)
-                        </div>
-                    </div>
-                    <button class="btn btn-secondary" onclick="location.reload()">🔄 Перезапуск узла</button>
-                    <button class="btn btn-secondary" style="font-size: 0.8em;" onclick="forceSync()">Принудительная передача</button>
+            <div style="display: flex; justify-content: space-between; align-items: center; border-left: 2px solid var(--accent); padding-left: 15px; margin-bottom: 30px;">
+                <input type="text" id="userNickname" placeholder="Твой никнейм" onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 4px; min-width: 200px;">
+                
+                <div id="sync-status-badge" style="padding: 6px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: rgba(255,184,0,0.1); color: var(--gold); border: 1px solid var(--gold); text-align: center;">
+                    Подключение...
                 </div>
             </div>
             <h2>Сводка по навыкам</h2>
