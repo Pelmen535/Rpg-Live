@@ -2347,6 +2347,7 @@
         function processNodeReward(skill, node) {
             let rewardGiven = false;
 
+            // Выдача опыта за выполнение
             if (node.type === 'Повторяющаяся') {
                 const today = new Date().toDateString();
                 if (node.lastCompleted !== today) {
@@ -2360,6 +2361,7 @@
                 node.rewardCollected = true;
                 rewardGiven = true;
 
+                // Механика лутбоксов
                 if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
                 state.user.tasksCompletedForLoot++;
                 if (state.user.tasksCompletedForLoot >= 5) {
@@ -2369,19 +2371,42 @@
                 }
             }
 
+            // БОЕВАЯ СИСТЕМА БОССОВ
             if (rewardGiven && node.type !== 'Босс') {
                 const activeBoss = skill.goals.find(g => g.type === 'Босс' && !g.done);
                 if (activeBoss) {
-                    const damage = REWARDS[node.type]?.xp || 10;
-                    activeBoss.hp -= (flow.active ? damage * 2 : damage);
+                    
+                    // Независимая таблица урона (не привязана к XP)
+                    const BOSS_DAMAGE = {
+                        "Краткосрочная": 30,
+                        "Среднесрочная": 100,
+                        "Долгосрочная": 400,
+                        "Повторяющаяся": 20 // Стартовый урон привычки
+                    };
+                    
+                    let damage = BOSS_DAMAGE[node.type] || 15;
+                    
+                    // МЕХАНИКА КОМБО: Чем больше стрик, тем сильнее удар!
+                    if (node.type === 'Повторяющаяся' && node.streak > 1) {
+                        // Каждое выполнение подряд увеличивает урон на 20% (максимум x3)
+                        let comboMult = Math.min(3, 1 + (node.streak * 0.2)); 
+                        damage = Math.floor(damage * comboMult);
+                    }
+
+                    // Режим Потока удваивает финальный урон
+                    let finalDamage = flow.active ? damage * 2 : damage;
+                    
+                    activeBoss.hp -= finalDamage;
+                    
                     if (activeBoss.hp <= 0) {
                         activeBoss.hp = 0;
                         activeBoss.done = true;
                         grantXP(skill, 'Долгосрочная');
                         grantXP(skill, 'Долгосрочная');
-                        alert(`⚔️ БОСС "${activeBoss.name}" ПОВЕРЖЕН! Огромная награда получена!`);
+                        alert(`⚔️ БОСС "${activeBoss.name}" ПОВЕРЖЕН! Вы нанесли финальный удар (${finalDamage} урона)!\nПолучена огромная награда.`);
                     } else {
-                        console.log(`Нанесен урон боссу! Осталось: ${activeBoss.hp}`);
+                        // Показываем мини-уведомление об уроне (по желанию, в консоль, чтобы не бесило алертами)
+                        console.log(`🗡️ Вы нанесли ${finalDamage} урона боссу. Осталось: ${activeBoss.hp} HP.`);
                     }
                 }
             }
@@ -2723,11 +2748,44 @@
         save();
         }
 
-        function toggleTaskDone(type, key, id) {
-        const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
-        const task = taskList.find(t => t.id === id);
-        if(task) task.done = !task.done;
-        save();
+        function toggleTaskDone(type, key, id, dateStr = '') {
+            const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
+            const task = taskList.find(t => t.id === id);
+            if (!task) return;
+
+            if (dateStr) {
+                // --- РЕЖИМ КОНВЕЙЕРА (ДИНАМИЧЕСКИЙ) ---
+                // Используем completedTemplates, чтобы задача не зачеркивалась во всем шаблоне сразу
+                if (!state.completedTemplates) state.completedTemplates = {};
+                if (!state.completedTemplates[dateStr]) state.completedTemplates[dateStr] = [];
+
+                const index = state.completedTemplates[dateStr].indexOf(id);
+                if (index > -1) {
+                    state.completedTemplates[dateStr].splice(index, 1);
+                } else {
+                    state.completedTemplates[dateStr].push(id);
+                }
+            } else {
+                // --- РЕЖИМ БАЗЫ (ШАБЛОН) ---
+                task.done = !task.done;
+            }
+
+            // Если задача привязана к цели — выполняем/отменяем и цель тоже
+            if (task.goalId && task.skillId) {
+                const skill = state.skills.find(s => s.id === task.skillId);
+                const node = skill.goals.find(g => g.id === task.goalId);
+                
+                // Проверяем текущее состояние "выполнено" для синхронизации с целью
+                const isCurrentlyDone = dateStr ? 
+                    (state.completedTemplates[dateStr] && state.completedTemplates[dateStr].includes(id)) : 
+                    task.done;
+                    
+                if (node && node.done !== isCurrentlyDone) {
+                    toggleNodeDone(task.skillId, task.goalId);
+                }
+            }
+            
+            save();
         }
 
         // ==========================================
