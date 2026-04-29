@@ -2915,49 +2915,16 @@
             if (!skill) return;
 
             const svg = document.getElementById('graph-svg');
-            const graphWrapper = document.getElementById('graph-wrapper'); // Теперь элементы живут тут
+            const graphWrapper = document.getElementById('graph-wrapper'); 
             svg.innerHTML = '';
 
             document.querySelectorAll('.canvas-node-wrap').forEach(el => el.remove());
 
-            (skill.graphNodes || []).forEach(node => {
-                if (node.parentId) {
-                    const parent = skill.graphNodes.find(p => p.id === node.parentId);
-                    if (parent) {
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-
-                        let startX, endX;
-                        const startY = parent.y + 25;
-                        const endY = node.y + 25;
-
-                        // СМАРТ-ЛИНИИ: Если ребенок справа - линия выходит из правого края (160px).
-                        // Если ребенка утащили налево - линия выйдет из левого края родителя.
-                        if (node.x >= parent.x) {
-                            startX = parent.x + 160; 
-                            endX = node.x;           
-                        } else {
-                            startX = parent.x;       
-                            endX = node.x + 160;     
-                        }
-
-                        const cp1x = startX + (endX - startX) * 0.5;
-                        const cp2x = startX + (endX - startX) * 0.5;
-
-                        const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
-
-                        path.setAttribute("d", d);
-                        path.setAttribute("stroke", skill.color);
-                        path.setAttribute("stroke-width", "2");
-                        path.setAttribute("fill", "none");
-                        path.setAttribute("opacity", "0.5");
-                        svg.appendChild(path);
-                    }
-                }
-            });
-
+            // ШАГ 1: Сначала рендерим сами узлы, чтобы браузер мог высчитать их ширину
             (skill.graphNodes || []).forEach(node => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'canvas-node-wrap';
+                wrapper.id = `graph-node-${node.id}`; // Добавляем ID для поиска
                 wrapper.style.left = node.x + 'px';
                 wrapper.style.top = node.y + 'px';
 
@@ -3017,14 +2984,14 @@
 
                 circle.onmousedown = e => {
                     if (e.button === 0 && !e.target.classList.contains('node-control-btn')) {
-                        e.stopPropagation(); // Не дает событию уйти в фон и сдвинуть камеру
+                        e.stopPropagation(); 
                         startDrag(e.clientX, e.clientY);
                     }
                 };
 
                 circle.addEventListener('touchstart', e => {
                     if (!e.target.classList.contains('node-control-btn')) {
-                        e.stopPropagation(); // Не дает сдвинуть камеру на мобилках
+                        e.stopPropagation(); 
                         startDrag(e.touches[0].clientX, e.touches[0].clientY);
                     }
                 }, { passive: false });
@@ -3048,10 +3015,57 @@
                 circle.appendChild(btnCheck);
                 circle.appendChild(btnNote);
                 wrapper.appendChild(circle);
-                graphWrapper.appendChild(wrapper); // Рендерим ВНУТРИ обертки камеры
+                graphWrapper.appendChild(wrapper); 
+            });
+
+            // ШАГ 2: Теперь рисуем связи, получая точный размер каждого узла из DOM
+            (skill.graphNodes || []).forEach(node => {
+                if (node.parentId) {
+                    const parent = skill.graphNodes.find(p => p.id === node.parentId);
+                    if (parent) {
+                        const nodeEl = document.getElementById(`graph-node-${node.id}`);
+                        const parentEl = document.getElementById(`graph-node-${parent.id}`);
+
+                        // Получаем реальную ширину и высоту отрендеренных узлов (fallback - 120x50)
+                        const nodeWidth = nodeEl ? nodeEl.offsetWidth : 120;
+                        const nodeHeight = nodeEl ? nodeEl.offsetHeight : 50;
+                        const parentWidth = parentEl ? parentEl.offsetWidth : 120;
+                        const parentHeight = parentEl ? parentEl.offsetHeight : 50;
+
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+
+                        let startX, endX;
+                        // Y-координата - это ровно середина высоты узла
+                        const startY = parent.y + (parentHeight / 2);
+                        const endY = node.y + (nodeHeight / 2);
+
+                        // Если ребенок справа: линия выходит из правого края родителя и входит в левый край ребенка
+                        if (node.x >= parent.x) {
+                            startX = parent.x + parentWidth; 
+                            endX = node.x;          
+                        } 
+                        // Если ребенка перетащили влево: линия выходит из левого края родителя и входит в правый край ребенка
+                        else {
+                            startX = parent.x;      
+                            endX = node.x + nodeWidth;     
+                        }
+
+                        // Математика кривой Безье для плавного изгиба
+                        const cp1x = startX + (endX - startX) * 0.5;
+                        const cp2x = startX + (endX - startX) * 0.5;
+
+                        const d = `M ${startX} ${startY} C ${cp1x} ${startY}, ${cp2x} ${endY}, ${endX} ${endY}`;
+
+                        path.setAttribute("d", d);
+                        path.setAttribute("stroke", skill.color);
+                        path.setAttribute("stroke-width", "2");
+                        path.setAttribute("fill", "none");
+                        path.setAttribute("opacity", "0.5");
+                        svg.appendChild(path);
+                    }
+                }
             });
         }
-
         function openGraphNodeModal(action, params = {}) {
             document.getElementById('graphNodeAction').value = action;
             document.getElementById('graphNodeId').value = params.id || '';
