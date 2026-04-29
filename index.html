@@ -318,7 +318,13 @@
             position: absolute;
             z-index: 5;
         }
-
+        .node-control-btn.top {
+            top: -15px;
+            left: 50%;
+            transform: translateX(-50%);
+            background: #2a2a35;
+            border-color: #555;
+        }
         .node-control-btn {
             position: absolute;
             width: 20px;
@@ -2906,7 +2912,13 @@
         document.getElementById('graphNodeParentId').dataset.direction = 'right';
         openGraphNodeModal('add', { parentId: node.id });
         };
-
+        const btnNote = document.createElement('div');
+        btnNote.innerHTML = '📝';
+        btnNote.className = 'node-control-btn top';
+        btnNote.onclick = (e) => {
+            e.stopPropagation();
+            openGraphNodeModal('edit', node);
+        };
         const btnCheck = document.createElement('div');
         btnCheck.innerHTML = '✓';
         btnCheck.className = `node-control-btn bottom ${node.done ? 'active' : ''}`;
@@ -2954,6 +2966,7 @@
         circle.appendChild(btnLeft);
         circle.appendChild(btnRight);
         circle.appendChild(btnCheck);
+        circle.appendChild(btnNote);
         wrapper.appendChild(circle);
         graphContainer.appendChild(wrapper);
         });
@@ -3128,11 +3141,6 @@
         if (!state.customAchievements) state.customAchievements = [];
         if (!state.unlockedAchievements) state.unlockedAchievements = [];
 
-        /* =========================================
-        СИСТЕМА ДОСТИЖЕНИЙ (100+ АВТО-ГЕНЕРАЦИЯ)
-        ========================================= */
-        if (!state.customAchievements) state.customAchievements = [];
-        if (!state.unlockedAchievements) state.unlockedAchievements = [];
 
         // Базовые уникальные ачивки
         const AUTO_ACHIEVEMENTS = [
@@ -3225,45 +3233,42 @@
         }
 
         function unlockManualAchievement(id) {
-        if (!state.unlockedAchievements.includes(id)) {
-        const ach = state.customAchievements.find(a => a.id === id);
-        if (ach && confirm(`Подтверждаешь выполнение: ${ach.title}?`)) {
-        state.unlockedAchievements.push(id);
-        state.global.gold += ach.gold;
-        state.global.xp += ach.xp;
-
-        checkGlobalLevelUp();
-       
-
-        save();
-        renderAchievements();
-        alert(`🏆 ДОСТИЖЕНИЕ ПОЛУЧЕНО!\nНаграда: ${ach.gold} Золота и ${ach.xp} XP.`);
-
-        // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
-        broadcastAchievement(ach.title, ach.icon);
-        }
-        }
+            if (!state.unlockedAchievements.includes(id)) {
+                const ach = state.customAchievements.find(a => a.id === id);
+                if (ach) {
+                    customConfirm("Выполнение достижения", `Вы действительно выполнили: "${ach.title}"?`, () => {
+                        state.unlockedAchievements.push(id);
+                        state.global.gold += ach.gold;
+                        state.global.xp += ach.xp;
+                        
+                        checkGlobalLevelUp();
+                        save();
+                        renderAchievements();
+                        
+                        showLocalAchievementToast(ach.title, ach.icon, ach.xp, ach.gold);
+                        broadcastAchievement(ach.title, ach.icon);
+                    });
+                }
+            }
         }
 
         function checkAutoAchievements() {
-        let changed = false;
-        AUTO_ACHIEVEMENTS.forEach(ach => {
-        if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
-        state.unlockedAchievements.push(ach.id);
-        state.global.gold += 50;
-        state.global.xp += 100;
-        changed = true;
-        alert(`🏆 АВТО-ДОСТИЖЕНИЕ: ${ach.title}!\nНаграда: 50 Золота и 100 XP.`);
+            let changed = false;
+            AUTO_ACHIEVEMENTS.forEach(ach => {
+                if (!state.unlockedAchievements.includes(ach.id) && ach.condition()) {
+                    state.unlockedAchievements.push(ach.id);
+                    state.global.gold += 50;
+                    state.global.xp += 100;
+                    changed = true;
+                    showLocalAchievementToast(ach.title, ach.icon, 100, 50);
+                    broadcastAchievement(ach.title, ach.icon);
+                }
+            });
 
-        // ОТПРАВЛЯЕМ УВЕДОМЛЕНИЕ ВСЕМ ИГРОКАМ:
-        broadcastAchievement(ach.title, ach.icon);
-        }
-        });
-
-        if (changed) {
-        checkGlobalLevelUp();
-        renderAchievements();
-        }
+            if (changed) {
+                checkGlobalLevelUp();
+                renderAchievements();
+            }
         }
 
         function renderAchievements() {
@@ -3414,8 +3419,9 @@
         document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
         document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
         document.getElementById('global-level').innerText = state.global.level;
-        document.getElementById('global-xp-text').innerText = `${state.global.xp} / 100`;
-        document.getElementById('global-xp-bar').style.width = `${state.global.xp}%`;
+        let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
+        document.getElementById('global-xp-text').innerText = `${state.global.xp} / ${neededXP}`;
+        document.getElementById('global-xp-bar').style.width = `${(state.global.xp / neededXP) * 100}%`;
         document.getElementById('global-gold').innerText = state.global.gold;
         document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
 
@@ -4024,6 +4030,55 @@
                 if (e.target === this) closeModals();
             });
         });
+        function customConfirm(title, text, onConfirm) {
+            let modal = document.getElementById('customConfirmModal');
+            if (!modal) {
+                modal = document.createElement('div');
+                modal.id = 'customConfirmModal';
+                modal.className = 'modal';
+                modal.style.zIndex = '2000';
+                modal.innerHTML = `
+                    <div class="modal-content" style="text-align: center; width: 350px;">
+                        <h3 id="confirmTitle" style="margin-top:0;"></h3>
+                        <p id="confirmText" style="color: var(--text-dim); margin-bottom: 25px;"></p>
+                        <div class="modal-buttons" style="flex-direction: row;">
+                            <button class="btn btn-primary" style="flex:1" id="btnConfirmYes">Да</button>
+                            <button class="btn btn-secondary" style="flex:1" onclick="document.getElementById('customConfirmModal').style.display='none'">Отмена</button>
+                        </div>
+                    </div>
+                `;
+                document.body.appendChild(modal);
+            }
+            document.getElementById('confirmTitle').innerText = title;
+            document.getElementById('confirmText').innerText = text;
+            document.getElementById('btnConfirmYes').onclick = () => {
+                modal.style.display = 'none';
+                onConfirm();
+            };
+            modal.style.display = 'flex';
+        }
+
+        function showLocalAchievementToast(title, icon, xp, gold) {
+            if (!document.getElementById('toast-container')) {
+                const tc = document.createElement('div');
+                tc.id = 'toast-container';
+                document.body.appendChild(tc);
+            }
+            const container = document.getElementById('toast-container');
+            const toast = document.createElement('div');
+            toast.className = 'global-toast';
+            toast.style.borderLeftColor = 'var(--success)';
+            toast.innerHTML = `
+                <div class="icon" style="font-size: 2.2em;">${icon}</div>
+                <div>
+                    <div class="meta" style="color: var(--success);">Достижение получено!</div>
+                    <div style="font-size: 1.1em; font-weight: bold; color: #fff; margin-bottom: 3px;">${title}</div>
+                    <div style="font-size: 0.85em; color: var(--gold);">Награда: 🪙 ${gold} | ✨ ${xp}</div>
+                </div>
+            `;
+            container.appendChild(toast);
+            setTimeout(() => toast.remove(), 6000);
+        }
     </script>
     <script>
         if ('serviceWorker' in navigator) {
