@@ -1062,11 +1062,13 @@
             </div>
         </div>
         <div id="dashboard" class="view">
+            <div class="btn-group">
+                <button class="btn btn-secondary" style="flex: 1;" onclick="manualEvent()">✨ Добавить опыт за событие</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="exportData()">💾 Экспорт данных</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт данных</button>
+                <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
+            </div>
             <div class="hero-stats" style="flex-wrap: wrap;">
-                <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
-                    <div class="hero-val" id="global-level">1</div>
-                    <div class="hero-label">Уровень</div>
-                </div>
                 <div class="hero-stat-block" style="flex: 2; min-width: 250px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                         <span class="hero-label">Опыт (XP)</span>
@@ -1082,14 +1084,16 @@
                     <div class="hero-xp-bar" style="height: 10px;">
                         <div class="progress-fill" id="global-stamina-bar" style="width:100%; background-color: #ff4444;"></div>
                     </div>
-                </div>
-                <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
+                    
+                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
                         <span class="hero-label">Здоровье ❤️</span>
                         <span id="global-hp-text" style="font-weight:bold; color:var(--danger);">100 / 100</span>
                     </div>
-                    <div class="hero-xp-bar" style="height: 10px;">
+                    <div class="hero-xp-bar" style="height: 10px; margin-bottom: 0;">
                         <div class="progress-fill" id="global-hp-bar" style="width:100%; background-color: var(--danger); box-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
                     </div>
+                    </div>
+                
                 <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
                     <div class="hero-val gold-val" id="global-gold">0</div>
                     <div class="hero-label">Золото</div>
@@ -1098,12 +1102,7 @@
                     </div>
                 </div>
             </div>
-            <div class="btn-group">
-                <button class="btn btn-secondary" onclick="manualEvent()">✨ Добавить опыт за событие</button>
-                <button class="btn btn-secondary" onclick="exportData()">💾 Экспорт данных</button>
-                <button class="btn btn-secondary" onclick="importData()">📂 Импорт данных</button>
-                <button class="btn btn-danger" onclick="logout()">Выход</button>
-            </div>
+            
             <div style="display: flex; gap: 10px; align-items: center; border-left: 1px solid var(--border); padding-left: 15px;">
                 <input type="text" id="userNickname" placeholder="Твой никнейм" onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 10px; border-radius: 4px;">
             </div>
@@ -3480,15 +3479,15 @@
         return `
         <div class="goal-list-node">
         <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
-        <div style="display:flex; justify-content:space-between; align-items:center;">
-        <div style="flex: 1;">
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
+        <div style="flex: 1 1 200px;">
         <div style="display:flex; align-items:center; gap:10px;">
         <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
         <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
         </div>
         ${extraContent}
         </div>
-        <div style="display:flex; gap:8px;">
+        <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
         ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
         <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
         <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
@@ -3502,12 +3501,12 @@
         };
         return `
         <div class="card">
-        <div style="display:flex; justify-content:space-between; align-items:center; border-bottom: 1px solid var(--border); padding-bottom:15px;">
-        <div>
+        <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
+        <div style="flex: 1 1 200px;">
         <h3 style="margin:0; color:${s.color}">${s.name}</h3>
         <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
         </div>
-        <div style="display:flex; gap:10px;">
+        <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
         <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Добавить корень (Цель)</button>
         <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
         </div>
