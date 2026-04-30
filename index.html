@@ -1095,6 +1095,38 @@
                 width: 100%;
             }
         }
+        /* --- Сворачивание навыков и целей --- */
+        .toggle-arrow {
+            cursor: pointer;
+            display: inline-flex;
+            align-items: center;
+            justify-content: center;
+            width: 24px;
+            height: 24px;
+            font-size: 0.9em;
+            color: var(--text-dim);
+            transition: transform 0.2s ease, color 0.2s ease;
+            user-select: none;
+            border-radius: 4px;
+        }
+
+            .toggle-arrow:hover {
+                color: var(--accent);
+                background: rgba(255, 255, 255, 0.05);
+            }
+
+            .toggle-arrow.collapsed {
+                transform: rotate(-90deg); /* Поворот стрелки вправо ▶ */
+            }
+
+        .children-container {
+            transition: all 0.3s ease;
+            transform-origin: top;
+        }
+
+            .children-container.collapsed {
+                display: none;
+            }
     </style>
 </head>
 <body>
@@ -3667,16 +3699,13 @@
 
         document.getElementById('skills-list').innerHTML = state.skills.map(s => {
             const buildListHtml = (parentId) => {
-                // --- ИСПРАВЛЕНИЕ ОТОБРАЖЕНИЯ ЦЕЛЕЙ ---
                 const children = (s.goals || []).filter(n => {
                     if (parentId === null) {
-                        // Показываем в корне: если нет родителя ИЛИ если родитель - это узел графа (не другая цель)
                         const parentIsAnotherGoal = s.goals.some(g => g.id === n.parentId);
                         return !n.parentId || !parentIsAnotherGoal;
                     }
                     return n.parentId === parentId;
                 });
-                // ------------------------------------
                 
                 if (children.length === 0) return '';
 
@@ -3713,13 +3742,20 @@
                         extraContent += `</div>`;
                     }
 
+                    // --- ПРОВЕРКА НАЛИЧИЯ ПОДЦЕЛЕЙ ДЛЯ СТРЕЛОЧКИ ---
+                    const hasChildren = (s.goals || []).some(g => g.parentId === n.id);
+                    const arrowHtml = hasChildren ? 
+                        `<span class="toggle-arrow ${n.collapsed ? 'collapsed' : ''}" onclick="toggleGoalCollapse('${s.id}', '${n.id}')">▼</span>` : 
+                        `<span style="width: 24px; display: inline-block;"></span>`;
+
                     return `
                     <div class="goal-list-node">
                         <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
                             <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
                                 <div style="flex: 1 1 200px;">
-                                    <div style="display:flex; align-items:center; gap:10px;">
-                                        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')">
+                                    <div style="display:flex; align-items:center; gap:5px;">
+                                        ${arrowHtml}
+                                        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')" style="margin-right: 5px;">
                                         <div>
                                             <span class="type-badge ${getTypeClass(n.type)}">${n.type}</span>
                                             <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
@@ -3734,18 +3770,29 @@
                                 </div>
                             </div>
                         </div>
-                        ${buildListHtml(n.id)}
+                        
+                        <!-- КОНТЕЙНЕР ДЛЯ ПОДЦЕЛЕЙ (СКРЫВАЕТСЯ) -->
+                        <div class="children-container ${n.collapsed ? 'collapsed' : ''}">
+                            ${buildListHtml(n.id)}
+                        </div>
                     </div>
                     `;
                 }).join('');
             };
 
+            // --- СТРЕЛОЧКА ДЛЯ САМОГО НАВЫКА ---
+            const skillArrowHtml = `<span class="toggle-arrow ${s.collapsed ? 'collapsed' : ''}" style="font-size: 1.2em; margin-right: 10px;" onclick="toggleSkillCollapse('${s.id}')">▼</span>`;
+
             return `
             <div class="card">
                 <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
-                    <div style="flex: 1 1 200px;">
-                        <h3 style="margin:0; color:${s.color}">${s.name}</h3>
-                        <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
+                    
+                    <div style="flex: 1 1 200px; display: flex; align-items: flex-start; margin-top: 5px;">
+                        ${skillArrowHtml}
+                        <div>
+                            <h3 style="margin:0; color:${s.color}">${s.name}</h3>
+                            <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
+                        </div>
                     </div>
                     
                     <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
@@ -3755,8 +3802,10 @@
                         <button class="btn btn-danger" style="padding: 8px 12px;" onclick="deleteSkill('${s.id}')" title="Удалить навык">✖</button>
                     </div>
                 </div>
-                <div style="margin-top:15px;">
-                    ${buildListHtml(null) || '<div style="color:var(--text-dim);">У этого навыка пока нет целей.</div>'}
+                
+                <!-- КОНТЕЙНЕР НАВЫКА (СКРЫВАЕТСЯ) -->
+                <div class="children-container ${s.collapsed ? 'collapsed' : ''}" style="margin-top:15px;">
+                    ${buildListHtml(null) || '<div style="color:var(--text-dim); padding-left: 34px;">У этого навыка пока нет целей.</div>'}
                 </div>
             </div>
             `;
@@ -4513,6 +4562,24 @@
                 case 'Повторяющаяся': return 'type-habit';
                 case 'Босс': return 'type-boss';
                 default: return '';
+            }
+        }
+        function toggleSkillCollapse(skillId) {
+            const skill = state.skills.find(s => s.id === skillId); 
+            if (skill) {
+                skill.collapsed = !skill.collapsed;
+                save();
+                render();
+            }
+        }
+
+        function toggleGoalCollapse(skillId, goalId) {
+            const skill = state.skills.find(s => s.id === skillId);
+            const goal = skill.goals.find(g => g.id === goalId);
+            if (goal) {
+                goal.collapsed = !goal.collapsed;
+                save();
+                render();
             }
         }
     </script>
