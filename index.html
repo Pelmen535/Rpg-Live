@@ -3707,7 +3707,8 @@
                             title: g.name,
                             subtitle: `🎯 Ручной фокус: ${s.name}`,
                             color: s.color,
-                            action: `toggleNodeDone('${s.id}', '${g.id}')`
+                            action: `toggleNodeDone('${s.id}', '${g.id}')`,
+                            unpinAction: `unpinFocus(event, '${s.id}', '${g.id}')` // Передаем экшен открепления
                         });
                     }
                 });
@@ -3717,11 +3718,14 @@
             const focusHtml = focusItems.map(item => `
             <div class="task-block" style="border-left: 4px solid ${item.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
             onclick="${item.action}">
-                <div>
+                <div style="flex: 1; padding-right: 15px;">
                     <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">${item.subtitle}</div>
                     <strong style="font-size: 1.1em;">${item.title}</strong>
                 </div>
-                <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success); pointer-events: none;">Выполнить</button>
+                <div style="display: flex; gap: 10px; align-items: center;">
+                    ${item.unpinAction ? `<button class="btn btn-tertiary" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em;" onclick="${item.unpinAction}" title="Убрать из фокуса">✖</button>` : ''}
+                    <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success); pointer-events: none;">Выполнить</button>
+                </div>
             </div>
             `).join('');
 
@@ -4615,6 +4619,17 @@
                 goal.collapsed = !goal.collapsed;
                 save();
                 render();
+            }
+        }
+        function unpinFocus(event, skillId, goalId) {
+            event.stopPropagation(); // Чтобы клик не засчитал задачу выполненной
+            const skill = state.skills.find(s => s.id === skillId);
+            if (skill) {
+                const goal = skill.goals.find(g => g.id === goalId);
+                if (goal) {
+                    goal.isFocus = false;
+                    save(); // Сохраняем и перерисовываем Дашборд
+                }
             }
         }
     </script>
