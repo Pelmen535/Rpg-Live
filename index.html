@@ -3766,7 +3766,11 @@
         ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
         ========================================= */
         function render() {
+            // --- ЗАЩИТА ОТ КРАШЕЙ (ПЕРЕНЕСЛИ В САМОЕ НАЧАЛО) ---
             if (!state.inventory) state.inventory = { streakFreezes: 0 };
+            if (!state.calendar) state.calendar = {};
+            if (!state.completedTemplates) state.completedTemplates = {};
+            if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
 
             const todayStr = new Date().toDateString();
             if (state.global.lastLoginDate !== todayStr) {
@@ -3806,6 +3810,7 @@
                     });
                 });
 
+                // Применение урона и проверка на СМЕРТЬ
                 if (damageTaken > 0) {
                     state.global.hp = (state.global.hp || 100) - damageTaken;
                     if (state.global.hp <= 0) {
@@ -3826,8 +3831,10 @@
                 localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
             }
 
+            // Инициализация HP для старых сохранений
             if (typeof state.global.hp === 'undefined') { state.global.hp = 100; state.global.maxHp = 100; }
             
+            // Отрисовка HP и прочей статы
             document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
             document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
             document.getElementById('global-level').innerText = state.global.level;
@@ -3836,7 +3843,6 @@
             document.getElementById('global-xp-bar').style.width = `${(state.global.xp / neededXP) * 100}%`;
             document.getElementById('global-gold').innerText = state.global.gold;
             document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
-
             // --- ЛОГИКА ФОКУСА ДНЯ (АВТО И РУЧНАЯ) ---
             const todayOffset = new Date().getTimezoneOffset() * 60000;
             const todayIso = new Date(Date.now() - todayOffset).toISOString().split('T')[0];
@@ -4034,8 +4040,7 @@
 
             renderFlow();
 
-            if (!state.calendar) state.calendar = {};
-            if (!state.completedTemplates) state.completedTemplates = {};
+       
 
             let rulerHtml = '';
             for (let i = 6; i <= 24; i++) rulerHtml += `<div class="time-slot"><span>${i.toString().padStart(2, '0')}:00</span></div>`;
@@ -4838,5 +4843,3 @@
     </script>
 </body>
 </html>
-
-    
