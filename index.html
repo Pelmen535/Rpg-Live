@@ -1127,6 +1127,61 @@
             .children-container.collapsed {
                 display: none;
             }
+        /* =========================================
+        АККОРДЕОНЫ ДЛЯ СПРАВКИ (КОДЕКС)
+        ========================================= */
+        .accordion-item {
+            background-color: #1a1a20;
+            border: 1px solid var(--border);
+            border-radius: 8px;
+            margin-bottom: 10px;
+            overflow: hidden;
+            transition: border-color 0.2s ease;
+        }
+
+        .accordion-item:hover {
+            border-color: #555555;
+        }
+
+        .accordion-header {
+            padding: 15px 20px;
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            cursor: pointer;
+            font-size: 1.1em;
+            font-weight: bold;
+            background: rgba(255, 255, 255, 0.02);
+            user-select: none;
+        }
+
+        .accordion-icon {
+            font-size: 0.9em;
+            color: var(--text-dim);
+            transition: transform 0.3s ease;
+        }
+
+        .accordion-item.active {
+            border-color: var(--accent);
+        }
+
+        .accordion-item.active .accordion-icon {
+            transform: rotate(-180deg);
+            color: var(--accent);
+        }
+
+        .accordion-content {
+            max-height: 0;
+            padding: 0 20px;
+            opacity: 0;
+            transition: max-height 0.3s ease, padding 0.3s ease, opacity 0.3s ease;
+        }
+
+        .accordion-item.active .accordion-content {
+            padding: 15px 20px;
+            opacity: 1;
+            border-top: 1px solid var(--border);
+        }
     </style>
 </head>
 <body>
@@ -1437,21 +1492,25 @@
         </div>
 
         <div id="info" class="view">
-            <div class="card">
-                <h2 style="color: var(--accent); text-align: center; margin-bottom: 30px;">🎓 Академия: Как играть в свою жизнь (Справка)</h2>
+            <h2 style="color: var(--accent); text-align: center; margin-bottom: 30px;">🎓 Академия: Кодекс Игрока</h2>
 
-                <div style="background: rgba(0, 242, 255, 0.05); border: 1px solid var(--accent); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
-                    <h3 style="color: var(--accent); margin-top: 0;">🚀 Быстрый старт (для новичков за 30 секунд)</h3>
-                    <p style="color: var(--text); line-height: 1.6; margin-bottom: 0;">
-                        Зайдите в раздел <b>«Навыки и Древа»</b>, нажмите <b>«+ Создать Навык»</b>, а затем внутри него добавьте свою первую цель через кнопку <b>«+ Добавить корень»</b>. Перейдите к появившейся карточке, поставьте галочку выполнения — и вы тут же получите свою первую порцию опыта (XP) и золота! Обязательно тратьте заработанное золото в <b>«Магазине»</b> на реальные удовольствия (например, «Поиграть в приставку»), иначе ваш персонаж получит штраф за выгорание.
-                    </p>
-                </div>
+            <div style="background: rgba(0, 242, 255, 0.05); border: 1px solid var(--accent); padding: 20px; border-radius: 8px; margin-bottom: 25px;">
+                <h3 style="color: var(--accent); margin-top: 0;">🚀 Быстрый старт (для новичков за 30 секунд)</h3>
+                <p style="color: var(--text); line-height: 1.6; margin-bottom: 0;">
+                    Зайдите в раздел <b>«Навыки и Древа»</b>, нажмите <b>«+ Создать Навык»</b>, а затем внутри него добавьте свою первую цель через кнопку <b>«+ Цель»</b>. Перейдите к появившейся карточке, поставьте галочку выполнения — и вы тут же получите свою первую порцию опыта (XP) и золота! Обязательно тратьте заработанное золото в <b>«Магазине»</b> на реальные удовольствия (например, «Поиграть в приставку»), иначе ваш персонаж получит штраф за выгорание.
+                </p>
+            </div>
 
-                <div style="display: grid; grid-template-columns: repeat(auto-fit, minmax(320px, 1fr)); gap: 20px;">
+            <!-- КОНТЕЙНЕР АККОРДЕОНОВ -->
+            <div class="accordion-container">
 
-                    <div class="goal-list-item">
-                        <h4 style="margin: 0 0 10px 0; color: var(--gold);">📝 Как завести задачу (без хаоса и стресса)</h4>
-                        <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: var(--gold);">📝 Как завести задачу (типы целей)</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <ul style="color: var(--text-dim); font-size: 0.95em; padding-left: 20px; margin: 0; line-height: 1.6;">
                             <li>
                                 <b>Типы целей:</b>
                                 <ul style="padding-left: 15px; margin: 5px 0 0 0;">
@@ -1464,38 +1523,58 @@
                             <li style="margin-top: 10px;"><b>Фокус дня 🎯:</b> В настройках любой задачи можно поставить галочку "Сделать Фокусом Дня". Такая задача будет закреплена на самом верху главного Дашборда, чтобы мозг не распылялся на мелочи.</li>
                         </ul>
                     </div>
+                </div>
 
-                    <div class="goal-list-item">
-                        <h4 style="margin: 0 0 10px 0; color: var(--xp-color);">⚔️ Геймификация (Как прокачать персонажа и не умереть)</h4>
-                        <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: var(--xp-color);">⚔️ Геймификация (Прокачка и Выгорание)</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <ul style="color: var(--text-dim); font-size: 0.95em; padding-left: 20px; margin: 0; line-height: 1.6;">
                             <li><b>Как получить опыт и золото:</b> выполняйте задачи. Чем глобальнее задача, тем больше награда (до 200 XP за долгосрочную). <b>Секрет x2:</b> если запустить задачу через таймер в разделе «ПОТОК» и сфокусированно работать, награда удвоится!</li>
                             <li><b>Система Выгорания (Энергия ⚡):</b> любая работа требует сил. На каждое выполненное дело вы тратите шкалу Энергии. Если она упадет до 0 — наступает <b>Выгорание</b>! Что будет? Система заблокирует начисление опыта и золота. Чтобы восстановить Энергию, идите в «Магазин» и купите себе отдых за золото. Игра заставляет вас отдыхать без чувства вины.</li>
                             <li><b>Стрики и Заморозки:</b> пропустили выполнение «Повторяющейся» задачи? Ваш стрик (цепочка дней) сбросится до нуля. Чтобы защититься, зайдите в Магазин и купите <b>«Заморозку стрейка ❄️»</b> (200 золота). Она сработает автоматически и спасет прогресс, если вы случайно забудете отметиться в системе.</li>
                             <li><b>Лутбоксы 🎁:</b> выполняете задачи, но чувствуете рутину? Каждые 5 любых выполненных дел дают вам 1 Лутбокс со случайной дополнительной наградой.</li>
                         </ul>
                     </div>
+                </div>
 
-                    <div class="goal-list-item">
-                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">📅 Расписание и тайм-менеджмент</h4>
-                        <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: var(--success);">📅 Расписание и тайм-менеджмент</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <ul style="color: var(--text-dim); font-size: 0.95em; padding-left: 20px; margin: 0; line-height: 1.6;">
                             <li><b>Шаблон (База) vs Динамика (Конвейер):</b> вкладка «Шаблон» — это ваш идеальный скелет недели (например, тренировки по средам, пары в универе). Вы настраиваете их один раз. Вкладка «Динамика» — это реальные дни (сегодня, завтра), куда автоматически подтягиваются ваши шаблоны + разовые уникальные события, которые вы назначили на конкретную дату.</li>
                             <li><b>Защита от перепланирования:</b> если вы попытаетесь поставить две задачи на одно и то же время, система выдаст алерт: «⚠️ Наложение! В это время у вас запланировано: [Название]. Всё равно сохранить?». Вы сможете скорректировать время до того, как сломаете свой график.</li>
                             <li><b>Куда деваются выполненные:</b> в расписании они просто элегантно зачеркиваются. А в разделе «Навыки» рядом с выполненной задачей появится кнопка <b>«Архив»</b>. Нажмите её, чтобы убрать задачу с экрана, навсегда сохранив её в Зале Славы (раздел «Аналитика»).</li>
                         </ul>
                     </div>
+                </div>
 
-                    <div class="goal-list-item" style="border-color: var(--accent);">
-                        <h4 style="margin: 0 0 10px 0; color: var(--accent);">🌐 Мультиплеер и Таблица Лидеров</h4>
-                        <ul style="color: var(--text-dim); font-size: 0.9em; padding-left: 20px; margin: 0; line-height: 1.6;">
-                            <li><b>Никнейм:</b> На главном Дашборде (рядом с кнопками экспорта) можно вписать свой ник. Он сохранится автоматически.</li>
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: var(--accent);">🌐 Мультиплеер и Таблица Лидеров</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <ul style="color: var(--text-dim); font-size: 0.95em; padding-left: 20px; margin: 0; line-height: 1.6;">
+                            <li><b>Никнейм:</b> На главном Дашборде можно вписать свой ник. Он сохранится автоматически.</li>
                             <li><b>Глобальный топ:</b> Во вкладке «Сеть 🌐» отображается топ лучших игроков по уровню и опыту в реальном времени. Все ваши действия отправляются в облако.</li>
                             <li><b>Синхронизация по воздуху:</b> Ваши устройства теперь связываются через облако Firebase. Откройте приложение на ПК и на телефоне, войдите под одним аккаунтом — и прогресс будет мгновенно синхронизироваться!</li>
                         </ul>
                     </div>
+                </div>
 
-                    <div class="goal-list-item" style="border-color: var(--danger);">
-                        <h4 style="margin: 0 0 10px 0; color: var(--danger);">❓ Частые ошибки и вопросы (FAQ)</h4>
-                        <div style="color: var(--text-dim); font-size: 0.85em; line-height: 1.6;">
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: var(--danger);">❓ Частые ошибки и вопросы (FAQ)</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <div style="color: var(--text-dim); font-size: 0.95em; line-height: 1.6;">
                             <b>«Я отметил задачу сделанной, но опыт не пришел. Почему?»</b>
                             <ul style="padding-left: 20px; margin: 4px 0 10px 0;">
                                 <li><b>Причина 1:</b> Вы словили Выгорание (шкала Энергии на Дашборде пуста). Срочно идите в Магазин и покупайте «Отдых»!</li>
@@ -1504,25 +1583,29 @@
                             </ul>
                             <b>«Я пропустил 3 дня из-за болезни. Мой уровень и золото сбросятся?»</b>
                             <p style="margin: 4px 0 10px 0;">Нет! Глобальный уровень, XP и золото не сгорают никогда. Сбросятся только счетчики стриков у ваших ежедневных привычек (если у вас не было куплено «Заморозок»). Возвращайтесь в игру в любой момент.</p>
-                            <b>«Как удалить задачу, чтобы не сломать учёт выполнений за прошлую неделю?»</b>
+                            <b>«Как удалить задачу, чтобы не сломать учёт?»</b>
                             <p style="margin: 4px 0 0 0;">Никогда не используйте красную кнопку «Удалить» в режиме редактирования для выполненных дел! Удаление стирает задачу из базы. Чтобы сохранить прогресс в статистике, используйте серую кнопку <b>«Архив»</b> — она появляется прямо на карточке задачи сразу после того, как вы ставите галочку выполнения.</p>
                         </div>
                     </div>
-
                 </div>
 
-                <div style="margin-top: 25px; padding: 15px; border: 1px dashed var(--border); border-radius: 8px;">
-                    <h4 style="margin: 0 0 10px 0; color: #fff;">🕵️ Скрытые фичи для Pro-игроков (Тайные механики)</h4>
-                    <p style="color: var(--text-dim); font-size: 0.9em; margin: 0; line-height: 1.6;">
-                        • <b>Правый клик в Расписании:</b> не нужно открывать задачу и искать кнопку редактирования. Нажмите по блоку в Расписании правой кнопкой мыши (или удерживайте палец на смартфоне), и окно настроек времени откроется мгновенно.<br>
-                        • <b>Магия Визуального Графа:</b> в режиме «Визуал. Граф» (раздел Навыков):<br>
-                        • Двойной клик по узлу — быстрое переименование и добавление конспекта.<br>
-                        • Правый клик по узлу — мгновенное удаление без лишних окон.<br>
-                        • Кнопки (+) по бокам узла — быстрое ветвление майндмапа в нужную сторону.<br>
-                        • <b>Античит ручного фарма:</b> на Дашборде есть кнопка «✨ Добавить опыт за событие» (на случай, если вы в реальности сделали крутую вещь вне плана). Но Мастер Игры бдит: эта кнопка сработает не более 3 раз в сутки.<br>
-                        • <b>Синхронизация по воздуху (WebRTC):</b> на Дашборде есть поле синхронизации. Откройте приложение на ПК и на телефоне, введите ID — и ваши устройства свяжутся напрямую (P2P), мгновенно передавая сохранения без участия серверов!
-                    </p>
+                <div class="accordion-item" onclick="toggleAccordion(this)">
+                    <div class="accordion-header">
+                        <span style="color: #ffffff;">🕵️ Скрытые фичи для Pro-игроков</span>
+                        <span class="accordion-icon">▼</span>
+                    </div>
+                    <div class="accordion-content">
+                        <p style="color: var(--text-dim); font-size: 0.95em; margin: 0; line-height: 1.6;">
+                            • <b>Правый клик в Расписании:</b> не нужно открывать задачу и искать кнопку редактирования. Нажмите по блоку в Расписании правой кнопкой мыши (или удерживайте палец на смартфоне), и окно настроек времени откроется мгновенно.<br><br>
+                            • <b>Магия Визуального Графа:</b> в режиме «Визуал. Граф» (раздел Навыков):<br>
+                            &nbsp;&nbsp;&nbsp;— Двойной клик по узлу — быстрое переименование и добавление конспекта.<br>
+                            &nbsp;&nbsp;&nbsp;— Правый клик по узлу — мгновенное удаление без лишних окон.<br>
+                            &nbsp;&nbsp;&nbsp;— Кнопки (+) по бокам узла — быстрое ветвление майндмапа в нужную сторону.<br><br>
+                            • <b>Античит ручного фарма:</b> на Дашборде есть кнопка «✨ Добавить опыт за событие» (на случай, если вы в реальности сделали крутую вещь вне плана). Но Мастер Игры бдит: эта кнопка сработает не более 3 раз в сутки.<br>
+                        </p>
+                    </div>
                 </div>
+
             </div>
         </div>
 
@@ -4630,6 +4713,23 @@
                     goal.isFocus = false;
                     save(); // Сохраняем и перерисовываем Дашборд
                 }
+            }
+        }
+        function toggleAccordion(element) {
+            const isActive = element.classList.contains('active');
+            
+            // Закрываем все остальные вкладки, чтобы экран был чистым
+            document.querySelectorAll('.accordion-item').forEach(item => {
+                item.classList.remove('active');
+                item.querySelector('.accordion-content').style.maxHeight = null;
+            });
+
+            // Открываем ту, на которую кликнули
+            if (!isActive) {
+                element.classList.add('active');
+                const content = element.querySelector('.accordion-content');
+                // Высчитываем реальную высоту контента для плавной анимации
+                content.style.maxHeight = content.scrollHeight + 50 + "px"; 
             }
         }
     </script>
