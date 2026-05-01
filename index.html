@@ -1347,9 +1347,9 @@
                 <div id="flow-setup">
                     <div style="display:flex; flex-direction:column; gap:10px; margin: 30px 0;">
                         <label style="color:var(--text); margin-bottom:0; font-size: 1.1em;">Выберите цель из вашей базы:</label>
-                        <div style="display:flex; gap:15px;">
-                            <select id="flowGoalSelect" style="margin:0; flex:3;"></select>
-                            <button class="btn btn-primary" onclick="addFlowGoal()">Добавить в Поток</button>
+                        <div style="display:flex; flex-wrap:wrap; gap:15px; align-items:center;">
+                            <select id="flowGoalSelect" style="margin:0; flex: 1 1 250px; min-width:0; padding:12px; border-radius:4px; background:#0b0b0d; color:#fff; border:1px solid var(--border);"></select>
+                            <button class="btn btn-primary" style="flex:0 0 auto; white-space:nowrap;" onclick="addFlowGoal()">Добавить в Поток</button>
                         </div>
                     </div>
 
@@ -2916,36 +2916,44 @@
         }
 
         function buyItem(id) {
-        const item = state.store.find(i => i.id === id);
-        if (state.global.gold >= item.price) {
-        state.global.gold -= item.price;
+            const item = state.store.find(i => String(i.id) === String(id));
+            if (!item) return;
 
-        if (item.isSpecial) {
-            if (item.id === 'freeze') {
-                if (!state.inventory) state.inventory = { streakFreezes: 0 };
-                state.inventory.streakFreezes++;
-                alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
-            } else if (item.id === 'heal') {
-                state.global.hp = Math.min(state.global.maxHp || 100, (state.global.hp || 100) + (item.heal || 30));
-                alert(`Вы выпили зелье 🧪! Восстановлено 30 HP. Текущее здоровье: ${state.global.hp}`);
-            }
-        } else {
-            const restoreAmount = item.stamina || 0;
-            if (restoreAmount > 0) {
-                state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-                state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
-                alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
+            if (state.global.gold >= item.price) {
+                state.global.gold -= item.price;
+
+                if (item.isSpecial) {
+                    if (item.id === 'freeze') {
+                        if (!state.inventory) state.inventory = { streakFreezes: 0 };
+                        state.inventory.streakFreezes++;
+                        alert(`Куплена заморозка стрейка ❄️! Теперь их: ${state.inventory.streakFreezes}`);
+                    } else if (item.id === 'heal') {
+                        state.global.hp = Math.min(state.global.maxHp || 100, (state.global.hp || 100) + (item.heal || 30));
+                        alert(`Вы выпили зелье 🧪! Восстановлено 30 HP. Текущее здоровье: ${state.global.hp}`);
+                    }
+                } else {
+                    const restoreAmount = item.stamina || 0;
+                    if (restoreAmount > 0) {
+                        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+                        state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
+                        alert(`Отдых удался: ${item.name}! Восстановлено ${restoreAmount} Энергии ⚡.`);
+                    } else {
+                        alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
+                    }
+                }
+
+                item.price = Math.ceil(item.price * 1.15);
+                save();
             } else {
-                alert(`Покупка успешно совершена: ${item.name}! Наслаждайтесь.`);
+                alert(`Не хватает золота! Нужно еще ${item.price - state.global.gold}. Идите выполнять цели.`);
             }
         }
 
-        item.price = Math.ceil(item.price * 1.15);
-
-        save();
-        } else {
-        alert(`Не хватает золота! Нужно еще ${item.price - state.global.gold}. Идите выполнять цели.`);
-        }
+        function deleteStoreItem(id) {
+            if (confirm('Вы уверены, что хотите удалить эту награду?')) {
+                state.store = state.store.filter(i => String(i.id) !== String(id));
+                save();
+            }
         }
 
         function deleteStoreItem(id) {
@@ -3585,339 +3593,340 @@
         ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
         ========================================= */
         function render() {
-        if (!state.inventory) state.inventory = { streakFreezes: 0 };
+            if (!state.inventory) state.inventory = { streakFreezes: 0 };
 
-        const todayStr = new Date().toDateString();
-        if (state.global.lastLoginDate !== todayStr) {
-            let damageTaken = 0;
+            const todayStr = new Date().toDateString();
+            if (state.global.lastLoginDate !== todayStr) {
+                let damageTaken = 0;
 
-            state.skills.forEach(s => {
-                (s.goals || []).forEach(g => {
-                    // 1. Урон от пропущенных привычек
-                    if (g.type === 'Повторяющаяся') {
-                        g.done = false;
-                        const yesterday = new Date();
-                        yesterday.setDate(yesterday.getDate() - 1);
+                state.skills.forEach(s => {
+                    (s.goals || []).forEach(g => {
+                        // 1. Урон от пропущенных привычек
+                        if (g.type === 'Повторяющаяся') {
+                            g.done = false;
+                            const yesterday = new Date();
+                            yesterday.setDate(yesterday.getDate() - 1);
 
-                        if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                            if (state.inventory.streakFreezes > 0) {
-                                state.inventory.streakFreezes--;
-                                console.log(`Использована заморозка для: ${g.name}`);
-                            } else {
-                                g.streak = 0; 
-                                damageTaken += 10; // 10 урона за каждую пропущенную привычку
+                            if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+                                if (state.inventory.streakFreezes > 0) {
+                                    state.inventory.streakFreezes--;
+                                    console.log(`Использована заморозка для: ${g.name}`);
+                                } else {
+                                    g.streak = 0; 
+                                    damageTaken += 10;
+                                }
                             }
                         }
-                    }
-                    // 2. Урон от проваленных Боссов
-                    if (g.type === 'Босс' && !g.done && g.deadline) {
-                        const deadlineDate = new Date(g.deadline);
-                        deadlineDate.setHours(0,0,0,0);
-                        const todayDate = new Date();
-                        todayDate.setHours(0,0,0,0);
-                        
-                        if (deadlineDate < todayDate) {
-                            damageTaken += 50; // 50 урона за провал дедлайна босса
-                            g.done = true; // Босс "уходит"
-                            alert(`💀 Вы провалили дедлайн босса "${g.name}"! Получено 50 урона.`);
+                        // 2. Урон от проваленных Боссов
+                        if (g.type === 'Босс' && !g.done && g.deadline) {
+                            const deadlineDate = new Date(g.deadline);
+                            deadlineDate.setHours(0,0,0,0);
+                            const todayDate = new Date();
+                            todayDate.setHours(0,0,0,0);
+                            
+                            if (deadlineDate < todayDate) {
+                                damageTaken += 50; 
+                                g.done = true; 
+                                alert(`💀 Вы провалили дедлайн босса "${g.name}"! Получено 50 урона.`);
+                            }
                         }
+                    });
+                });
+
+                if (damageTaken > 0) {
+                    state.global.hp = (state.global.hp || 100) - damageTaken;
+                    if (state.global.hp <= 0) {
+                        alert(`☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики привычек\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь снова!`);
+                        state.global.level = Math.max(1, state.global.level - 1);
+                        state.global.gold = Math.floor(state.global.gold / 2);
+                        state.global.hp = 100;
+                        if (!state.analytics) state.analytics = {};
+                        state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
+                    } else {
+                        alert(`🌙 Ночной отчет: Вы получили ${damageTaken} урона за пропущенные задачи! Осталось HP: ${state.global.hp}`);
+                    }
+                }
+
+                state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
+                state.global.stamina = state.global.maxStamina;
+                state.global.lastLoginDate = todayStr;
+                localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+            }
+
+            if (typeof state.global.hp === 'undefined') { state.global.hp = 100; state.global.maxHp = 100; }
+            
+            document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
+            document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
+            document.getElementById('global-level').innerText = state.global.level;
+            let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
+            document.getElementById('global-xp-text').innerText = `${state.global.xp} / ${neededXP}`;
+            document.getElementById('global-xp-bar').style.width = `${(state.global.xp / neededXP) * 100}%`;
+            document.getElementById('global-gold').innerText = state.global.gold;
+            document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
+
+            // --- ЛОГИКА ФОКУСА ДНЯ (АВТО И РУЧНАЯ) ---
+            // 1. Вычисляем текущие запланированные цели из расписания на СЕГОДНЯ
+            const todayOffset = new Date().getTimezoneOffset() * 60000;
+            const todayIso = new Date(Date.now() - todayOffset).toISOString().split('T')[0];
+            const todayDayOfWeek = new Date().getDay();
+            
+            const scheduledTasksToday = [
+                ...(state.schedule[todayDayOfWeek] || []),
+                ...(state.calendar[todayIso] || [])
+            ];
+            // Собираем ID целей, привязанных к сегодняшнему расписанию
+            const scheduledGoalIds = scheduledTasksToday.map(t => t.goalId).filter(id => id);
+
+            // 2. Формируем список фокуса
+            const focusTasks = [];
+            state.skills.forEach(s => {
+                (s.goals || []).filter(g => !g.done && (g.isFocus || scheduledGoalIds.includes(g.id))).forEach(g => {
+                    // Защита от дублирования, если на 1 цель назначено 2 блока времени
+                    if (!focusTasks.find(ft => ft.goal.id === g.id)) {
+                        focusTasks.push({ skill: s, goal: g });
                     }
                 });
             });
 
-            // Применение урона и проверка на СМЕРТЬ
-            if (damageTaken > 0) {
-                state.global.hp = (state.global.hp || 100) - damageTaken;
-                if (state.global.hp <= 0) {
-                    alert(`☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики привычек\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь снова!`);
-                    state.global.level = Math.max(1, state.global.level - 1);
-                    state.global.gold = Math.floor(state.global.gold / 2);
-                    state.global.hp = 100;
-                    if (!state.analytics) state.analytics = {};
-                    state.analytics.deaths = (state.analytics.deaths || 0) + 1; // Для ачивки
-                } else {
-                    alert(`🌙 Ночной отчет: Вы получили ${damageTaken} урона за пропущенные задачи! Осталось HP: ${state.global.hp}`);
-                }
+            const focusHtml = focusTasks.map(ft => `
+            <div class="task-block" style="border-left: 4px solid ${ft.skill.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
+            onclick="toggleNodeDone('${ft.skill.id}', '${ft.goal.id}')">
+            <div>
+            <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">🎯 Фокус: ${ft.skill.name}</div>
+            <strong style="font-size: 1.1em;">${ft.goal.name}</strong>
+            </div>
+            <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success);">Выполнить</button>
+            </div>
+            `).join('');
+
+            let focusContainer = document.getElementById('dash-focus-container');
+            if (!focusContainer) {
+                document.getElementById('dash-summary').insertAdjacentHTML('beforebegin', '<div id="dash-focus-container"></div>');
+                focusContainer = document.getElementById('dash-focus-container');
             }
+            focusContainer.innerHTML = focusHtml ? `<h3 style="color: var(--gold);">🎯 Фокус дня</h3>${focusHtml}<hr style="border-color: var(--border); margin: 25px 0;">` : '';
 
-            state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-            state.global.stamina = state.global.maxStamina;
-            state.global.lastLoginDate = todayStr;
-            localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-        }
+            document.getElementById('dash-summary').innerHTML = state.skills.map(s => `
+            <div class="card" style="border-top: 3px solid ${s.color}; margin-bottom: 0;">
+            <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
+            <strong style="font-size: 1.1em;">${s.name}</strong>
+            <span style="background:#222; padding:3px 8px; border-radius:4px; font-size:0.8em;">Ур. ${s.level}</span>
+            </div>
+            <div style="font-size:0.8em; color:var(--text-dim); margin-bottom:6px;">XP: ${s.xp} / 100</div>
+            <div style="height:6px; background:#000; border-radius: 3px; overflow: hidden;">
+            <div style="width:${s.xp}%; height:100%; background:${s.color};"></div>
+            </div>
+            </div>
+            `).join('') || '<div style="color:var(--text-dim);">Добавьте первый навык.</div>';
 
-        // Инициализация HP для старых сохранений
-        if (typeof state.global.hp === 'undefined') { state.global.hp = 100; state.global.maxHp = 100; }
-        
-        // Отрисовка HP
-        document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
-        document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
-        document.getElementById('global-level').innerText = state.global.level;
-        let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
-        document.getElementById('global-xp-text').innerText = `${state.global.xp} / ${neededXP}`;
-        document.getElementById('global-xp-bar').style.width = `${(state.global.xp / neededXP) * 100}%`;
-        document.getElementById('global-gold').innerText = state.global.gold;
-        document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
-
-        const focusTasks = [];
-        state.skills.forEach(s => {
-        (s.goals || []).filter(g => g.isFocus && !g.done).forEach(g => {
-        focusTasks.push({ skill: s, goal: g });
-        });
-        });
-
-        const focusHtml = focusTasks.map(ft => `
-        <div class="task-block" style="border-left: 4px solid ${ft.skill.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
-        onclick="toggleNodeDone('${ft.skill.id}', '${ft.goal.id}')">
-        <div>
-        <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">🎯 Фокус: ${ft.skill.name}</div>
-        <strong style="font-size: 1.1em;">${ft.goal.name}</strong>
-        </div>
-        <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success);">Выполнить</button>
-        </div>
-        `).join('');
-
-        let focusContainer = document.getElementById('dash-focus-container');
-        if (!focusContainer) {
-        document.getElementById('dash-summary').insertAdjacentHTML('beforebegin', '<div id="dash-focus-container"></div>');
-        focusContainer = document.getElementById('dash-focus-container');
-        }
-        focusContainer.innerHTML = focusHtml ? `<h3 style="color: var(--gold);">🎯 Фокус дня</h3>${focusHtml}<hr style="border-color: var(--border); margin: 25px 0;">` : '';
-
-        document.getElementById('dash-summary').innerHTML = state.skills.map(s => `
-        <div class="card" style="border-top: 3px solid ${s.color}; margin-bottom: 0;">
-        <div style="display:flex; justify-content:space-between; margin-bottom:10px;">
-        <strong style="font-size: 1.1em;">${s.name}</strong>
-        <span style="background:#222; padding:3px 8px; border-radius:4px; font-size:0.8em;">Ур. ${s.level}</span>
-        </div>
-        <div style="font-size:0.8em; color:var(--text-dim); margin-bottom:6px;">XP: ${s.xp} / 100</div>
-        <div style="height:6px; background:#000; border-radius: 3px; overflow: hidden;">
-        <div style="width:${s.xp}%; height:100%; background:${s.color};"></div>
-        </div>
-        </div>
-        `).join('') || '<div style="color:var(--text-dim);">Добавьте первый навык.</div>';
-
-        document.getElementById('skills-list').innerHTML = state.skills.map(s => {
-            const buildListHtml = (parentId) => {
-                const children = (s.goals || []).filter(n => {
-                    if (parentId === null) {
-                        const parentIsAnotherGoal = s.goals.some(g => g.id === n.parentId);
-                        return !n.parentId || !parentIsAnotherGoal;
-                    }
-                    return n.parentId === parentId;
-                });
-                
-                if (children.length === 0) return '';
-
-                return children.map(n => {
-                    let extraContent = '';
-
-                    if (n.type === 'Долгосрочная') {
-                        const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
-                        const doneCount = subTasks.filter(sub => sub.done).length;
-                        const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
-                        extraContent = `
-                        <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
-                        <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
-                        `;
-                    }
-
-                    if (n.type === 'Босс') {
-                        const hpPercent = Math.max(0, (n.hp / n.maxHp) * 100);
-                        extraContent = `
-                        <div style="font-size: 0.8em; color: var(--danger); margin-top: 10px; font-weight: bold;">👿 БОСС: ${n.hp} / ${n.maxHp} HP</div>
-                        <div class="project-progress-container" style="border-color: var(--danger); height: 10px; background: #222;">
-                        <div class="project-progress-fill" style="width: ${hpPercent}%; background: var(--danger);"></div>
-                        </div>
-                        ${n.deadline ? `<div style="font-size: 0.7em; color: var(--text-dim); margin-top: 4px;">⏳ Убить до: ${n.deadline}</div>` : ''}
-                        `;
-                    }
-
-                    if (n.type === 'Повторяющаяся') {
-                        extraContent = `<div class="habit-grid-mini">`;
-                        for(let i=0; i<7; i++) {
-                            const isActive = (n.streak || 0) > i;
-                            extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
+            document.getElementById('skills-list').innerHTML = state.skills.map(s => {
+                const buildListHtml = (parentId) => {
+                    const children = (s.goals || []).filter(n => {
+                        if (parentId === null) {
+                            const parentIsAnotherGoal = s.goals.some(g => g.id === n.parentId);
+                            return !n.parentId || !parentIsAnotherGoal;
                         }
-                        extraContent += `</div>`;
-                    }
+                        return n.parentId === parentId;
+                    });
+                    
+                    if (children.length === 0) return '';
 
-                    // --- ПРОВЕРКА НАЛИЧИЯ ПОДЦЕЛЕЙ ДЛЯ СТРЕЛОЧКИ ---
-                    const hasChildren = (s.goals || []).some(g => g.parentId === n.id);
-                    const arrowHtml = hasChildren ? 
-                        `<span class="toggle-arrow ${n.collapsed ? 'collapsed' : ''}" onclick="toggleGoalCollapse('${s.id}', '${n.id}')">▼</span>` : 
-                        `<span style="width: 24px; display: inline-block;"></span>`;
+                    return children.map(n => {
+                        let extraContent = '';
 
-                    return `
-                    <div class="goal-list-node">
-                        <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
-                            <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
-                                <div style="flex: 1 1 200px;">
-                                    <div style="display:flex; align-items:center; gap:5px;">
-                                        ${arrowHtml}
-                                        <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')" style="margin-right: 5px;">
-                                        <div>
-                                            <span class="type-badge ${getTypeClass(n.type)}">${n.type}</span>
-                                            <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+                        if (n.type === 'Долгосрочная') {
+                            const subTasks = (s.goals || []).filter(sub => sub.parentId === n.id);
+                            const doneCount = subTasks.filter(sub => sub.done).length;
+                            const progress = subTasks.length > 0 ? Math.round((doneCount / subTasks.length) * 100) : (n.done ? 100 : 0);
+                            extraContent = `
+                            <div style="font-size: 0.7em; color: var(--text-dim); margin-top: 5px;">Прогресс проекта: ${progress}%</div>
+                            <div class="project-progress-container"><div class="project-progress-fill" style="width: ${progress}%"></div></div>
+                            `;
+                        }
+
+                        if (n.type === 'Босс') {
+                            const hpPercent = Math.max(0, (n.hp / n.maxHp) * 100);
+                            extraContent = `
+                            <div style="font-size: 0.8em; color: var(--danger); margin-top: 10px; font-weight: bold;">👿 БОСС: ${n.hp} / ${n.maxHp} HP</div>
+                            <div class="project-progress-container" style="border-color: var(--danger); height: 10px; background: #222;">
+                            <div class="project-progress-fill" style="width: ${hpPercent}%; background: var(--danger);"></div>
+                            </div>
+                            ${n.deadline ? `<div style="font-size: 0.7em; color: var(--text-dim); margin-top: 4px;">⏳ Убить до: ${n.deadline}</div>` : ''}
+                            `;
+                        }
+
+                        if (n.type === 'Повторяющаяся') {
+                            extraContent = `<div class="habit-grid-mini">`;
+                            for(let i=0; i<7; i++) {
+                                const isActive = (n.streak || 0) > i;
+                                extraContent += `<div class="habit-day-dot ${isActive ? 'active' : ''}"></div>`;
+                            }
+                            extraContent += `</div>`;
+                        }
+
+                        const hasChildren = (s.goals || []).some(g => g.parentId === n.id);
+                        const arrowHtml = hasChildren ? 
+                            `<span class="toggle-arrow ${n.collapsed ? 'collapsed' : ''}" onclick="toggleGoalCollapse('${s.id}', '${n.id}')">▼</span>` : 
+                            `<span style="width: 24px; display: inline-block;"></span>`;
+
+                        return `
+                        <div class="goal-list-node">
+                            <div class="goal-list-item" style="border-left: 3px solid ${n.done ? 'var(--success)' : '#555'}">
+                                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap:wrap; gap:15px;">
+                                    <div style="flex: 1 1 200px;">
+                                        <div style="display:flex; align-items:center; gap:5px;">
+                                            ${arrowHtml}
+                                            <input type="checkbox" ${n.done ? 'checked' : ''} onclick="toggleNodeDone('${s.id}', '${n.id}')" style="margin-right: 5px;">
+                                            <div>
+                                                <span class="type-badge ${getTypeClass(n.type)}">${n.type}</span>
+                                                <strong style="${n.done ? 'text-decoration:line-through; color:#666;' : ''}">${n.name}</strong>
+                                            </div>
                                         </div>
+                                        ${extraContent}
                                     </div>
-                                    ${extraContent}
-                                </div>
-                                <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
-                                    ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-                                    <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
-                                    <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
+                                    <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
+                                        ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
+                                        <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
+                                        <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
+                                    </div>
                                 </div>
                             </div>
+                            <div class="children-container ${n.collapsed ? 'collapsed' : ''}">
+                                ${buildListHtml(n.id)}
+                            </div>
                         </div>
-                        
-                        <!-- КОНТЕЙНЕР ДЛЯ ПОДЦЕЛЕЙ (СКРЫВАЕТСЯ) -->
-                        <div class="children-container ${n.collapsed ? 'collapsed' : ''}">
-                            ${buildListHtml(n.id)}
+                        `;
+                    }).join('');
+                };
+
+                const skillArrowHtml = `<span class="toggle-arrow ${s.collapsed ? 'collapsed' : ''}" style="font-size: 1.2em; margin-right: 10px;" onclick="toggleSkillCollapse('${s.id}')">▼</span>`;
+
+                return `
+                <div class="card">
+                    <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
+                        <div style="flex: 1 1 200px; display: flex; align-items: flex-start; margin-top: 5px;">
+                            ${skillArrowHtml}
+                            <div>
+                                <h3 style="margin:0; color:${s.color}">${s.name}</h3>
+                                <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
+                            </div>
+                        </div>
+                        <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
+                            <button class="btn btn-secondary" onclick="exportSkillById('${s.id}')">💾 Экспорт</button>
+                            <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Цель</button>
+                            <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
+                            <button class="btn btn-danger" style="padding: 8px 12px;" onclick="deleteSkill('${s.id}')" title="Удалить навык">✖</button>
                         </div>
                     </div>
-                    `;
-                }).join('');
+                    <div class="children-container ${s.collapsed ? 'collapsed' : ''}" style="margin-top:15px;">
+                        ${buildListHtml(null) || '<div style="color:var(--text-dim); padding-left: 34px;">У этого навыка пока нет целей.</div>'}
+                    </div>
+                </div>
+                `;
+            }).join('');
+
+            if (activeTreeSkillId) {
+                renderCanvas();
+            }
+
+            renderFlow();
+
+            if (!state.calendar) state.calendar = {};
+            if (!state.completedTemplates) state.completedTemplates = {};
+
+            let rulerHtml = '';
+            for (let i = 6; i <= 24; i++) rulerHtml += `<div class="time-slot"><span>${i.toString().padStart(2, '0')}:00</span></div>`;
+            document.getElementById('time-ruler').innerHTML = rulerHtml;
+
+            const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
+            let weekHtml = '';
+
+            const today = new Date();
+            const offset = today.getTimezoneOffset() * 60000;
+
+            const renderTaskCard = (t, isDynamic, dateStr) => {
+                const skill = state.skills.find(x => x.id === t.skillId);
+                const colorBorder = skill ? skill.color : '#555';
+                const styleDate = t._type === 'date' ? 'background: rgba(255, 255, 255, 0.08); border-style: dashed;' : '';
+
+                let isDone = t.done;
+                if (isDynamic && t._type === 'template') {
+                    isDone = state.completedTemplates[dateStr] && state.completedTemplates[dateStr].includes(t.id);
+                }
+
+                return `
+                <div class="task-block ${isDone ? 'done' : ''}"
+                style="border-left: 4px solid ${colorBorder}; ${styleDate}"
+                onclick="toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${isDynamic ? dateStr : ''}')"
+                oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id})">
+                <div class="task-time">🕒 ${t.time} (${t.duration}м)</div>
+                <div class="task-title">${t.title}</div>
+                ${skill ? `<div style="font-size:0.75em; color:${colorBorder}; margin-top:6px; font-weight:bold;">${skill.name}</div>` : ''}
+                </div>
+                `;
             };
 
-            // --- СТРЕЛОЧКА ДЛЯ САМОГО НАВЫКА ---
-            const skillArrowHtml = `<span class="toggle-arrow ${s.collapsed ? 'collapsed' : ''}" style="font-size: 1.2em; margin-right: 10px;" onclick="toggleSkillCollapse('${s.id}')">▼</span>`;
+            if (currentScheduleTab === 'static') {
+                const staticDays = [1, 2, 3, 4, 5, 6, 0];
 
-            return `
-            <div class="card">
-                <div style="display:flex; justify-content:space-between; align-items:flex-start; flex-wrap: wrap; gap:15px; border-bottom: 1px solid var(--border); padding-bottom:15px;">
-                    
-                    <div style="flex: 1 1 200px; display: flex; align-items: flex-start; margin-top: 5px;">
-                        ${skillArrowHtml}
-                        <div>
-                            <h3 style="margin:0; color:${s.color}">${s.name}</h3>
-                            <div style="color:var(--text-dim); font-size:0.8em; margin-top:5px;">Уровень ${s.level}</div>
-                        </div>
+                staticDays.forEach(dayOfWeek => {
+                    const templateTasks = (state.schedule[dayOfWeek] || []).map(t => ({...t, _type: 'template', _key: dayOfWeek}));
+                    templateTasks.sort((a,b) => a.time.localeCompare(b.time));
+
+                    const tasksHtml = templateTasks.map(t => renderTaskCard(t, false, null)).join('');
+                    weekHtml += `
+                    <div class="day-col" style="border-style: dashed;">
+                    <div class="day-title">${dayNames[dayOfWeek]} <br><span style="font-size:0.8em; color:var(--text-dim);">Абстрактный шаблон</span></div>
+                    ${tasksHtml}
                     </div>
-                    
-                    <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
-                        <button class="btn btn-secondary" onclick="exportSkillById('${s.id}')">💾 Экспорт</button>
-                        <button class="btn btn-secondary" onclick="openGoalModal('${s.id}')">+ Цель</button>
-                        <button class="btn btn-primary" onclick="openTreeCanvas('${s.id}')">Визуал. Граф</button>
-                        <button class="btn btn-danger" style="padding: 8px 12px;" onclick="deleteSkill('${s.id}')" title="Удалить навык">✖</button>
+                    `;
+                });
+            } else {
+                for(let i = 0; i < 7; i++) {
+                    const currentDate = new Date(today);
+                    currentDate.setDate(today.getDate() + i);
+
+                    const dateStr = new Date(currentDate - offset).toISOString().split('T')[0];
+                    const currentDayOfWeek = currentDate.getDay();
+                    const isToday = (i === 0);
+
+                    const templateTasks = (state.schedule[currentDayOfWeek] || []).map(t => ({...t, _type: 'template', _key: currentDayOfWeek}));
+                    const exactTasks = (state.calendar[dateStr] || []).map(t => ({...t, _type: 'date', _key: dateStr}));
+                    const combinedTasks = [...templateTasks, ...exactTasks].sort((a,b) => a.time.localeCompare(b.time));
+
+                    const tasksHtml = combinedTasks.map(t => renderTaskCard(t, true, dateStr)).join('');
+                    const displayDate = `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' })}`;
+
+                    weekHtml += `
+                    <div class="day-col" style="${isToday ? 'border-color:var(--accent); background:rgba(0,242,255,0.03);' : ''}">
+                    <div class="day-title" style="${isToday ? 'color:var(--accent);' : ''}">
+                    ${dayNames[currentDayOfWeek]}, ${displayDate} ${isToday ? '<br><span style="font-size:0.8em">(Сегодня)</span>' : ''}
                     </div>
-                </div>
-                
-                <!-- КОНТЕЙНЕР НАВЫКА (СКРЫВАЕТСЯ) -->
-                <div class="children-container ${s.collapsed ? 'collapsed' : ''}" style="margin-top:15px;">
-                    ${buildListHtml(null) || '<div style="color:var(--text-dim); padding-left: 34px;">У этого навыка пока нет целей.</div>'}
-                </div>
+                    ${tasksHtml}
+                    </div>
+                    `;
+                }
+            }
+            document.getElementById('week-display').innerHTML = weekHtml;
+
+            document.getElementById('store-gold-balance').innerText = state.global.gold;
+            
+            // ИСПРАВЛЕНЫ КАВЫЧКИ В onclick="buyItem('${i.id}')"
+            document.getElementById('store-container').innerHTML = state.store.map(i => `
+            <div class="store-item">
+            <h3 style="margin:5px 0;">${i.name}</h3>
+            <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
+            ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
+            <div class="store-actions">
+            <button class="btn btn-primary" style="flex:3;" onclick="buyItem('${i.id}')">Купить</button>
+            <button class="btn btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem('${i.id}')">✖</button>
             </div>
-            `;
-        }).join('');
-
-        if (activeTreeSkillId) {
-        renderCanvas();
+            </div>
+            `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
+            
+            renderLootList();
+            updateLootboxUI();
         }
-
-        renderFlow();
-
-        if (!state.calendar) state.calendar = {};
-        if (!state.completedTemplates) state.completedTemplates = {};
-
-        let rulerHtml = '';
-        for (let i = 6; i <= 24; i++) rulerHtml += `<div class="time-slot"><span>${i.toString().padStart(2, '0')}:00</span></div>`;
-        document.getElementById('time-ruler').innerHTML = rulerHtml;
-
-        const dayNames = ["Вс", "Пн", "Вт", "Ср", "Чт", "Пт", "Сб"];
-        let weekHtml = '';
-
-        const today = new Date();
-        const offset = today.getTimezoneOffset() * 60000;
-
-        const renderTaskCard = (t, isDynamic, dateStr) => {
-        const skill = state.skills.find(x => x.id === t.skillId);
-        const colorBorder = skill ? skill.color : '#555';
-        const styleDate = t._type === 'date' ? 'background: rgba(255, 255, 255, 0.08); border-style: dashed;' : '';
-
-        let isDone = t.done;
-        if (isDynamic && t._type === 'template') {
-        isDone = state.completedTemplates[dateStr] && state.completedTemplates[dateStr].includes(t.id);
-        }
-
-        return `
-        <div class="task-block ${isDone ? 'done' : ''}"
-        style="border-left: 4px solid ${colorBorder}; ${styleDate}"
-        onclick="toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${isDynamic ? dateStr : ''}')"
-        oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id})">
-        <div class="task-time">🕒 ${t.time} (${t.duration}м)</div>
-        <div class="task-title">${t.title}</div>
-        ${skill ? `<div style="font-size:0.75em; color:${colorBorder}; margin-top:6px; font-weight:bold;">${skill.name}</div>` : ''}
-        </div>
-        `;
-        };
-
-        if (currentScheduleTab === 'static') {
-        const staticDays = [1, 2, 3, 4, 5, 6, 0];
-
-        staticDays.forEach(dayOfWeek => {
-        const templateTasks = (state.schedule[dayOfWeek] || []).map(t => ({...t, _type: 'template', _key: dayOfWeek}));
-        templateTasks.sort((a,b) => a.time.localeCompare(b.time));
-
-        const tasksHtml = templateTasks.map(t => renderTaskCard(t, false, null)).join('');
-        weekHtml += `
-        <div class="day-col" style="border-style: dashed;">
-        <div class="day-title">${dayNames[dayOfWeek]} <br><span style="font-size:0.8em; color:var(--text-dim);">Абстрактный шаблон</span></div>
-        ${tasksHtml}
-        </div>
-        `;
-        });
-        } else {
-        for(let i = 0; i < 7; i++) {
-        const currentDate = new Date(today);
-        currentDate.setDate(today.getDate() + i);
-
-        const dateStr = new Date(currentDate - offset).toISOString().split('T')[0];
-        const currentDayOfWeek = currentDate.getDay();
-        const isToday = (i === 0);
-
-        const templateTasks = (state.schedule[currentDayOfWeek] || []).map(t => ({...t, _type: 'template', _key: currentDayOfWeek}));
-        const exactTasks = (state.calendar[dateStr] || []).map(t => ({...t, _type: 'date', _key: dateStr}));
-        const combinedTasks = [...templateTasks, ...exactTasks].sort((a,b) => a.time.localeCompare(b.time));
-
-        const tasksHtml = combinedTasks.map(t => renderTaskCard(t, true, dateStr)).join('');
-        const displayDate = `${currentDate.getDate()} ${currentDate.toLocaleString('ru-RU', { month: 'short' })}`;
-
-        weekHtml += `
-        <div class="day-col" style="${isToday ? 'border-color:var(--accent); background:rgba(0,242,255,0.03);' : ''}">
-        <div class="day-title" style="${isToday ? 'color:var(--accent);' : ''}">
-        ${dayNames[currentDayOfWeek]}, ${displayDate} ${isToday ? '<br><span style="font-size:0.8em">(Сегодня)</span>' : ''}
-        </div>
-        ${tasksHtml}
-        </div>
-        `;
-        }
-        }
-        document.getElementById('week-display').innerHTML = weekHtml;
-
-        document.getElementById('store-gold-balance').innerText = state.global.gold;
-        document.getElementById('store-container').innerHTML = state.store.map(i => `
-        <div class="store-item">
-        <h3 style="margin:5px 0;">${i.name}</h3>
-        <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
-        ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
-        <div class="store-actions">
-        <button class="btn btn-primary" style="flex:3;" onclick="buyItem(${i.id})">Купить</button>
-        <button class="btn btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem(${i.id})">✖</button>
-        </div>
-        </div>
-        `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
-        renderLootList();
-        updateLootboxUI();
-        }
-
-        if (!state.store.find(i => i.id === 'freeze')) {
-            state.store.push({ id: 'freeze', name: 'Заморозка стрейка ❄️', price: 200, stamina: 0, isSpecial: true });
-        }
-        if (!state.store.find(i => i.id === 'heal')) {
-            state.store.push({ id: 'heal', name: 'Малое Зелье Лечения 🧪', price: 150, stamina: 0, heal: 30, isSpecial: true });
-        }
-        render();
 
         /* =========================================
         ЛОГИКА ЛУТБОКСОВ (Интегрировано из React)
