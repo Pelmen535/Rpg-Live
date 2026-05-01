@@ -1947,6 +1947,7 @@
 
         let syncRef = null;
         let isSyncing = false; // Защита от зацикливания
+        let hasInitialSync = false;
 
         // Временные переменные (Не сохраняются при обновлении страницы)
         let flow = { active: false, timeRemaining: 0, interval: null, tasks: [] };
@@ -2064,80 +2065,88 @@
         initNetwork(uid);
         }
 
+       
+
         function initNetwork(hash) {
-        syncRef = database.ref('users/' + hash);
+            syncRef = database.ref('users/' + hash);
 
-        database.ref('.info/connected').on('value', (snap) => {
-        if (snap.val() === true) {
-        updateSyncUI('online');
-        } else {
-        updateSyncUI('offline');
-        }
-        });
+            database.ref('.info/connected').on('value', (snap) => {
+                if (snap.val() === true) {
+                    updateSyncUI('online');
+                } else {
+                    updateSyncUI('offline');
+                }
+            });
 
-        syncRef.on('value', (snapshot) => {
-        const incomingState = snapshot.val();
+            syncRef.on('value', (snapshot) => {
+                const incomingState = snapshot.val();
 
-        if (!incomingState || !incomingState.global) {
-        pushState();
-        return;
-        }
+                if (!incomingState || !incomingState.global) {
+                    hasInitialSync = true; // Облако реально пустое (новый аккаунт), разрешаем пушить
+                    pushState();
+                    return;
+                }
 
-        const myTime = state.global.lastUpdated || 0;
-        const incomingTime = incomingState.global.lastUpdated || 0;
+                const myTime = state.global.lastUpdated || 0;
+                const incomingTime = incomingState.global.lastUpdated || 0;
+                const isLocalEmpty = (!state.skills || state.skills.length === 0);
 
-        const isLocalEmpty = (!state.skills || state.skills.length === 0);
+                // ЕСЛИ ЭТО ПЕРВАЯ СИНХРОНИЗАЦИЯ (!hasInitialSync), МЫ ЖЕСТКО ЗАБИРАЕМ ДАННЫЕ ИЗ ОБЛАКА, ИГНОРИРУЯ ЛОКАЛЬНЫЙ ТАЙМШТАМП
+                if (incomingTime > myTime || isLocalEmpty || !hasInitialSync) {
+                    console.log("Синхронизация: приняты данные из облака ☁️");
+                    isSyncing = true;
 
-        if (incomingTime > myTime || isLocalEmpty) {
-        console.log("Синхронизация: приняты данные из облака ☁️");
-        isSyncing = true;
+                    state = incomingState;
 
-        state = incomingState;
+                    if (!state.skills) state.skills = [];
+                    if (!state.store) state.store = [];
+                    if (!state.notes) state.notes = [];
+                    if (!state.customAchievements) state.customAchievements = [];
+                    if (!state.unlockedAchievements) state.unlockedAchievements = [];
+                    if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
+                    if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
+                    if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
 
-        if (!state.skills) state.skills = [];
-        if (!state.store) state.store = [];
-        if (!state.notes) state.notes = [];
-        if (!state.customAchievements) state.customAchievements = [];
-        if (!state.unlockedAchievements) state.unlockedAchievements = [];
-        if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
-        if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
-        if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
+                    localStorage.setItem('rpg_os_session_hash', hash);
+                    localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
 
-        localStorage.setItem('rpg_os_session_hash', hash);
-        localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
-
-        render();
-        listenToSharedHabits();
-        listenToGlobalEvents();
-        updateSyncUI('online');
-        setTimeout(() => isSyncing = false, 500);
-        } else if (myTime > incomingTime && !isLocalEmpty) {
-        pushState();
-        }
-        }, (error) => {
-        console.error("Firebase Auth/Sync Error:", error);
-        alert("Критическая ошибка доступа к базе данных.");
-        });
+                    render();
+                    listenToSharedHabits();
+                    listenToGlobalEvents();
+                    updateSyncUI('online');
+                    
+                    setTimeout(() => { 
+                        isSyncing = false; 
+                        hasInitialSync = true; // <-- Снимаем блокировку только ПОСЛЕ успешного скачивания
+                    }, 500);
+                } else if (myTime > incomingTime && !isLocalEmpty && hasInitialSync) {
+                    pushState();
+                }
+            }, (error) => {
+                console.error("Firebase Auth/Sync Error:", error);
+                alert("Критическая ошибка доступа к базе данных.");
+            });
         }
 
         function pushState() {
-        if (!syncRef || isSyncing) return;
+            // ЖЕСТКИЙ БЛОК: Запрещаем любую отправку данных, если мы еще не получили первую сводку с сервера
+            if (!syncRef || isSyncing || !hasInitialSync) return; 
 
-        syncRef.set(state)
-        .then(() => updateSyncUI('online'))
-        .catch((error) => {
-        console.error("Ошибка сохранения в облако:", error);
-        updateSyncUI('offline');
-        });
+            syncRef.set(state)
+            .then(() => updateSyncUI('online'))
+            .catch((error) => {
+                console.error("Ошибка сохранения в облако:", error);
+                updateSyncUI('offline');
+            });
 
-        if (state.network && state.network.syncId) {
-        database.ref('leaderboard/' + state.network.syncId).set({
-        name: state.user?.nickname || 'Анонимный Сталкер',
-        level: state.global.level,
-        xp: state.global.xp,
-        lastActive: Date.now()
-        });
-        }
+            if (state.network && state.network.syncId) {
+                database.ref('leaderboard/' + state.network.syncId).set({
+                    name: state.user?.nickname || 'Анонимный Сталкер',
+                    level: state.global.level,
+                    xp: state.global.xp,
+                    lastActive: Date.now()
+                });
+            }
         }
 
         function updateSyncUI(status) {
