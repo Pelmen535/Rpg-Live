@@ -1349,7 +1349,8 @@
                 </div>
             </div>
 
-            <div id="achievements-grid" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 15px;">
+            <!-- Обновленный контейнер: вертикальный список с прокруткой -->
+            <div id="achievements-list" style="display: flex; flex-direction: column; gap: 12px; max-height: 65vh; overflow-y: auto; padding-right: 10px;">
             </div>
         </div>
         <div id="skills" class="view">
@@ -3680,33 +3681,38 @@
         }
 
         function renderAchievements() {
-        if (!state.customAchievements) state.customAchievements = [];
+            if (!state.customAchievements) state.customAchievements = [];
 
-        const allAchievements = [...AUTO_ACHIEVEMENTS, ...state.customAchievements];
-        document.getElementById('achievements-count').innerText = `${state.unlockedAchievements.length} / ${allAchievements.length}`;
+            const allAchievements = [...AUTO_ACHIEVEMENTS, ...state.customAchievements];
+            document.getElementById('achievements-count').innerText = `${state.unlockedAchievements.length} / ${allAchievements.length}`;
 
-        const grid = document.getElementById('achievements-grid');
-        grid.innerHTML = allAchievements.map(ach => {
-        const isUnlocked = state.unlockedAchievements.includes(ach.id);
-        const borderCol = isUnlocked ? 'var(--gold)' : 'var(--border)';
-        const bg = isUnlocked ? 'rgba(255, 184, 0, 0.05)' : 'transparent';
-        const opacity = isUnlocked ? '1' : '0.4';
+            // Ищем новый контейнер-список
+            const list = document.getElementById('achievements-list');
+            list.innerHTML = allAchievements.map(ach => {
+                const isUnlocked = state.unlockedAchievements.includes(ach.id);
+                const borderCol = isUnlocked ? 'var(--gold)' : 'var(--border)';
+                const bg = isUnlocked ? 'rgba(255, 184, 0, 0.05)' : 'transparent';
+                const opacity = isUnlocked ? '1' : '0.5';
 
-        return `
-        <div class="card" style="border-color: ${borderCol}; background: ${bg}; opacity: ${opacity}; margin-bottom: 0; display: flex; align-items: center; gap: 15px; padding: 15px; position: relative;">
-        ${(!ach.auto && !isUnlocked) ? `<div style="position: absolute; top: 5px; right: 10px; cursor: pointer; color: var(--danger); font-size: 0.8em;" onclick="deleteCustomAchievement('${ach.id}')">✖</div>` : ''}
+                return `
+                <div class="card" style="border-color: ${borderCol}; background: ${bg}; opacity: ${opacity}; margin-bottom: 0; display: flex; align-items: center; gap: 20px; padding: 15px 20px; position: relative; flex-shrink: 0;">
+                    ${(!ach.auto && !isUnlocked) ? `<div style="position: absolute; top: 10px; right: 15px; cursor: pointer; color: var(--danger); font-size: 0.9em;" onclick="deleteCustomAchievement('${ach.id}')" title="Удалить">✖</div>` : ''}
 
-        <div style="font-size: 2.5em; filter: ${isUnlocked ? 'none' : 'grayscale(100%)'};">${ach.icon}</div>
-        <div style="flex: 1;">
-        <h4 style="margin: 0 0 5px 0; color: ${isUnlocked ? 'var(--gold)' : 'var(--text)'};">${ach.title}</h4>
-        <div style="font-size: 0.8em; color: var(--text-dim); line-height: 1.3;">${ach.desc}</div>
-        ${!ach.auto ? `<div style="font-size: 0.7em; color: var(--xp-color); margin-top: 5px;">Награда: 🪙 ${ach.gold} | ✨ ${ach.xp}</div>` : ''}
-        </div>
-        ${(!isUnlocked && !ach.auto) ? `<button class="btn btn-secondary" style="padding: 5px 10px; font-size: 0.8em;" onclick="unlockManualAchievement('${ach.id}')">Выполнено!</button>` : ''}
-        ${isUnlocked ? `<div style="color: var(--success); font-weight: bold;">✓</div>` : ''}
-        </div>
-        `;
-        }).join('');
+                    <div style="font-size: 2.2em; filter: ${isUnlocked ? 'none' : 'grayscale(100%)'}; min-width: 50px; text-align: center;">${ach.icon}</div>
+                    
+                    <div style="flex: 1;">
+                        <h4 style="margin: 0 0 5px 0; color: ${isUnlocked ? 'var(--gold)' : 'var(--text)'}; font-size: 1.1em;">${ach.title}</h4>
+                        <div style="font-size: 0.85em; color: var(--text-dim); line-height: 1.4;">${ach.desc}</div>
+                        ${!ach.auto ? `<div style="font-size: 0.8em; color: var(--xp-color); margin-top: 8px; font-weight: bold;">Награда: 🪙 ${ach.gold} | ✨ ${ach.xp}</div>` : ''}
+                    </div>
+                    
+                    <div style="display: flex; flex-direction: column; align-items: flex-end; justify-content: center; min-width: 100px;">
+                        ${(!isUnlocked && !ach.auto) ? `<button class="btn btn-secondary" style="padding: 6px 15px; font-size: 0.85em;" onclick="unlockManualAchievement('${ach.id}')">Выполнить</button>` : ''}
+                        ${isUnlocked ? `<div style="color: var(--success); font-size: 1.8em; font-weight: bold; text-shadow: 0 0 10px rgba(0,204,102,0.3);">✓</div>` : ''}
+                    </div>
+                </div>
+                `;
+            }).join('');
         }
         /* =========================================
         МЕХАНИКА ГЛОБАЛЬНЫХ УВЕДОМЛЕНИЙ (BROADCAST)
@@ -4832,3 +4838,5 @@
     </script>
 </body>
 </html>
+
+    
