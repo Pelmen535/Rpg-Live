@@ -3665,37 +3665,63 @@
             document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
 
             // --- ЛОГИКА ФОКУСА ДНЯ (АВТО И РУЧНАЯ) ---
-            // 1. Вычисляем текущие запланированные цели из расписания на СЕГОДНЯ
             const todayOffset = new Date().getTimezoneOffset() * 60000;
             const todayIso = new Date(Date.now() - todayOffset).toISOString().split('T')[0];
             const todayDayOfWeek = new Date().getDay();
             
+            // 1. Собираем все задачи из расписания на СЕГОДНЯ
             const scheduledTasksToday = [
-                ...(state.schedule[todayDayOfWeek] || []),
-                ...(state.calendar[todayIso] || [])
+                ...(state.schedule[todayDayOfWeek] || []).map(t => ({...t, _type: 'template', _key: todayDayOfWeek})),
+                ...(state.calendar[todayIso] || []).map(t => ({...t, _type: 'date', _key: todayIso}))
             ];
-            // Собираем ID целей, привязанных к сегодняшнему расписанию
-            const scheduledGoalIds = scheduledTasksToday.map(t => t.goalId).filter(id => id);
 
-            // 2. Формируем список фокуса
-            const focusTasks = [];
+            const focusItems = [];
+
+            // А. Авто-фокус: Задачи из расписания
+            scheduledTasksToday.forEach(t => {
+                // Проверяем, выполнена ли задача именно сегодня
+                let isDone = t.done;
+                if (t._type === 'template') {
+                    isDone = state.completedTemplates[todayIso] && state.completedTemplates[todayIso].includes(t.id);
+                }
+                
+                // Показываем в Фокусе только невыполненные дела
+                if (!isDone) {
+                    const skill = state.skills.find(s => s.id === t.skillId);
+                    focusItems.push({
+                        title: t.title,
+                        subtitle: `🕒 ${t.time} (${t.duration}м)` + (skill ? ` | ${skill.name}` : ''),
+                        color: skill ? skill.color : '#aaaaaa',
+                        action: `toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${todayIso}')`
+                    });
+                }
+            });
+
+            // Б. Ручной фокус: Цели с галочкой "Сделать Фокусом"
             state.skills.forEach(s => {
-                (s.goals || []).filter(g => !g.done && (g.isFocus || scheduledGoalIds.includes(g.id))).forEach(g => {
-                    // Защита от дублирования, если на 1 цель назначено 2 блока времени
-                    if (!focusTasks.find(ft => ft.goal.id === g.id)) {
-                        focusTasks.push({ skill: s, goal: g });
+                (s.goals || []).filter(g => g.isFocus && !g.done).forEach(g => {
+                    // Исключаем дубликаты, если эта цель уже висит в фокусе через Расписание
+                    const alreadyInSchedule = scheduledTasksToday.some(t => t.goalId === g.id);
+                    if (!alreadyInSchedule) {
+                        focusItems.push({
+                            title: g.name,
+                            subtitle: `🎯 Ручной фокус: ${s.name}`,
+                            color: s.color,
+                            action: `toggleNodeDone('${s.id}', '${g.id}')`
+                        });
                     }
                 });
             });
 
-            const focusHtml = focusTasks.map(ft => `
-            <div class="task-block" style="border-left: 4px solid ${ft.skill.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
-            onclick="toggleNodeDone('${ft.skill.id}', '${ft.goal.id}')">
-            <div>
-            <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">🎯 Фокус: ${ft.skill.name}</div>
-            <strong style="font-size: 1.1em;">${ft.goal.name}</strong>
-            </div>
-            <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success);">Выполнить</button>
+            // 2. Генерируем HTML-блоки
+            const focusHtml = focusItems.map(item => `
+            <div class="task-block" style="border-left: 4px solid ${item.color}; background: #1a1a20; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
+            onclick="${item.action}">
+                <div>
+                    <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">${item.subtitle}</div>
+                    <strong style="font-size: 1.1em;">${item.title}</strong>
+                </div>
+                <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success); pointer-events: none;">Выполнить</button>
             </div>
             `).join('');
 
