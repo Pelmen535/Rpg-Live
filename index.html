@@ -2118,6 +2118,8 @@
                     isSyncing = true;
 
                     state = incomingState;
+                    if (!state.network) state.network = getDefaultState().network;
+                    state.network.syncId = hash;
 
                     if (!state.skills) state.skills = [];
                     if (!state.store) state.store = [];
@@ -4607,7 +4609,7 @@
                 const data = snapshot.val();
                 if (!data) return;
 
-                // ФИЛЬТР ДУБЛИКАТОВ: оставляем только одну запись для каждого имени (с бóльшим уровнем)
+                // ФИЛЬТР: Схлопываем аккаунты-призраки с одинаковыми никами, оставляя макс. уровень
                 const uniquePlayers = {};
                 Object.values(data).forEach(p => {
                     if (!uniquePlayers[p.name] || uniquePlayers[p.name].level < p.level) {
