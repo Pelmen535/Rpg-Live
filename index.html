@@ -2912,7 +2912,14 @@
         const duration = parseInt(document.getElementById('taskDuration').value);
         const title = document.getElementById('taskTitle').value;
 
-        if (!title || !time) return;
+        if (!title) {
+            alert("Пожалуйста, введите название задачи!");
+            return;
+        }
+        if (!time) {
+            alert("Ошибка планшета: время не передалось! Пожалуйста, нажмите на часы и выберите время еще раз.");
+            return;
+        }
 
         if (mode === 'date') {
         const selectedDate = new Date(document.getElementById('taskExactDate').value + 'T' + time);
