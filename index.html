@@ -1214,10 +1214,10 @@
 
                 <div style="text-align: left;">
                     <label>Email (Почта)</label>
-                    <input type="email" id="auth-email" placeholder="stalker@zone.com" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
+                    <input type="email" id="auth-email" placeholder="stalker@zone.com" autocapitalize="none" autocorrect="off" style="width: 100%; padding: 12px; margin-bottom: 15px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
 
                     <label>Пароль (минимум 6 символов)</label>
-                    <input type="password" id="auth-password" placeholder="••••••••" style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
+                    <input type="password" id="auth-password" placeholder="••••••••" autocapitalize="none" autocorrect="off" style="width: 100%; padding: 12px; margin-bottom: 25px; background: #0b0b0d; color: white; border: 1px solid var(--border); border-radius: 4px;">
                 </div>
 
                 <div class="auth-actions">
@@ -1958,10 +1958,18 @@
         let isSyncing = false; // Защита от зацикливания
         let hasInitialSync = false;
 
-        // Временные переменные (Не сохраняются при обновлении страницы)
+        // Временные переменные
         let flow = { active: false, timeRemaining: 0, interval: null, tasks: [] };
         let activeTreeSkillId = null;
-        let realtimeHabits = {}; // <--- ДОБАВЛЕНО ДЛЯ ГРУППОВЫХ СТРИКОВ
+        let realtimeHabits = {}; 
+
+        // ДОБАВИТЬ ЭТО: Броня от блокировок iOS Safari
+        function safeSetLocal(key, value) {
+            try { safeSetLocal(key, value); } catch(e) { console.warn("LS blocked:", e); }
+        }
+        function safeRemoveLocal(key) {
+            try { safeRemoveLocal(key); } catch(e) { console.warn("LS blocked:", e); }
+        }
 
         // Переменные для перетаскивания узлов на графе
         let dragNodeId = null;
@@ -1976,10 +1984,18 @@
         const auth = firebase.auth();
 
         auth.onAuthStateChanged((user) => {
-        if (user) {
-        console.log("Сессия восстановлена для:", user.email);
-        startApp(user.uid);
-        } else {
+            if (user) {
+                console.log("Сессия восстановлена для:", user.email);
+                
+                // ФИКС: Очищаем кэш ЗДЕСЬ, если зашел другой юзер
+                if (state.network && state.network.syncId && state.network.syncId !== user.uid) {
+                    console.warn("Смена аккаунта! Очистка локальных данных.");
+                    state = getDefaultState();
+                    safeRemoveLocal('rpg_os_final_v2');
+                }
+                
+                startApp(user.uid);
+            } else {
         document.getElementById('auth-view').style.display = 'flex';
         document.getElementById('main-nav').style.display = 'none';
         document.querySelectorAll('.view').forEach(v => {
@@ -1999,7 +2015,7 @@
 
         setAuthLoading(true);
         try {
-        localStorage.removeItem('rpg_os_final_v2');
+        safeRemoveLocal('rpg_os_final_v2');
         state = getDefaultState();
         await auth.createUserWithEmailAndPassword(email, pass);
         } catch (error) {
@@ -2026,11 +2042,7 @@
         const userCredential = await auth.signInWithEmailAndPassword(email, pass);
         const uid = userCredential.user.uid;
 
-        if (state.network && state.network.syncId && state.network.syncId !== uid) {
-        console.warn("Обнаружена смена аккаунта. Очистка кэша.");
-        localStorage.removeItem('rpg_os_final_v2');
-        state = getDefaultState();
-        }
+        
         } catch (error) {
         console.error("Ошибка входа:", error);
         if (error.code === 'auth/invalid-credential') showAuthError("Неверный Email или пароль.");
@@ -2043,7 +2055,7 @@
         function logout() {
         if(confirm("Выйти из учетной записи? Локальные данные будут стерты.")) {
         auth.signOut().then(() => {
-        localStorage.removeItem('rpg_os_final_v2');
+        safeRemoveLocal('rpg_os_final_v2');
         state = getDefaultState();
         location.reload();
         }).catch((error) => {
@@ -2116,8 +2128,8 @@
                     if (!state.user) state.user = { tasksCompletedForLoot: 0, lootboxThreshold: 5 };
                     if (typeof state.lootboxes === 'undefined') state.lootboxes = 2;
 
-                    localStorage.setItem('rpg_os_session_hash', hash);
-                    localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+                    safeSetLocal('rpg_os_session_hash', hash);
+                    safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
 
                     render();
                     listenToSharedHabits();
@@ -2190,7 +2202,7 @@
         }
 
         function saveLocal() {
-        localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+        safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
         }
 
         function save() {
@@ -2201,7 +2213,7 @@
         }
 
         const stateStr = JSON.stringify(state);
-        localStorage.setItem('rpg_os_final_v2', stateStr);
+        safeSetLocal('rpg_os_final_v2', stateStr);
 
         pushState();
         render();
@@ -3881,7 +3893,7 @@
                 state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
                 state.global.stamina = state.global.maxStamina;
                 state.global.lastLoginDate = todayStr;
-                localStorage.setItem('rpg_os_final_v2', JSON.stringify(state));
+                safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
             }
 
             // Инициализация HP для старых сохранений
