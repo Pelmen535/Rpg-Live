@@ -4549,31 +4549,52 @@
             input.click();
         }
         function importData() {
-        const input = document.createElement('input');
-        input.type = 'file';
-        input.accept = '.json';
-        input.onchange = e => {
-        const file = e.target.files[0];
-        const reader = new FileReader();
-        reader.readAsText(file, 'UTF-8');
-        reader.onload = readerEvent => {
-        try {
-        const content = readerEvent.target.result;
-        const parsed = JSON.parse(content);
-        if (parsed && parsed.global) {
-        state = parsed;
-        save();
-        alert("Данные успешно импортированы!");
-        location.reload();
-        } else {
-        alert("Неверный формат файла.");
-        }
-        } catch (err) {
-        alert("Ошибка чтения файла: " + err);
-        }
-        }
-        };
-        input.click();
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const parsed = JSON.parse(content);
+                        
+                        if (parsed && parsed.global) {
+                            // ФИКС 1: Запоминаем текущий ID пользователя (чтобы не вылететь)
+                            const myNetworkInfo = state.network; 
+                            
+                            // Загружаем чужое сохранение
+                            state = parsed;
+                            
+                            // Возвращаем свой ID на законное место!
+                            if (myNetworkInfo && myNetworkInfo.syncId) {
+                                if (!state.network) state.network = {};
+                                state.network.syncId = myNetworkInfo.syncId;
+                            }
+
+                            save(); // Сохраняем в кэш и пушим в облако
+                            
+                            alert("Данные успешно импортированы!");
+                            
+                            // ФИКС 2: Даем Firebase 1 секунду, чтобы данные улетели на сервер до перезагрузки
+                            setTimeout(() => { location.reload(); }, 1000);
+                            
+                        } else {
+                            alert("Неверный формат файла.");
+                        }
+                    } catch (err) {
+                        alert("Ошибка чтения файла: " + err);
+                    }
+                }
+            };
+            
+            // ФИКС для iOS (чтобы открывалось окно файлов)
+            input.style.display = 'none';
+            document.body.appendChild(input);
+            input.click();
+            setTimeout(() => { document.body.removeChild(input); }, 1000);
         }
 
         function syncNote(sourceId, title, content, type, skillId = null) {
