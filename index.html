@@ -4607,7 +4607,16 @@
                 const data = snapshot.val();
                 if (!data) return;
 
-                const players = Object.values(data).sort((a, b) => b.level - a.level);
+                // ФИЛЬТР ДУБЛИКАТОВ: оставляем только одну запись для каждого имени (с бóльшим уровнем)
+                const uniquePlayers = {};
+                Object.values(data).forEach(p => {
+                    if (!uniquePlayers[p.name] || uniquePlayers[p.name].level < p.level) {
+                        uniquePlayers[p.name] = p;
+                    }
+                });
+
+                // Сортируем уже очищенный список
+                const players = Object.values(uniquePlayers).sort((a, b) => b.level - a.level);
 
                 document.getElementById('leaderboard-list').innerHTML = players.map((p, index) => `
                     <div style="display: flex; justify-content: space-between; padding: 12px 0; border-bottom: 1px solid #222; ${index === 0 ? 'color: var(--gold); font-size: 1.1em; font-weight: bold;' : ''}">
