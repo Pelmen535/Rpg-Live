@@ -1430,13 +1430,19 @@
             </div>
         </div>
 
-        <div id="schedule" class="view">
+       <div id="schedule" class="view">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 25px; flex-wrap: wrap; gap: 15px;">
                 <div>
                     <h2 style="margin:0;">Тактическое расписание</h2>
                     <div style="color: var(--text-dim); font-size: 0.9em; margin-top:5px;">Шаблон (база) / Конвейер (реальное время)</div>
                 </div>
-                <div style="display: flex; gap: 15px; align-items: center;">
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    
+                    <div class="btn-group" style="margin-bottom: 0; width: auto;">
+                        <button class="btn btn-secondary" onclick="importScheduleTemplate()">📂 Импорт</button>
+                        <button class="btn btn-secondary" onclick="exportScheduleTemplate()">💾 Экспорт</button>
+                    </div>
+
                     <div style="background: #1c1c1e; padding: 4px; border-radius: 8px; display: flex; gap: 5px; border: 1px solid var(--border);">
                         <button id="tab-dynamic" class="btn btn-primary" style="padding: 8px 15px; border: none; box-shadow: none;" onclick="switchScheduleTab('dynamic')">Динамика (Конвейер)</button>
                         <button id="tab-static" class="btn btn-secondary" style="padding: 8px 15px; border: none;" onclick="switchScheduleTab('static')">Шаблон (База)</button>
@@ -4473,7 +4479,51 @@
         downloadAnchorNode.click();
         downloadAnchorNode.remove();
         }
+        /* =========================================
+           ЭКСПОРТ И ИМПОРТ РАСПИСАНИЯ
+        ========================================= */
+        function exportScheduleTemplate() {
+            // Экспортируем только базовый шаблон, без привязки к конкретным датам (динамике)
+            const dataStr = "data:text/json;charset=utf-8," + encodeURIComponent(JSON.stringify(state.schedule, null, 2));
+            const downloadAnchorNode = document.createElement('a');
+            downloadAnchorNode.setAttribute("href", dataStr);
+            downloadAnchorNode.setAttribute("download", "Schedule_Blueprint.json");
+            document.body.appendChild(downloadAnchorNode);
+            downloadAnchorNode.click();
+            downloadAnchorNode.remove();
+        }
 
+        function importScheduleTemplate() {
+            const input = document.createElement('input');
+            input.type = 'file';
+            input.accept = '.json';
+            input.onchange = e => {
+                const file = e.target.files[0];
+                const reader = new FileReader();
+                reader.readAsText(file, 'UTF-8');
+                reader.onload = readerEvent => {
+                    try {
+                        const content = readerEvent.target.result;
+                        const parsed = JSON.parse(content);
+                        
+                        // Простейшая проверка, что это именно расписание (объект с днями недели)
+                        if (parsed && typeof parsed === 'object' && (parsed['1'] !== undefined || parsed['0'] !== undefined)) {
+                            customConfirm("Импорт расписания", "Внимание! Это полностью заменит ваш текущий ШАБЛОН расписания (динамические задачи на конкретные даты останутся). Продолжить?", () => {
+                                state.schedule = parsed;
+                                save();
+                                render();
+                                customAlert("Успех", "Шаблон расписания успешно загружен!");
+                            });
+                        } else {
+                            customAlert("Ошибка", "Файл не является валидным шаблоном расписания.");
+                        }
+                    } catch (err) {
+                        customAlert("Ошибка", "Не удалось прочитать файл: " + err);
+                    }
+                }
+            };
+            input.click();
+        }
         function importData() {
         const input = document.createElement('input');
         input.type = 'file';
