@@ -3785,25 +3785,60 @@
             if (state.global.lastLoginDate !== todayStr) {
                 let damageTaken = 0;
 
-                state.skills.forEach(s => {
-                    (s.goals || []).forEach(g => {
-                        // 1. Урон от пропущенных привычек
-                        if (g.type === 'Повторяющаяся') {
-                            g.done = false;
-                            const yesterday = new Date();
-                            yesterday.setDate(yesterday.getDate() - 1);
+                // 1. УРОН ТОЛЬКО ЗА ПРОПУЩЕННОЕ РАСПИСАНИЕ
+                const yesterday = new Date();
+                yesterday.setDate(yesterday.getDate() - 1);
+                const yesterdayOffset = yesterday.getTimezoneOffset() * 60000;
+                const yesterdayIso = new Date(yesterday - yesterdayOffset).toISOString().split('T')[0];
+                const yesterdayDayOfWeek = yesterday.getDay();
 
-                            if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                                if (state.inventory.streakFreezes > 0) {
-                                    state.inventory.streakFreezes--;
-                                    console.log(`Использована заморозка для: ${g.name}`);
-                                } else {
-                                    g.streak = 0; 
-                                    damageTaken += 10;
+                // Собираем всё, что было запланировано на вчера
+                const yesterdayTasks = [
+                    ...(state.schedule[yesterdayDayOfWeek] || []).map(t => ({...t, _type: 'template'})),
+                    ...(state.calendar[yesterdayIso] || []).map(t => ({...t, _type: 'date'}))
+                ];
+
+                yesterdayTasks.forEach(t => {
+                    let isDone = t.done;
+                    if (t._type === 'template') {
+                        isDone = state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id);
+                    }
+
+                    if (!isDone) {
+                        // Если задача из расписания не выполнена, проверяем наличие Щита (Заморозки)
+                        if (state.inventory.streakFreezes > 0) {
+                            state.inventory.streakFreezes--;
+                            console.log(`Щит спасла от урона за пропущенную задачу: ${t.title}`);
+                            
+                            // Если задача привязана к привычке, спасаем её стрик (фейковое выполнение)
+                            if (t.goalId && t.skillId) {
+                                const skill = state.skills.find(s => s.id === t.skillId);
+                                if (skill) {
+                                    const goal = skill.goals.find(g => g.id === t.goalId);
+                                    if (goal && goal.type === 'Повторяющаяся') {
+                                        goal.lastCompleted = yesterday.toDateString(); 
+                                    }
                                 }
                             }
+                        } else {
+                            damageTaken += 10; // УРОН НАНОСИТСЯ ТОЛЬКО ЗДЕСЬ! (10 HP за провал задачи из расписания)
                         }
-                        // 2. Урон от проваленных Боссов
+                    }
+                });
+
+                // 2. Обходим все навыки: сбрасываем визуал, обнуляем незащищенные стрики и чекаем Боссов
+                state.skills.forEach(s => {
+                    (s.goals || []).forEach(g => {
+                        if (g.type === 'Повторяющаяся') {
+                            g.done = false; // Визуальный сброс галочки на Дашборде
+                            
+                            // Если реально не делали и щит не сработал - стрик сбрасывается (но без урона!)
+                            if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+                                g.streak = 0; 
+                            }
+                        }
+                        
+                        // Дедлайны Боссов всё еще наносят урон, так как они независимы от расписания
                         if (g.type === 'Босс' && !g.done && g.deadline) {
                             const deadlineDate = new Date(g.deadline);
                             deadlineDate.setHours(0,0,0,0);
@@ -3813,7 +3848,7 @@
                             if (deadlineDate < todayDate) {
                                 damageTaken += 50; 
                                 g.done = true; 
-                                alert(`💀 Вы провалили дедлайн босса "${g.name}"! Получено 50 урона.`);
+                                customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!\nПолучено 50 урона.`);
                             }
                         }
                     });
@@ -3823,14 +3858,14 @@
                 if (damageTaken > 0) {
                     state.global.hp = (state.global.hp || 100) - damageTaken;
                     if (state.global.hp <= 0) {
-                        alert(`☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики привычек\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь снова!`);
+                        customAlert("ПОРАЖЕНИЕ", `☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь!`);
                         state.global.level = Math.max(1, state.global.level - 1);
                         state.global.gold = Math.floor(state.global.gold / 2);
                         state.global.hp = 100;
                         if (!state.analytics) state.analytics = {};
                         state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
                     } else {
-                        alert(`🌙 Ночной отчет: Вы получили ${damageTaken} урона за пропущенные задачи! Осталось HP: ${state.global.hp}`);
+                        customAlert("Ночной отчет", `🌙 Вы получили ${damageTaken} урона за пропущенные задачи в расписании!\nОсталось HP: ${state.global.hp}`);
                     }
                 }
 
