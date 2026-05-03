@@ -1833,9 +1833,17 @@
                     <input type="number" id="taskDuration" value="60">
                 </div>
             </div>
-            <label>Привязка к цвету навыка</label>
-            <select id="taskSkillId">
+            <label>Привязка к навыку</label>
+            <select id="taskSkillId" onchange="updateTaskGoalSelect()">
                 <option value="">Без навыка (Обычное дело)</option>
+            </select>
+
+            <div id="taskGoalContainer" style="display: none; margin-top: 15px;">
+                <label>Привязка к конкретной цели / привычке</label>
+                <select id="taskGoalSelect">
+                    <option value="">-- Весь навык целиком --</option>
+                </select>
+            </div>
             </select>
             <label>Название / Описание</label>
             <input type="text" id="taskTitle" placeholder="Например: Пара в университете">
@@ -2853,30 +2861,56 @@
             }
             save();
         }
+        function updateTaskGoalSelect(selectedGoalId = '') {
+            const skillId = document.getElementById('taskSkillId').value;
+            const container = document.getElementById('taskGoalContainer');
+            const select = document.getElementById('taskGoalSelect');
+            
+            select.innerHTML = '<option value="">-- Весь навык целиком (Без конкретной цели) --</option>';
+            
+            if (!skillId) {
+                container.style.display = 'none';
+                return;
+            }
 
+            const skill = state.skills.find(s => s.id === skillId);
+            if (skill && skill.goals && skill.goals.length > 0) {
+                container.style.display = 'block';
+                skill.goals.forEach(g => {
+                    // Добавляем иконку для красоты в зависимости от типа
+                    const icon = g.type === 'Повторяющаяся' ? '🔄' : (g.type === 'Босс' ? '👹' : '🎯');
+                    select.innerHTML += `<option value="${g.id}">${icon} ${g.name}</option>`;
+                });
+                if (selectedGoalId) select.value = selectedGoalId;
+            } else {
+                container.style.display = 'none';
+            }
+        }
         function openTaskModal(type = null, key = null, taskId = null, goalId = null) {
             if (!state.calendar) state.calendar = {};
-            document.getElementById('taskGoalId').value = goalId || ''; // Сохраняем связь
 
-        const skillSelect = document.getElementById('taskSkillId');
-        skillSelect.innerHTML = '<option value="">Без навыка (Обычное дело)</option>';
-        state.skills.forEach(s => skillSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`);
+            const skillSelect = document.getElementById('taskSkillId');
+            skillSelect.innerHTML = '<option value="">Без навыка (Обычное дело)</option>';
+            state.skills.forEach(s => skillSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`);
 
-        if (taskId) {
-        const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
-        const task = taskList.find(t => t.id === taskId);
+            if (taskId) {
+                const taskList = type === 'template' ? state.schedule[key] : state.calendar[key];
+                const task = taskList.find(t => t.id === taskId);
 
-        document.getElementById('taskModalTitle').innerText = 'Редактировать блок';
-        document.getElementById('editTaskId').value = task.id;
-        document.getElementById('editTaskOldType').value = type;
-        document.getElementById('editTaskOldKey').value = key;
-        document.getElementById('taskMode').value = type;
-        document.getElementById('taskTime').value = task.time;
-        document.getElementById('taskDuration').value = task.duration;
-        document.getElementById('taskTitle').value = task.title;
-        document.getElementById('taskSkillId').value = task.skillId || '';
+                document.getElementById('taskModalTitle').innerText = 'Редактировать блок';
+                document.getElementById('editTaskId').value = task.id;
+                document.getElementById('editTaskOldType').value = type;
+                document.getElementById('editTaskOldKey').value = key;
+                document.getElementById('taskMode').value = type;
+                document.getElementById('taskTime').value = task.time;
+                document.getElementById('taskDuration').value = task.duration;
+                document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskSkillId').value = task.skillId || '';
+                
+                updateTaskGoalSelect(task.goalId); // <--- Подгружаем цели при редактировании
 
-        if (type === 'template') {
+                if (type === 'template') {
+        // ... дальше идет старый код функции без изменений
         document.getElementById('taskDay').value = key;
         } else {
         document.getElementById('taskExactDate').value = key;
@@ -2903,6 +2937,7 @@
         document.getElementById('taskDuration').value = '60';
         document.getElementById('taskTitle').value = '';
         document.getElementById('taskSkillId').value = '';
+        updateTaskGoalSelect(); // <--- Сбрасываем цели для новой задачи
         document.getElementById('btnDeleteTask').style.display = 'none';
         }
 
@@ -2954,7 +2989,7 @@
         const taskObj = { 
             id, time, duration, title, 
             skillId: document.getElementById('taskSkillId').value, 
-            goalId: document.getElementById('taskGoalId').value, // Привязываем ID цели
+            goalId: document.getElementById('taskGoalSelect').value, // Читаем из нового селекта
             done: false 
         };
 
@@ -4093,7 +4128,7 @@
                                     </div>
                                     <div class="btn-group" style="margin-bottom:0; flex: 1 1 100%;">
                                         ${n.done ? `<button class="btn btn-secondary" style="padding:4px; font-size:0.7em;" onclick="archiveGoal('${s.id}', '${n.id}')">Архив</button>` : ''}
-                                        <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}';">📅 В календарь</button>
+                                        <button class="btn btn-secondary" onclick="openTaskModal('date', new Date().toISOString().split('T')[0], null, '${n.id}'); document.getElementById('taskTitle').value='${n.name.replace(/'/g, "\\'")}'; document.getElementById('taskSkillId').value='${s.id}'; updateTaskGoalSelect('${n.id}');">📅 В календарь</button>
                                         <button class="btn btn-secondary" style="padding:4px 8px; font-size:0.8em;" onclick="openGoalModal('${s.id}', '${n.id}')">✎</button>
                                     </div>
                                 </div>
