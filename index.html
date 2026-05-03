@@ -3830,10 +3830,11 @@
 
                 yesterdayTasks.forEach(t => {
                     let isDone = t.done;
-                    if (t._type === 'template') {
-                        isDone = state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id);
+                    
+                    if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) {
+                        isDone = true;
                     }
-
+                    
                     if (!isDone) {
                         // Если задача из расписания не выполнена, проверяем наличие Щита (Заморозки)
                         if (state.inventory.streakFreezes > 0) {
@@ -3903,6 +3904,8 @@
                 state.global.stamina = state.global.maxStamina;
                 state.global.lastLoginDate = todayStr;
                 safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
+
+                setTimeout(() => { pushState(); }, 1000);
             }
 
             // Инициализация HP для старых сохранений
