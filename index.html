@@ -2133,6 +2133,11 @@
                     safeSetLocal('rpg_os_session_hash', hash);
                     safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
 
+                    // ФИКС: Снимаем блокировку ДО рендера, чтобы функция смогла 
+                    // отправить результаты ночного урона обратно в облако Firebase
+                    isSyncing = false; 
+                    hasInitialSync = true; 
+
                     render();
                     listenToSharedHabits();
                     listenToGlobalEvents();
@@ -3888,24 +3893,40 @@
                 // Применение урона и проверка на СМЕРТЬ
                 if (damageTaken > 0) {
                     state.global.hp = (state.global.hp || 100) - damageTaken;
-                    if (state.global.hp <= 0) {
-                        customAlert("ПОРАЖЕНИЕ", `☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь!`);
+                    
+                    // Защита от спама: показываем окно только один раз за сессию
+                    const alertKey = 'daily_dmg_shown_' + todayStr;
+                    const alertAlreadyShown = sessionStorage.getItem(alertKey);
+
+                    if (!alertAlreadyShown) {
+                        if (state.global.hp <= 0) {
+                            customAlert("ПОРАЖЕНИЕ", `☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь!`);
+                            state.global.level = Math.max(1, state.global.level - 1);
+                            state.global.gold = Math.floor(state.global.gold / 2);
+                            state.global.hp = 100;
+                            if (!state.analytics) state.analytics = {};
+                            state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
+                        } else {
+                            customAlert("Ночной отчет", `🌙 Вы получили ${damageTaken} урона за пропущенные задачи в расписании!\nОсталось HP: ${state.global.hp}`);
+                        }
+                        sessionStorage.setItem(alertKey, 'true');
+                    } else if (state.global.hp <= 0) {
+                        // Если алерт уже был, но нужно молча откатить статы
                         state.global.level = Math.max(1, state.global.level - 1);
                         state.global.gold = Math.floor(state.global.gold / 2);
                         state.global.hp = 100;
-                        if (!state.analytics) state.analytics = {};
-                        state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
-                    } else {
-                        customAlert("Ночной отчет", `🌙 Вы получили ${damageTaken} урона за пропущенные задачи в расписании!\nОсталось HP: ${state.global.hp}`);
                     }
                 }
 
                 state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
                 state.global.stamina = state.global.maxStamina;
                 state.global.lastLoginDate = todayStr;
+                state.global.lastUpdated = Date.now(); // Жестко обновляем таймштамп
+                
                 safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
-
-                setTimeout(() => { pushState(); }, 1000);
+                
+                // ФИКС: Принудительно закидываем итоги ночи в Firebase!
+                pushState();
             }
 
             // Инициализация HP для старых сохранений
