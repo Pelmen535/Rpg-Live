@@ -2090,7 +2090,6 @@
 
         state.network.syncId = uid;
 
-        switchView('dashboard');
         initNetwork(uid);
         }
 
@@ -2146,7 +2145,7 @@
                     isSyncing = false; 
                     hasInitialSync = true; 
 
-                    render();
+                    switchView('dashboard');
                     listenToSharedHabits();
                     listenToGlobalEvents();
                     updateSyncUI('online');
@@ -2165,10 +2164,12 @@
         }
 
         function pushState() {
-            // ЖЕСТКИЙ БЛОК: Запрещаем любую отправку данных, если мы еще не получили первую сводку с сервера
             if (!syncRef || isSyncing || !hasInitialSync) return; 
 
-            syncRef.set(state)
+            // ФИКС: Очищаем state от программного мусора (undefined), иначе Firebase откажется сохранять новый день!
+            const cleanState = JSON.parse(JSON.stringify(state));
+
+            syncRef.set(cleanState)
             .then(() => updateSyncUI('online'))
             .catch((error) => {
                 console.error("Ошибка сохранения в облако:", error);
