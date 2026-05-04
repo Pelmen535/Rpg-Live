@@ -4397,158 +4397,185 @@
         МЕХАНИКА ГРУППОВЫХ СТРИКОВ (МУЛЬТИПЛЕЕР)
         ========================================= */
         function createSharedHabit() {
-        const title = prompt("Что будем делать вместе? (Например: Учить Golang 1 час)");
-        if (!title) return;
+            const title = prompt("Что будем делать вместе? (Например: Учить Golang 1 час)");
+            if (!title) return;
 
-        const habitId = 'pact_' + Date.now();
-        const myUid = state.network.syncId;
-        const myName = state.user?.nickname || 'Сталкер';
+            const habitId = 'pact_' + Date.now();
+            const myUid = state.network.syncId;
+            const myName = state.user?.nickname || 'Сталкер';
 
-        const habitData = {
-        id: habitId,
-        title: title,
-        streak: 0,
-        lastDate: '',
-        members: {}
-        };
-        habitData.members[myUid] = { name: myName, doneToday: false, lastDoneDate: '' };
+            const habitData = {
+                id: habitId,
+                title: title,
+                startDate: new Date().toDateString(), // Отсчет начинается с сегодня
+                failedDate: '',
+                members: {}
+            };
+            habitData.members[myUid] = { name: myName, lastFailedDate: '', lastRewardDate: '' };
 
-        database.ref('shared_habits/' + habitId).set(habitData).then(() => {
-        if (!state.network.sharedHabits) state.network.sharedHabits = [];
-        if (!state.network.sharedHabits.includes(habitId)) {
-        state.network.sharedHabits.push(habitId);
-        save();
-        }
-        alert(`Договор заключен! Скопируй ID: ${habitId}`);
-        listenToSharedHabits();
-        });
+            database.ref('shared_habits/' + habitId).set(habitData).then(() => {
+                if (!state.network.sharedHabits) state.network.sharedHabits = [];
+                if (!state.network.sharedHabits.includes(habitId)) {
+                    state.network.sharedHabits.push(habitId);
+                    save();
+                }
+                alert(`Договор заключен! Скопируй ID: ${habitId}`);
+                listenToSharedHabits();
+            });
         }
 
         function joinSharedHabit() {
-        const habitId = prompt("Введи ID договора:");
-        if (!habitId) return;
+            const habitId = prompt("Введи ID договора:");
+            if (!habitId) return;
 
-        const myUid = state.network.syncId;
-        const myName = state.user?.nickname || 'Сталкер';
+            const myUid = state.network.syncId;
+            const myName = state.user?.nickname || 'Сталкер';
 
-        database.ref('shared_habits/' + habitId).once('value', snap => {
-        if (snap.exists()) {
-        database.ref(`shared_habits/${habitId}/members/${myUid}`).set({
-        name: myName,
-        doneToday: false,
-        lastDoneDate: ''
-        }).then(() => {
-        if (!state.network.sharedHabits) state.network.sharedHabits = [];
-        if (!state.network.sharedHabits.includes(habitId)) {
-        state.network.sharedHabits.push(habitId);
-        save();
+            database.ref('shared_habits/' + habitId).once('value', snap => {
+                if (snap.exists()) {
+                    database.ref(`shared_habits/${habitId}/members/${myUid}`).set({
+                        name: myName,
+                        lastFailedDate: '',
+                        lastRewardDate: ''
+                    }).then(() => {
+                        if (!state.network.sharedHabits) state.network.sharedHabits = [];
+                        if (!state.network.sharedHabits.includes(habitId)) {
+                            state.network.sharedHabits.push(habitId);
+                            save();
+                        }
+                        alert("Кровный договор подписан!");
+                        listenToSharedHabits();
+                    });
+                } else {
+                    alert("Договор с таким ID не найден в Матрице.");
+                }
+            });
         }
-        alert("Кровный договор подписан!");
-        listenToSharedHabits();
-        });
-        } else {
-        alert("Договор с таким ID не найден в Матрице.");
-        }
-        });
-        }
 
-        function toggleSharedHabit(habitId) {
-        const habit = realtimeHabits[habitId];
-        const myUid = state.network.syncId;
-        if (!habit || !habit.members || !habit.members[myUid]) return;
+        function failSharedHabit(habitId) {
+            if(!confirm("Вы уверены? Это действие сбросит стрик для ВСЕЙ ГРУППЫ до нуля, и вы получите 30 урона по здоровью!")) return;
 
-        const today = new Date().toDateString();
-        const me = habit.members[myUid];
+            const habit = realtimeHabits[habitId];
+            const myUid = state.network.syncId;
+            if (!habit || !habit.members || !habit.members[myUid]) return;
 
-        if (me.lastDoneDate === today) return;
+            const today = new Date().toDateString();
 
-        database.ref(`shared_habits/${habitId}/members/${myUid}/lastDoneDate`).set(today).then(() => {
-        state.global.xp += REWARDS['Повторяющаяся'].xp * 2;
-        state.global.gold += REWARDS['Повторяющаяся'].g * 2;
-        save();
+            // Штраф за провал
+            state.global.hp = Math.max(1, (state.global.hp || 100) - 30);
+            saveLocal(); 
 
-        database.ref(`shared_habits/${habitId}`).once('value', snap => {
-        const updatedHabit = snap.val();
-        let allDone = true;
-        Object.values(updatedHabit.members).forEach(m => {
-        if (m.lastDoneDate !== today) allDone = false;
-        });
-
-        if (allDone && updatedHabit.lastDate !== today) {
-        database.ref(`shared_habits/${habitId}/streak`).set((updatedHabit.streak || 0) + 1);
-        database.ref(`shared_habits/${habitId}/lastDate`).set(today);
-        }
-        });
-        });
+            // Сбрасываем стрик: теперь новой точкой отсчета станет ЗАВТРАШНИЙ день
+            // (или сегодняшний, но из-за failedDate сегодня будет отображаться 0)
+            database.ref(`shared_habits/${habitId}/startDate`).set(today);
+            database.ref(`shared_habits/${habitId}/failedDate`).set(today);
+            database.ref(`shared_habits/${habitId}/members/${myUid}/lastFailedDate`).set(today);
         }
 
         function listenToSharedHabits() {
-        if (!state.network || !state.network.sharedHabits) return;
+            if (!state.network || !state.network.sharedHabits) return;
 
-        state.network.sharedHabits.forEach(habitId => {
-        database.ref('shared_habits/' + habitId).on('value', snap => {
-        if (snap.exists()) {
-        realtimeHabits[habitId] = snap.val();
-        checkSharedHabitDaily(habitId);
-        renderSharedHabits();
-        } else {
-        delete realtimeHabits[habitId];
-        }
-        });
-        });
+            state.network.sharedHabits.forEach(habitId => {
+                database.ref('shared_habits/' + habitId).on('value', snap => {
+                    if (snap.exists()) {
+                        realtimeHabits[habitId] = snap.val();
+                        checkSharedHabitDaily(habitId);
+                        renderSharedHabits();
+                    } else {
+                        delete realtimeHabits[habitId];
+                    }
+                });
+            });
         }
 
         function checkSharedHabitDaily(habitId) {
-        const habit = realtimeHabits[habitId];
-        if (!habit) return;
+            const habit = realtimeHabits[habitId];
+            if (!habit) return;
 
-        const today = new Date().toDateString();
-        const yesterday = new Date();
-        yesterday.setDate(yesterday.getDate() - 1);
-        const yesterdayStr = yesterday.toDateString();
+            const todayStr = new Date().toDateString();
+            const myUid = state.network.syncId;
 
-        if (habit.lastDate && habit.lastDate !== today && habit.lastDate !== yesterdayStr) {
-        database.ref(`shared_habits/${habitId}/streak`).set(0);
+            // Награда выдается только если сегодня договор не был сорван
+            if (habit.failedDate !== todayStr) {
+                const me = habit.members ? habit.members[myUid] : null;
+                
+                if (me && me.lastRewardDate !== todayStr) {
+                    let multiplier = 1; // По умолчанию даем награду за 1 день (сегодня)
+                    
+                    // Если зашли не первый раз, считаем сколько дней нас не было
+                    if (me.lastRewardDate) {
+                        const lastReward = new Date(me.lastRewardDate);
+                        lastReward.setHours(0,0,0,0);
+                        const today = new Date();
+                        today.setHours(0,0,0,0);
+                        
+                        const daysMissed = Math.floor((today - lastReward) / (1000 * 60 * 60 * 24));
+                        if (daysMissed > 0) multiplier = daysMissed;
+                    }
+                    
+                    // Выдаем награду за все пропущенные дни разом
+                    state.global.xp += (REWARDS['Повторяющаяся'].xp * 2) * multiplier;
+                    state.global.gold += (REWARDS['Повторяющаяся'].g * 2) * multiplier;
+                    checkGlobalLevelUp();
+                    
+                    database.ref(`shared_habits/${habitId}/members/${myUid}/lastRewardDate`).set(todayStr).then(() => {
+                        saveLocal(); 
+                    });
+                }
+            }
         }
+
+        // Математический расчет стрика (чтобы рос сам по себе без захода в прилу)
+        function getMathematicalStreak(habit) {
+            if (!habit.startDate) return 0;
+            const today = new Date();
+            today.setHours(0,0,0,0);
+            const start = new Date(habit.startDate);
+            start.setHours(0,0,0,0);
+            
+            if (habit.failedDate === new Date().toDateString()) return 0;
+            
+            let streak = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            return streak < 0 ? 0 : streak;
         }
 
         function renderSharedHabits() {
-        const container = document.getElementById('shared-habits-list');
-        if (!container) return;
+            const container = document.getElementById('shared-habits-list');
+            if (!container) return;
 
-        const today = new Date().toDateString();
-        const myUid = state.network.syncId;
+            const today = new Date().toDateString();
+            const myUid = state.network.syncId;
 
-        const html = Object.values(realtimeHabits).map(habit => {
-        const me = habit.members ? habit.members[myUid] : null;
-        const iDidIt = me && me.lastDoneDate === today;
+            const html = Object.values(realtimeHabits).map(habit => {
+                const isGroupFailedToday = habit.failedDate === today;
+                const computedStreak = getMathematicalStreak(habit);
 
-        const membersHtml = Object.values(habit.members || {}).map(m => {
-        const isDone = m.lastDoneDate === today;
-        return `<span style="font-size: 0.9em; margin-right: 15px; color: ${isDone ? 'var(--success)' : 'var(--danger)'}">
-        ${isDone ? '✓' : '✖'} ${m.name}
-        </span>`;
-        }).join('');
+                const membersHtml = Object.values(habit.members || {}).map(m => {
+                    const hasFailed = m.lastFailedDate === today;
+                    return `<span style="font-size: 0.9em; margin-right: 15px; color: ${hasFailed ? 'var(--danger)' : 'var(--success)'}">
+                    ${hasFailed ? '✖' : '✓'} ${m.name}
+                    </span>`;
+                }).join('');
 
-        return `
-        <div class="card" style="border-left: 4px solid var(--flow); background: #1a1a20;">
-        <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
-        <h4 style="margin:0; color: var(--text);">${habit.title}</h4>
-        <div style="font-size: 1.2em; font-weight: bold; color: var(--flow);">🔥 ${habit.streak || 0}</div>
-        </div>
-        <div style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">${membersHtml}</div>
-        <div class="btn-group">
-        ${iDidIt ?
-        `<button class="btn btn-secondary" disabled style="flex: 2; opacity: 0.5; color: var(--success); border-color: var(--success);">Выполнено</button>` :
-        `<button class="btn btn-flow-action" style="flex: 2;" onclick="toggleSharedHabit('${habit.id}')">Отметиться</button>`
-        }
-        <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 0.8em;" onclick="navigator.clipboard.writeText('${habit.id}'); alert('ID скопирован!')">📋 ID</button>
-        </div>
-        </div>
-        `;
-        }).join('');
+                return `
+                <div class="card" style="border-left: 4px solid ${isGroupFailedToday ? 'var(--danger)' : 'var(--success)'}; background: #1a1a20;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                        <h4 style="margin:0; color: ${isGroupFailedToday ? 'var(--danger)' : 'var(--text)'};">${isGroupFailedToday ? '<s>' + habit.title + '</s>' : habit.title}</h4>
+                        <div style="font-size: 1.2em; font-weight: bold; color: ${isGroupFailedToday ? 'var(--danger)' : 'var(--success)'};">🔥 ${computedStreak}</div>
+                    </div>
+                    <div style="margin-bottom: 15px; border-bottom: 1px solid #333; padding-bottom: 10px;">${membersHtml}</div>
+                    <div class="btn-group">
+                        ${isGroupFailedToday ?
+                        `<button class="btn btn-secondary" disabled style="flex: 2; opacity: 0.5; color: var(--danger); border-color: var(--danger);">Договор сорван на сегодня</button>` :
+                        `<button class="btn btn-danger" style="flex: 2; background: rgba(255, 68, 68, 0.1);" onclick="failSharedHabit('${habit.id}')">Провалить задание</button>`
+                        }
+                        <button class="btn btn-secondary" style="flex: 1; padding: 5px; font-size: 0.8em;" onclick="navigator.clipboard.writeText('${habit.id}'); alert('ID скопирован!')">📋 ID</button>
+                    </div>
+                </div>
+                `;
+            }).join('');
 
-        container.innerHTML = html || '<div style="color:var(--text-dim); grid-column: 1/-1;">Здесь будут ваши общие договоры.</div>';
+            container.innerHTML = html || '<div style="color:var(--text-dim); grid-column: 1/-1;">Здесь будут ваши общие договоры.</div>';
         }
 
         /* =========================================
