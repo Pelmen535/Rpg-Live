@@ -4527,7 +4527,7 @@
 
         // Математический расчет стрика (чтобы рос сам по себе без захода в прилу)
         function getMathematicalStreak(habit) {
-            if (!habit.startDate) return 0;
+            if (!habit.startDate) return 0; // Если договор старый и багованный
             const today = new Date();
             today.setHours(0,0,0,0);
             const start = new Date(habit.startDate);
@@ -4535,7 +4535,7 @@
             
             if (habit.failedDate === new Date().toDateString()) return 0;
             
-            let streak = Math.floor((today - start) / (1000 * 60 * 60 * 24));
+            let streak = Math.floor((today - start) / (1000 * 60 * 60 * 24)) + 1; // ФИКС: Добавили +1
             return streak < 0 ? 0 : streak;
         }
 
