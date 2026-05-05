@@ -1795,6 +1795,7 @@
             <input type="hidden" id="editTaskOldType">
             <input type="hidden" id="editTaskOldKey">
             <input type="hidden" id="taskGoalId">
+            <input type="hidden" id="editTaskDynamicDate"> <!-- ФИКС: Новое поле -->
 
             <label>Тип события</label>
             <select id="taskMode" onchange="toggleTaskModeUI()">
@@ -2887,8 +2888,9 @@
                 container.style.display = 'none';
             }
         }
-        function openTaskModal(type = null, key = null, taskId = null, goalId = null) {
+        function openTaskModal(type = null, key = null, taskId = null, goalId = null, dynamicDate = '') {
             if (!state.calendar) state.calendar = {};
+            document.getElementById('editTaskDynamicDate').value = dynamicDate;
 
             const skillSelect = document.getElementById('taskSkillId');
             skillSelect.innerHTML = '<option value="">Без навыка (Обычное дело)</option>';
@@ -2902,25 +2904,32 @@
                 document.getElementById('editTaskId').value = task.id;
                 document.getElementById('editTaskOldType').value = type;
                 document.getElementById('editTaskOldKey').value = key;
-                document.getElementById('taskMode').value = type;
                 document.getElementById('taskTime').value = task.time;
                 document.getElementById('taskDuration').value = task.duration;
                 document.getElementById('taskTitle').value = task.title;
                 document.getElementById('taskSkillId').value = task.skillId || '';
                 
-                updateTaskGoalSelect(task.goalId); // <--- Подгружаем цели при редактировании
+                updateTaskGoalSelect(task.goalId);
 
-                if (type === 'template') {
-        // ... дальше идет старый код функции без изменений
-        document.getElementById('taskDay').value = key;
-        } else {
-        document.getElementById('taskExactDate').value = key;
-        const d = new Date(key);
-        document.getElementById('displayExactDate').innerText = `${d.getDate()} ${d.toLocaleString('ru-RU', { month: 'short' })}`;
-        }
+                // ФИКС: Если мы редактируем шаблон внутри Динамики — сразу делаем его уникальным
+                if (dynamicDate && type === 'template') {
+                    document.getElementById('taskMode').value = 'date';
+                    document.getElementById('taskExactDate').value = dynamicDate;
+                    const d = new Date(dynamicDate);
+                    document.getElementById('displayExactDate').innerText = `${d.getDate()} ${d.toLocaleString('ru-RU', { month: 'short' })}`;
+                } else {
+                    document.getElementById('taskMode').value = type;
+                    if (type === 'template') {
+                        document.getElementById('taskDay').value = key;
+                    } else {
+                        document.getElementById('taskExactDate').value = key;
+                        const d = new Date(key);
+                        document.getElementById('displayExactDate').innerText = `${d.getDate()} ${d.toLocaleString('ru-RU', { month: 'short' })}`;
+                    }
+                }
 
-        document.getElementById('btnDeleteTask').style.display = 'block';
-        } else {
+                document.getElementById('btnDeleteTask').style.display = 'block';
+            } else {
         document.getElementById('taskModalTitle').innerText = 'Запланировать блок';
         document.getElementById('editTaskId').value = '';
         document.getElementById('editTaskOldType').value = '';
@@ -2996,8 +3005,23 @@
 
         const oldType = document.getElementById('editTaskOldType').value;
         const oldKey = document.getElementById('editTaskOldKey').value;
-        if (oldType === 'template' && state.schedule[oldKey]) state.schedule[oldKey] = state.schedule[oldKey].filter(t => t.id !== id);
-        else if (oldType === 'date' && state.calendar[oldKey]) state.calendar[oldKey] = state.calendar[oldKey].filter(t => t.id !== id);
+        const dynamicDate = document.getElementById('editTaskDynamicDate').value;
+        
+        let targetId = id;
+
+        if (oldType === 'template' && dynamicDate) {
+            // ФИКС: Перенос в Динамике. Прячем задачу на сегодня, не трогая сам шаблон
+            if (!state.completedTemplates) state.completedTemplates = {};
+            if (!state.completedTemplates[dynamicDate]) state.completedTemplates[dynamicDate] = [];
+            state.completedTemplates[dynamicDate].push(parseInt(document.getElementById('editTaskId').value));
+            
+            targetId = Date.now(); // Генерируем новый ID, чтобы перенесенная задача стала независимой
+            taskObj.id = targetId; 
+        } else {
+            // Нормальное редактирование: честно удаляем старую версию
+            if (oldType === 'template' && state.schedule[oldKey]) state.schedule[oldKey] = state.schedule[oldKey].filter(t => t.id !== targetId);
+            else if (oldType === 'date' && state.calendar[oldKey]) state.calendar[oldKey] = state.calendar[oldKey].filter(t => t.id !== targetId);
+        }
 
         if (mode === 'template') {
         if (!state.schedule[key]) state.schedule[key] = [];
@@ -3017,15 +3041,24 @@
         }
 
         function deleteTask() {
-        const id = parseInt(document.getElementById('editTaskId').value);
-        const type = document.getElementById('editTaskOldType').value;
-        const key = document.getElementById('editTaskOldKey').value;
+            const id = parseInt(document.getElementById('editTaskId').value);
+            const type = document.getElementById('editTaskOldType').value;
+            const key = document.getElementById('editTaskOldKey').value;
+            const dynamicDate = document.getElementById('editTaskDynamicDate').value;
 
-        if (type === 'template') state.schedule[key] = state.schedule[key].filter(t => t.id !== id);
-        else state.calendar[key] = state.calendar[key].filter(t => t.id !== id);
+            if (type === 'template' && dynamicDate) {
+                // ФИКС: Удаление в Динамике просто скрывает задачу на этот день
+                if (!state.completedTemplates) state.completedTemplates = {};
+                if (!state.completedTemplates[dynamicDate]) state.completedTemplates[dynamicDate] = [];
+                state.completedTemplates[dynamicDate].push(id);
+            } else {
+                // Полное удаление
+                if (type === 'template') state.schedule[key] = state.schedule[key].filter(t => t.id !== id);
+                else state.calendar[key] = state.calendar[key].filter(t => t.id !== id);
+            }
 
-        closeModals();
-        save();
+            closeModals();
+            save();
         }
 
         function toggleTaskDone(type, key, id, dateStr = '') {
@@ -4200,7 +4233,7 @@
                 <div class="task-block ${isDone ? 'done' : ''}"
                 style="border-left: 4px solid ${colorBorder}; ${styleDate}"
                 onclick="toggleTaskDone('${t._type}', '${t._key}', ${t.id}, '${isDynamic ? dateStr : ''}')"
-                oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id})">
+                oncontextmenu="event.preventDefault(); openTaskModal('${t._type}', '${t._key}', ${t.id}, '${t.goalId || ''}', '${isDynamic ? dateStr : ''}')">
                 <div class="task-time">🕒 ${t.time} (${t.duration}м)</div>
                 <div class="task-title">${t.title}</div>
                 ${skill ? `<div style="font-size:0.75em; color:${colorBorder}; margin-top:6px; font-weight:bold;">${skill.name}</div>` : ''}
