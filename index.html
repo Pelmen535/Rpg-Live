@@ -4504,7 +4504,25 @@
             database.ref(`shared_habits/${habitId}/failedDate`).set(today);
             database.ref(`shared_habits/${habitId}/members/${myUid}/lastFailedDate`).set(today);
         }
+        function leaveSharedHabit(habitId) {
+            if(!confirm("Вы точно хотите покинуть этот Кровный Договор? Он исчезнет из вашего списка, а вы перестанете быть его участником.")) return;
 
+            const myUid = state.network.syncId;
+
+            // 1. Удаляем ID договора из локального массива
+            state.network.sharedHabits = state.network.sharedHabits.filter(id => id !== habitId);
+            
+            // 2. Удаляем себя из списка участников в Firebase
+            database.ref(`shared_habits/${habitId}/members/${myUid}`).remove().then(() => {
+                // 3. Отключаем прослушивание этого конкретного договора
+                database.ref('shared_habits/' + habitId).off();
+                delete realtimeHabits[habitId];
+                
+                // 4. Перерисовываем UI и сохраняем обновленный state в облако
+                renderSharedHabits();
+                save(); 
+            });
+        }
         function listenToSharedHabits() {
             if (!state.network || !state.network.sharedHabits) return;
 
@@ -4591,8 +4609,11 @@
                 }).join('');
 
                 return `
-                <div class="card" style="border-left: 4px solid ${isGroupFailedToday ? 'var(--danger)' : 'var(--success)'}; background: #1a1a20;">
-                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px;">
+                <div class="card" style="border-left: 4px solid ${isGroupFailedToday ? 'var(--danger)' : 'var(--success)'}; background: #1a1a20; position: relative;">
+                    <!-- Крестик для выхода из договора -->
+                    <div style="position: absolute; top: 10px; right: 15px; cursor: pointer; color: var(--danger); font-size: 0.9em;" onclick="leaveSharedHabit('${habit.id}')" title="Покинуть договор">✖</div>
+                    
+                    <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 10px; padding-right: 20px;">
                         <h4 style="margin:0; color: ${isGroupFailedToday ? 'var(--danger)' : 'var(--text)'};">${isGroupFailedToday ? '<s>' + habit.title + '</s>' : habit.title}</h4>
                         <div style="font-size: 1.2em; font-weight: bold; color: ${isGroupFailedToday ? 'var(--danger)' : 'var(--success)'};">🔥 ${computedStreak}</div>
                     </div>
