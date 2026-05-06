@@ -2086,12 +2086,22 @@
         }
 
         function startApp(uid) {
-        document.getElementById('auth-view').style.display = 'none';
-        document.getElementById('main-nav').style.display = 'flex';
+            document.getElementById('auth-view').style.display = 'none';
+            document.getElementById('main-nav').style.display = 'flex';
 
-        state.network.syncId = uid;
+            state.network.syncId = uid;
 
-        initNetwork(uid);
+            initNetwork(uid);
+
+            // ФИКС: Если Firebase заблокирован браузером, через 2.5 сек запускаем локально
+            setTimeout(() => {
+                if (!hasInitialSync) {
+                    console.warn("Матрица не отвечает. Запуск локальной копии.");
+                    hasInitialSync = true;
+                    switchView('dashboard');
+                    updateSyncUI('offline');
+                }
+            }, 2500);
         }
 
        
@@ -2111,7 +2121,8 @@
                 const incomingState = snapshot.val();
 
                 if (!incomingState || !incomingState.global) {
-                    hasInitialSync = true; // Облако реально пустое (новый аккаунт), разрешаем пушить
+                    hasInitialSync = true; 
+                    switchView('dashboard'); // ФИКС: Обязательно показываем интерфейс!
                     pushState();
                     return;
                 }
@@ -2160,7 +2171,10 @@
                 }
             }, (error) => {
                 console.error("Firebase Auth/Sync Error:", error);
-                alert("Критическая ошибка доступа к базе данных.");
+                // ФИКС: Запускаем игру в оффлайн-режиме, если доступ к базе отбит
+                hasInitialSync = true;
+                switchView('dashboard');
+                updateSyncUI('offline');
             });
         }
 
