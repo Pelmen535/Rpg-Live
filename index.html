@@ -1974,10 +1974,10 @@
 
         // ДОБАВИТЬ ЭТО: Броня от блокировок iOS Safari
         function safeSetLocal(key, value) {
-            try { safeSetLocal(key, value); } catch(e) { console.warn("LS blocked:", e); }
+            try { localStorage.setItem(key, value); } catch(e) { console.warn("LS blocked:", e); }
         }
         function safeRemoveLocal(key) {
-            try { safeRemoveLocal(key); } catch(e) { console.warn("LS blocked:", e); }
+            try { localStorage.removeItem(key); } catch(e) { console.warn("LS blocked:", e); }
         }
 
         // Переменные для перетаскивания узлов на графе
