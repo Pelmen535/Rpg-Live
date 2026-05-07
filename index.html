@@ -1413,6 +1413,7 @@
         <div id="dashboard" class="view">
             <div class="btn-group">
                 <button class="btn btn-primary" style="flex: 1; background-color: var(--success); color: #000; border: none;" id="btnVacation" onclick="toggleVacationMode()">🌴 Уйти в отпуск</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="requestNotificationPermission()">🔔 Включить Пуши</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="manualEvent()">✨ Добавить опыт</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="exportData()">💾 Экспорт</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
@@ -2299,13 +2300,14 @@
             setTimeout(() => {
                 if (!hasInitialSync) {
                     console.warn("Матрица загружается долго. Временно показываем локальную копию...");
-                    // ВАЖНО: Мы БОЛЬШЕ НЕ СТАВИМ hasInitialSync = true здесь!
-                    // Это гарантирует, что когда облако всё-таки ответит (хоть через 10 секунд), 
-                    // оно 100% перекроет старые локальные данные ПК.
                     switchView('dashboard');
                     updateSyncUI('offline');
                 }
             }, 5000);
+
+            // ---> ДОБАВИТЬ ЭТО <---
+            // Запускаем проверку расписания каждые 30 секунд
+            setInterval(checkScheduleForNotifications, 30000);
         }
 
        
@@ -5422,6 +5424,81 @@
                 // Высчитываем реальную высоту контента для плавной анимации
                 content.style.maxHeight = content.scrollHeight + 50 + "px"; 
             }
+        }
+        /* =========================================
+           ДВИЖОК ПУШ-УВЕДОМЛЕНИЙ (LOCAL PUSH)
+        ========================================= */
+        let notifiedTasks = {}; // Запоминаем, о чем уже напомнили
+
+        function requestNotificationPermission() {
+            if (!("Notification" in window)) {
+                customAlert("Ошибка", "Твой браузер не поддерживает системные уведомления.");
+                return;
+            }
+            Notification.requestPermission().then(permission => {
+                if (permission === "granted") {
+                    customAlert("Успех!", "Уведомления разрешены. Теперь Матрица будет будить тебя перед задачами.");
+                    sendPushNotification("Система активна", "Тестовое уведомление: связь с Ядром установлена.");
+                } else {
+                    customAlert("Отказ", "Ты запретил уведомления. Включи их в настройках браузера/телефона.");
+                }
+            });
+        }
+
+        function sendPushNotification(title, body) {
+            if (Notification.permission === "granted") {
+                // Если есть ServiceWorker (для мобилок)
+                if (navigator.serviceWorker) {
+                    navigator.serviceWorker.ready.then(function(registration) {
+                        registration.showNotification(title, {
+                            body: body,
+                            icon: 'icon-192.png', // Иконка твоего PWA
+                            vibrate: [200, 100, 200, 100, 200], // Вибрация для телефона
+                            tag: 'rpg-life-notify',
+                            badge: 'icon-192.png'
+                        });
+                    });
+                } else {
+                    // Десктопный фоллбэк
+                    new Notification(title, { body: body, icon: 'icon-192.png' });
+                }
+            }
+        }
+
+        function checkScheduleForNotifications() {
+            if (Notification.permission !== "granted") return;
+            if (state.global.isVacation) return;
+
+            const now = new Date();
+            const offset = now.getTimezoneOffset() * 60000;
+            const todayIso = new Date(now - offset).toISOString().split('T')[0];
+            const dayOfWeek = now.getDay();
+            
+            const currentHour = now.getHours().toString().padStart(2, '0');
+            const currentMinute = now.getMinutes().toString().padStart(2, '0');
+            const currentTimeStr = `${currentHour}:${currentMinute}`;
+
+            // Собираем все задачи на сегодня (Шаблон + Конвейер)
+            const scheduledTasksToday = [
+                ...(state.schedule[dayOfWeek] || []).map(t => ({...t, _type: 'template'})),
+                ...(state.calendar[todayIso] || []).map(t => ({...t, _type: 'date'}))
+            ];
+
+            scheduledTasksToday.forEach(task => {
+                let isDone = task.done;
+                if (task._type === 'template') {
+                    isDone = state.completedTemplates && state.completedTemplates[todayIso] && state.completedTemplates[todayIso].includes(task.id);
+                }
+
+                // Если задача не выполнена и время пришло
+                if (!isDone && task.time === currentTimeStr) {
+                    const notifyKey = `${task.id}_${todayIso}`;
+                    if (!notifiedTasks[notifyKey]) {
+                        sendPushNotification("⚡ Пора действовать!", `Твоя задача: ${task.title} начинается прямо сейчас.`);
+                        notifiedTasks[notifyKey] = true; // Чтобы не спамить каждую секунду в течение этой минуты
+                    }
+                }
+            });
         }
     </script>
     <script>
