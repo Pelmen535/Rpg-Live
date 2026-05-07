@@ -1213,86 +1213,83 @@
             opacity: 1;
             border-top: 1px solid var(--border);
         }
-        /* =========================================
-           2D IDLE RUNNER (ПЕРСОНАЖ И ФОН)
+       /* =========================================
+           CYBER-CORE ENGINE (ЯДРО СИСТЕМЫ)
         ========================================= */
         #game-window {
-            background-color: #87CEEB; /* Небесный цвет по умолчанию */
-            image-rendering: pixelated;
-            border: 4px solid var(--text); /* Жирная игровая рамка */
-            border-radius: 8px;
-            box-shadow: inset 0 0 30px rgba(0,0,0,0.1); /* Внутреннее затенение для глубины */
+            background-color: #0b0b0d; /* Глубокий черный */
+            border: 2px solid #219eb3; 
+            box-shadow: inset 0 0 20px rgba(33, 158, 179, 0.2);
+            position: relative;
+            overflow: hidden;
         }
 
+        /* Анимированный фон: Цифровой поток */
         .scrolling-bg {
             position: absolute;
-            top: 0; left: 0; width: 200%; height: 100%;
-            background-repeat: repeat-x;
-            animation: scrollBg 20s linear infinite;
+            top: 0; left: 0; width: 100%; height: 100%;
+            background: linear-gradient(0deg, transparent 0%, rgba(33, 158, 179, 0.05) 50%, transparent 100%);
+            background-size: 100% 4px;
+            animation: scanline 4s linear infinite;
             z-index: 1;
-            transform: translateZ(0); /* Аппаратное ускорение для плавности */
         }
 
-        /* Если нет картинки для 2 уровня, временно используем 1-й, но меняем оттенок фильтром */
-        .bg-level-0 { background-image: url('bg_0.png'); background-size: auto 100%; }
-        .bg-level-1 { background-image: url('bg_1.png'); background-size: auto 100%; }
-        .bg-level-2 { background-image: url('bg_1.png'); background-size: auto 100%; filter: hue-rotate(45deg); }
+        @keyframes scanline {
+            0% { transform: translateY(-100%); }
+            100% { transform: translateY(100%); }
+        }
 
-        .scrolling-ground {
+        /* Центральное Ядро */
+        #cyber-core {
             position: absolute;
-            bottom: 0; left: 0; width: 200%; 
-            height: 64px; 
-            background-color: #483223; /* <--- Зальет прозрачный зазор снизу цветом земли */
-            background-image: url('ground.png');
-            background-position: bottom left; /* <--- Жестко прижмет текстуру к низу */
-            background-size: auto 100%;
-            background-repeat: repeat-x;
-            animation: scrollBg 2s linear infinite;
-            z-index: 5;
-            transform: translateZ(0);
-        }
-
-        @keyframes scrollBg {
-            0% { transform: translateX(0); }
-            100% { transform: translateX(-50%); }
-        }
-
-        #character {
-            position: absolute;
-            bottom: 45px; /* Ставим ноги ровно на уровень травы */
-            left: 15%; /* Сдвигаем чуть левее, по правилу золотого сечения для раннеров */
-            width: 110px; /* Увеличили персонажа в полтора раза */
-            height: 140px;
-            background-size: contain;
-            background-repeat: no-repeat;
-            background-position: bottom center;
+            top: 50%; left: 30%; /* Смещено влево для баланса с логом */
+            transform: translate(-50%, -50%);
+            width: 120px; height: 120px;
             z-index: 10;
-            animation: runBob 0.3s infinite alternate;
-            filter: drop-shadow(3px 5px 0px rgba(0,0,0,0.25)); /* Добавили мягкую тень персонажу */
+            display: flex; align-items: center; justify-content: center;
         }
 
-        @keyframes runBob {
-            0% { transform: translateY(0); }
-            100% { transform: translateY(-8px); } /* Более акцентированный шаг */
+        .core-orbit {
+            position: absolute;
+            width: 100%; height: 100%;
+            border: 2px dashed #219eb3;
+            border-radius: 50%;
+            animation: rotateOrbit 10s linear infinite;
         }
 
-        /* Стилизация игровых кнопок (HUD) */
-        .game-hud-btn {
-            background: rgba(255, 243, 224, 0.9);
-            border: 2px solid var(--text);
-            box-shadow: 2px 2px 0px var(--text);
-            color: var(--text);
-            font-family: var(--font-game);
-            font-size: 1rem;
-            padding: 6px 12px;
-            cursor: pointer;
-            backdrop-filter: blur(4px);
-            transition: transform 0.1s;
+        .core-sphere {
+            width: 60px; height: 60px;
+            background: radial-gradient(circle, #ff9ff3, #cc4eb3);
+            border-radius: 50%;
+            box-shadow: 0 0 30px #cc4eb3;
+            animation: corePulse 2s ease-in-out infinite alternate;
+            z-index: 11;
         }
-        .game-hud-btn:active {
-            transform: translate(2px, 2px);
-            box-shadow: 0px 0px 0px var(--text);
+
+        /* Состояния перегрева ядра */
+        .status-warning .core-sphere { background: radial-gradient(circle, #f6e58d, #d68f00); box-shadow: 0 0 40px #d68f00; }
+        .status-critical .core-sphere { background: radial-gradient(circle, #ff7979, #d94848); box-shadow: 0 0 50px #d94848; animation: glitch 0.2s infinite; }
+
+        @keyframes rotateOrbit { from { transform: rotate(0deg); } to { transform: rotate(360deg); } }
+        @keyframes corePulse { from { transform: scale(0.9); opacity: 0.8; } to { transform: scale(1.1); opacity: 1; } }
+        @keyframes glitch { 0% { transform: translate(2px,0); } 50% { transform: translate(-2px,1px); } 100% { transform: translate(0,0); } }
+
+        /* Терминал логов справа */
+        #core-terminal {
+            position: absolute;
+            top: 15px; right: 140px; bottom: 15px; left: 55%;
+            background: rgba(0, 0, 0, 0.4);
+            border: 1px solid rgba(33, 158, 179, 0.3);
+            padding: 10px;
+            font-family: 'VT323', monospace;
+            font-size: 0.9rem;
+            color: #7ed6df;
+            overflow: hidden;
+            z-index: 5;
         }
+
+        .log-entry { margin-bottom: 4px; border-left: 2px solid #219eb3; padding-left: 5px; opacity: 0.8; }
+        .log-success { color: #badc58; border-color: #badc58; }
 
         
     </style>
@@ -1347,14 +1344,24 @@
                 <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
             </div>
             <div id="game-window" style="padding: 0; overflow: hidden; position: relative; height: 280px; margin-bottom: 20px;">
-                <div id="game-bg" class="scrolling-bg bg-level-0"></div>
-                <div id="game-ground" class="scrolling-ground"></div>
+                <div class="scrolling-bg"></div>
                 
-                <div id="character" class="char-walk clothes-0"></div>
+                <div id="cyber-core" class="status-normal">
+                    <div class="core-orbit"></div>
+                    <div class="core-sphere"></div>
+                </div>
+
+                <div id="core-terminal">
+                    <div id="terminal-logs">
+                        <div class="log-entry">System initialized...</div>
+                        <div class="log-entry">Kernel: v.1.0.4-stable</div>
+                        <div class="log-entry">Node: Yekaterinburg_Primary</div>
+                    </div>
+                </div>
                 
                 <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 20;">
-                    <button class="game-hud-btn" onclick="upgradeClothes()">👖 ОДЕЖДА (УР. <span id="ui-clothes-lvl">0</span>)</button>
-                    <button class="game-hud-btn" onclick="upgradeBackground()">🌄 ФОН (УР. <span id="ui-bg-lvl">0</span>)</button>
+                    <button class="game-hud-btn" onclick="upgradeClothes()">🖥️ СЕРВЕРЫ (УР. <span id="ui-clothes-lvl">0</span>)</button>
+                    <button class="game-hud-btn" onclick="upgradeBackground()">❄️ ОХЛАЖДЕНИЕ (УР. <span id="ui-bg-lvl">0</span>)</button>
                 </div>
             </div>
             <div id="vacation-banner" style="display:none; background: rgba(0,204,102,0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; color: var(--success); font-weight: bold;">
@@ -2723,7 +2730,7 @@
 
         function processNodeReward(skill, node) {
             let rewardGiven = false;
-
+            
             // Выдача опыта за выполнение
             if (node.type === 'Повторяющаяся') {
                 const today = new Date().toDateString();
@@ -3314,32 +3321,43 @@
            ПРОКАЧКА 2D ПЕРСОНАЖА
         ========================================= */
         function upgradeClothes() {
-            const cost = 200 * (state.character.clothesLevel + 1);
-            if (state.character.clothesLevel >= 2) {
-                customAlert("Максимум", "Вы собрали лучший сет брони (одежды)!"); return;
+            const cost = 250 * (state.character.clothesLevel + 1);
+            if (state.character.clothesLevel >= 5) {
+                customAlert("Max Level", "Вычислительная мощность на пределе."); return;
             }
             if (state.global.gold >= cost) {
                 state.global.gold -= cost;
                 state.character.clothesLevel++;
+                addCoreLog(`Hardware upgrade: Server Node Cluster ${state.character.clothesLevel} connected.`, "success");
                 save();
             } else {
-                customAlert("Нужно больше золота", `Стоимость следующей шмотки: ${cost} 🪙! Выполняйте задачи.`);
+                customAlert("Low Credits", `Нужно ${cost} 🪙 для расширения серверной стойки.`);
             }
         }
 
         function upgradeBackground() {
-            const cost = 300 * (state.character.bgLevel + 1);
-            if (state.character.bgLevel >= 2) {
-                customAlert("Максимум", "Фон прокачан до предела!"); return;
+            const cost = 400 * (state.character.bgLevel + 1);
+            if (state.character.bgLevel >= 5) {
+                customAlert("Max Level", "Установлена система жидкого азота."); return;
             }
             if (state.global.gold >= cost) {
                 state.global.gold -= cost;
                 state.character.bgLevel++;
-                state.character.speed += 0.4; // Персонаж бежит быстрее
+                addCoreLog(`Cooling upgrade: Heat sink level ${state.character.bgLevel} active.`, "success");
                 save();
             } else {
-                customAlert("Нужно больше золота", `Стоимость улучшения локации: ${cost} 🪙!`);
+                customAlert("Low Credits", `Система охлаждения стоит ${cost} 🪙.`);
             }
+        }
+
+        function addCoreLog(text, type = "") {
+            const container = document.getElementById('terminal-logs');
+            if (!container) return;
+            const entry = document.createElement('div');
+            entry.className = `log-entry ${type === "success" ? "log-success" : ""}`;
+            entry.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
+            container.prepend(entry); // Новые логи сверху
+            if (container.children.length > 10) container.lastChild.remove();
         }
         /* =========================================
         7. МАГАЗИН
@@ -4030,30 +4048,26 @@
         ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
         ========================================= */
         function render() {
+            // --- ЛОГИКА КИБЕР-ЯДРА ---
+            const coreEl = document.getElementById('cyber-core');
+            const hpPercent = (state.global.hp / (state.global.maxHp || 100)) * 100;
+            
+            if (coreEl) {
+                coreEl.className = ""; // Сброс
+                if (hpPercent > 70) coreEl.classList.add('status-normal');
+                else if (hpPercent > 30) coreEl.classList.add('status-warning');
+                else coreEl.classList.add('status-critical');
+
+                document.getElementById('ui-clothes-lvl').innerText = state.character.clothesLevel;
+                document.getElementById('ui-bg-lvl').innerText = state.character.bgLevel;
+            }
             // --- ЗАЩИТА ОТ КРАШЕЙ (ПЕРЕНЕСЛИ В САМОЕ НАЧАЛО) ---
             if (!state.inventory) state.inventory = { streakFreezes: 0 };
             if (!state.calendar) state.calendar = {};
             if (!state.completedTemplates) state.completedTemplates = {};
             if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
             // Синхронизация 2D мира
-            if (!state.character) state.character = { clothesLevel: 0, bgLevel: 0, speed: 1 };
-            const charEl = document.getElementById('character');
-            const bgEl = document.getElementById('game-bg');
-            const groundEl = document.getElementById('game-ground');
-            
-            if (charEl) charEl.className = `char-walk clothes-${state.character.clothesLevel}`;
-            if (bgEl) bgEl.className = `scrolling-bg bg-level-${state.character.bgLevel}`;
-            
-            // Настройка скорости бега
-            // Настройка скорости бега
-            if (groundEl) {
-                groundEl.style.animationDuration = `${2 / state.character.speed}s`;
-                bgEl.style.animationDuration = `${20 / state.character.speed}s`;
-                charEl.style.animationDuration = `${0.3 / state.character.speed}s`;
-                
-                document.getElementById('ui-clothes-lvl').innerText = state.character.clothesLevel;
-                document.getElementById('ui-bg-lvl').innerText = state.character.bgLevel;
-            }
+           
 
            const todayStr = new Date().toDateString();
             if (state.global.lastLoginDate !== todayStr) {
