@@ -1235,25 +1235,40 @@
         }
         @keyframes panGrid { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
 
-        /* Сам Атом */
-        #atom-core {
-            position: absolute;
-            top: 50%; left: 30%;
-            transform: translate(-50%, -50%);
-            width: 140px; height: 140px;
-            z-index: 10;
-            transform-style: preserve-3d;
+        /* =========================================
+           URANIUM-238 CORE (ЯДРО УРАНА)
+        ========================================= */
+        #game-window {
+            background-color: #050805; /* Глубокий темно-зеленый */
+            border: 2px solid #4ade80; 
+            box-shadow: inset 0 0 30px rgba(74, 222, 128, 0.1);
         }
 
         .nucleus {
             position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 35px; height: 35px;
-            background: radial-gradient(circle, #00f2ff, #004d66);
+            width: 45px; height: 45px; /* Увеличили размер для "тяжелого" ядра */
+            background: radial-gradient(circle, #bbf7d0, #166534);
             border-radius: 50%;
-            box-shadow: 0 0 20px #00f2ff, inset 0 0 10px #fff;
-            animation: coreBreathe 3s ease-in-out infinite alternate;
+            box-shadow: 0 0 30px #22c55e, inset 0 0 15px #fff;
+            animation: coreBreathe 4s ease-in-out infinite alternate;
             z-index: 5;
-            transition: all 0.5s;
+        }
+
+        /* Добавляем эффект радиоактивного тумана вокруг ядра */
+        .nucleus::after {
+            content: '';
+            position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px;
+            background: radial-gradient(circle, rgba(34, 197, 94, 0.2), transparent 70%);
+            border-radius: 50%;
+            animation: pulseFog 2s infinite alternate;
+        }
+
+        @keyframes pulseFog { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
+
+        .electron {
+            width: 8px; height: 8px; 
+            background: #fff;
+            box-shadow: 0 0 15px #4ade80;
         }
 
         /* 3D Орбиты */
@@ -1361,8 +1376,10 @@
                 <div id="atom-core" class="status-normal">
                     <div class="nucleus"></div>
                     <div class="orbit-plane plane-1"><div class="orbit-ring"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-2"><div class="orbit-ring"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-3"><div class="orbit-ring"><div class="electron"></div></div></div>
+                    <div class="orbit-plane plane-2"><div class="orbit-ring" style="animation-duration: 2.5s;"><div class="electron"></div></div></div>
+                    <div class="orbit-plane plane-3"><div class="orbit-ring" style="animation-duration: 6s;"><div class="electron"></div></div></div>
+                    <div class="orbit-plane plane-1" style="transform: rotateX(120deg);"><div class="orbit-ring" style="animation-duration: 4.5s;"><div class="electron"></div></div></div>
+                    <div class="orbit-plane plane-2" style="transform: rotateY(90deg);"><div class="orbit-ring" style="animation-duration: 8s;"><div class="electron"></div></div></div>
                 </div>
 
                 <div id="core-terminal">
@@ -4160,7 +4177,10 @@
 
                         if (!alertAlreadyShown) {
                             if (state.global.hp <= 0) {
-                                customAlert("ВЗРЫВ РЕАКТОРА", `⚛️ Критическая масса достигнута. Сдерживающее поле уничтожено!\n\nШтраф:\n- Потеряно 20% золота\n\nЭнергия перераспределена. Атом снова стабилен. Возвращайтесь к задачам!`);
+                                customAlert("☢️ ЯДЕРНЫЙ РАСПАД", `Критическая масса превышена. Ядро Урана раскололось!\n\nПроизошел выброс энергии. Система перезагружена.\n- Потеряно 20% золота.\n\nСтабильность восстановлена до 100%.`);
+                                addCoreLog("CRITICAL: Nuclear fission detected! Emergency cooling active.", "danger");
+                                // ... остальной код (сброс золота и HP)
+                            
                                 state.global.gold = Math.floor(state.global.gold * 0.8);
                                 state.global.hp = state.global.maxHp;
                                 if (!state.analytics) state.analytics = {};
