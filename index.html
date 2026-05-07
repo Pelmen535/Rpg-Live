@@ -1217,28 +1217,37 @@
            2D IDLE RUNNER (ПЕРСОНАЖ И ФОН)
         ========================================= */
         #game-window {
-            background-color: #a8e6cf; /* Базовое небо */
+            background-color: #87CEEB; /* Небесный цвет по умолчанию */
             image-rendering: pixelated;
+            border: 4px solid var(--text); /* Жирная игровая рамка */
+            border-radius: 8px;
+            box-shadow: inset 0 0 30px rgba(0,0,0,0.1); /* Внутреннее затенение для глубины */
         }
+
         .scrolling-bg {
             position: absolute;
             top: 0; left: 0; width: 200%; height: 100%;
-            background-size: 50% 100%;
+            background-repeat: repeat-x;
             animation: scrollBg 20s linear infinite;
-            opacity: 0.6;
+            z-index: 1;
+            transform: translateZ(0); /* Аппаратное ускорение для плавности */
         }
-        /* Уровни фона */
-        .bg-level-0 { background-image: radial-gradient(circle, #fff 10%, transparent 10%); background-size: 50px 50px; background-position: 0 0; }
-        .bg-level-1 { background: repeating-linear-gradient(45deg, transparent, transparent 20px, rgba(255,255,255,0.2) 20px, rgba(255,255,255,0.2) 40px); background-color: #ffd3b6; }
-        .bg-level-2 { background: repeating-linear-gradient(0deg, #ff8b94, transparent 20px); background-color: #ffaaa5; }
+
+        /* Если нет картинки для 2 уровня, временно используем 1-й, но меняем оттенок фильтром */
+        .bg-level-0 { background-image: url('bg_0.png'); background-size: auto 100%; }
+        .bg-level-1 { background-image: url('bg_1.png'); background-size: auto 100%; }
+        .bg-level-2 { background-image: url('bg_1.png'); background-size: auto 100%; filter: hue-rotate(45deg); }
 
         .scrolling-ground {
             position: absolute;
-            bottom: 0; left: 0; width: 200%; height: 40px;
-            background-color: var(--success);
-            background-image: repeating-linear-gradient(90deg, transparent, transparent 20px, rgba(0,0,0,0.1) 20px, rgba(0,0,0,0.1) 40px);
+            bottom: 0; left: 0; width: 200%; 
+            height: 64px; /* Сделали землю толще и заметнее */
+            background-image: url('ground.png');
+            background-size: auto 100%;
+            background-repeat: repeat-x;
             animation: scrollBg 2s linear infinite;
-            border-top: 4px solid var(--text);
+            z-index: 5;
+            transform: translateZ(0);
         }
 
         @keyframes scrollBg {
@@ -1246,57 +1255,44 @@
             100% { transform: translateX(-50%); }
         }
 
-        /* =========================================
-           ОБНОВЛЕННЫЙ 2D ПЕРСОНАЖ (КАРТИНКИ)
-        ========================================= */
         #character {
             position: absolute;
-            bottom: 35px; /* Чтобы ноги касались травы */
-            left: 20%;
-            width: 70px; /* Настрой ширину под свои картинки */
-            height: 90px; /* Настрой высоту */
+            bottom: 45px; /* Ставим ноги ровно на уровень травы */
+            left: 15%; /* Сдвигаем чуть левее, по правилу золотого сечения для раннеров */
+            width: 110px; /* Увеличили персонажа в полтора раза */
+            height: 140px;
             background-size: contain;
             background-repeat: no-repeat;
             background-position: bottom center;
             z-index: 10;
-            /* Простая анимация покачивания, имитирующая бег */
             animation: runBob 0.3s infinite alternate;
+            filter: drop-shadow(3px 5px 0px rgba(0,0,0,0.25)); /* Добавили мягкую тень персонажу */
         }
 
         @keyframes runBob {
             0% { transform: translateY(0); }
-            100% { transform: translateY(-6px); }
+            100% { transform: translateY(-8px); } /* Более акцентированный шаг */
         }
 
-        /* Применяем картинки в зависимости от уровня прокачки */
-        .clothes-0 { background-image: url('char_0.png'); }
-        .clothes-1 { background-image: url('char_1.png'); }
-        .clothes-2 { background-image: url('char_2.png'); }
+        /* Стилизация игровых кнопок (HUD) */
+        .game-hud-btn {
+            background: rgba(255, 243, 224, 0.9);
+            border: 2px solid var(--text);
+            box-shadow: 2px 2px 0px var(--text);
+            color: var(--text);
+            font-family: var(--font-game);
+            font-size: 1rem;
+            padding: 6px 12px;
+            cursor: pointer;
+            backdrop-filter: blur(4px);
+            transition: transform 0.1s;
+        }
+        .game-hud-btn:active {
+            transform: translate(2px, 2px);
+            box-shadow: 0px 0px 0px var(--text);
+        }
 
-        /* =========================================
-           ОБНОВЛЕННЫЕ ФОНЫ И ЗЕМЛЯ
-        ========================================= */
-        .bg-level-0 { 
-            background-image: url('bg_0.png'); 
-            background-size: auto 100%; 
-            background-color: #b5e1ff; /* Цвет подложки под небо */
-        }
-        .bg-level-1 { 
-            background-image: url('bg_1.png'); 
-            background-size: auto 100%; 
-            background-color: #d8f0e6;
-        }
-
-        .scrolling-ground {
-            position: absolute;
-            bottom: 0; left: 0; width: 200%; height: 50px;
-            background-image: url('ground.png');
-            background-size: auto 100%; /* Земля будет повторяться по горизонтали */
-            background-repeat: repeat-x;
-            animation: scrollBg 2s linear infinite;
-            border-top: none; /* Убираем старую границу */
-            z-index: 5;
-        }
+        
     </style>
 </head>
 <body>
@@ -1348,15 +1344,15 @@
                 <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
                 <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
             </div>
-            <div id="game-window" class="card" style="padding: 0; overflow: hidden; position: relative; height: 220px; margin-bottom: 20px;">
+            <div id="game-window" style="padding: 0; overflow: hidden; position: relative; height: 280px; margin-bottom: 20px;">
                 <div id="game-bg" class="scrolling-bg bg-level-0"></div>
                 <div id="game-ground" class="scrolling-ground"></div>
                 
                 <div id="character" class="char-walk clothes-0"></div>
                 
-                <div style="position: absolute; top: 10px; right: 10px; display: flex; flex-direction: column; gap: 5px;">
-                    <button class="btn btn-secondary" style="font-size: 0.8em; padding: 4px 8px; background: var(--panel);" onclick="upgradeClothes()">👖 Одежда (Ур. <span id="ui-clothes-lvl">0</span>)</button>
-                    <button class="btn btn-secondary" style="font-size: 0.8em; padding: 4px 8px; background: var(--panel);" onclick="upgradeBackground()">🌄 Фон (Ур. <span id="ui-bg-lvl">0</span>)</button>
+                <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 20;">
+                    <button class="game-hud-btn" onclick="upgradeClothes()">👖 ОДЕЖДА (УР. <span id="ui-clothes-lvl">0</span>)</button>
+                    <button class="game-hud-btn" onclick="upgradeBackground()">🌄 ФОН (УР. <span id="ui-bg-lvl">0</span>)</button>
                 </div>
             </div>
             <div id="vacation-banner" style="display:none; background: rgba(0,204,102,0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; color: var(--success); font-weight: bold;">
@@ -4047,11 +4043,11 @@
             if (bgEl) bgEl.className = `scrolling-bg bg-level-${state.character.bgLevel}`;
             
             // Настройка скорости бега
+            // Настройка скорости бега
             if (groundEl) {
                 groundEl.style.animationDuration = `${2 / state.character.speed}s`;
                 bgEl.style.animationDuration = `${20 / state.character.speed}s`;
-                document.querySelector('.char-leg.left').style.animationDuration = `${0.4 / state.character.speed}s`;
-                document.querySelector('.char-leg.right').style.animationDuration = `${0.4 / state.character.speed}s`;
+                charEl.style.animationDuration = `${0.3 / state.character.speed}s`;
                 
                 document.getElementById('ui-clothes-lvl').innerText = state.character.clothesLevel;
                 document.getElementById('ui-bg-lvl').innerText = state.character.bgLevel;
