@@ -1413,7 +1413,7 @@
         <div id="dashboard" class="view">
             <div class="btn-group">
                 <button class="btn btn-primary" style="flex: 1; background-color: var(--success); color: #000; border: none;" id="btnVacation" onclick="toggleVacationMode()">🌴 Уйти в отпуск</button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="requestNotificationPermission()">🔔 Включить Пуши</button>
+                <button class="btn btn-secondary" style="flex: 1;" id="btnTogglePush" onclick="togglePushNotifications()">🔕 Пуши: ВЫКЛ</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="manualEvent()">✨ Добавить опыт</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="exportData()">💾 Экспорт</button>
                 <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
@@ -2054,6 +2054,10 @@
             </select>
             <label>Название / Описание</label>
             <input type="text" id="taskTitle" placeholder="Например: Пара в университете">
+            <label style="display: flex; align-items: center; gap: 10px; margin: 15px 0 5px 0; cursor: pointer; background: rgba(0, 242, 255, 0.05); padding: 10px; border: 1px solid rgba(0, 242, 255, 0.2); border-radius: 6px;">
+                <input type="checkbox" id="taskNeedPush" style="width: auto; margin: 0; transform: scale(1.2);">
+                <span style="color: var(--accent); font-weight: bold; font-size: 0.9em;">🔔 Прислать Push-напоминание</span>
+            </label>
             <div class="modal-buttons" style="margin-top:25px;">
                 <button class="btn btn-primary" style="flex:2" onclick="saveTask()">Сохранить</button>
                 <button class="btn btn-danger" style="flex:1" id="btnDeleteTask" onclick="deleteTask()">Удалить</button>
@@ -3136,6 +3140,7 @@
                 document.getElementById('taskTime').value = task.time;
                 document.getElementById('taskDuration').value = task.duration;
                 document.getElementById('taskTitle').value = task.title;
+                document.getElementById('taskNeedPush').checked = task.needPush || false; // Загружаем галочку
                 document.getElementById('taskSkillId').value = task.skillId || '';
                 
                 updateTaskGoalSelect(task.goalId);
@@ -3164,6 +3169,7 @@
         document.getElementById('editTaskOldType').value = '';
         document.getElementById('editTaskOldKey').value = '';
         document.getElementById('taskMode').value = 'template';
+        document.getElementById('taskNeedPush').checked = false; // По умолчанию отключено
 
         document.getElementById('taskDay').value = new Date().getDay();
 
@@ -3228,7 +3234,8 @@
         const taskObj = { 
             id, time, duration, title, 
             skillId: document.getElementById('taskSkillId').value, 
-            goalId: document.getElementById('taskGoalSelect').value, // Читаем из нового селекта
+            goalId: document.getElementById('taskGoalSelect').value, 
+            needPush: document.getElementById('taskNeedPush').checked, // <--- СОХРАНЯЕМ ГАЛОЧКУ
             done: false 
         };
 
@@ -4574,7 +4581,19 @@
                 if(vacBtn) { vacBtn.innerText = "🌴 Уйти в отпуск"; vacBtn.className = "btn btn-primary"; vacBtn.style.background = "var(--success)"; vacBtn.style.color = "#000"; vacBtn.style.flex = "1"; }
                 if(vacBanner) vacBanner.style.display = "none";
             }
-
+            // Управление кнопкой Пушей на Дашборде
+            const btnPush = document.getElementById('btnTogglePush');
+            if (btnPush) {
+                if (state.global.pushEnabled) {
+                    btnPush.innerText = "🔔 Пуши: ВКЛ";
+                    btnPush.style.color = "var(--success)";
+                    btnPush.style.borderColor = "var(--success)";
+                } else {
+                    btnPush.innerText = "🔕 Пуши: ВЫКЛ";
+                    btnPush.style.color = "";
+                    btnPush.style.borderColor = "transparent";
+                }
+            }
             document.getElementById('store-gold-balance').innerText = state.global.gold;
             
             document.getElementById('store-container').innerHTML = state.store.map(i => `
@@ -5430,19 +5449,25 @@
         ========================================= */
         let notifiedTasks = {}; // Запоминаем, о чем уже напомнили
 
-        function requestNotificationPermission() {
-            if (!("Notification" in window)) {
-                customAlert("Ошибка", "Твой браузер не поддерживает системные уведомления.");
-                return;
-            }
-            Notification.requestPermission().then(permission => {
-                if (permission === "granted") {
-                    customAlert("Успех!", "Уведомления разрешены. Теперь Матрица будет будить тебя перед задачами.");
-                    sendPushNotification("Система активна", "Тестовое уведомление: связь с Ядром установлена.");
-                } else {
-                    customAlert("Отказ", "Ты запретил уведомления. Включи их в настройках браузера/телефона.");
+        function togglePushNotifications() {
+            if (!state.global.pushEnabled) {
+                if (!("Notification" in window)) {
+                    customAlert("Ошибка", "Твой браузер не поддерживает системные уведомления.");
+                    return;
                 }
-            });
+                Notification.requestPermission().then(permission => {
+                    if (permission === "granted") {
+                        state.global.pushEnabled = true;
+                        save(); // save() автоматически вызовет render() и обновит кнопку
+                        customAlert("Успех!", "Уведомления включены. Теперь ставь галочку 'Прислать Push' внутри важных задач.");
+                    } else {
+                        customAlert("Отказ", "Ты запретил уведомления. Включи их в настройках браузера/телефона.");
+                    }
+                });
+            } else {
+                state.global.pushEnabled = false;
+                save();
+            }
         }
 
         function sendPushNotification(title, body) {
@@ -5466,6 +5491,7 @@
         }
 
         function checkScheduleForNotifications() {
+            if (!state.global.pushEnabled) return; // <--- ГЛОБАЛЬНАЯ БЛОКИРОВКА
             if (Notification.permission !== "granted") return;
             if (state.global.isVacation) return;
 
@@ -5485,6 +5511,7 @@
             ];
 
             scheduledTasksToday.forEach(task => {
+                if (!task.needPush) return; // <--- ИГНОРИРУЕМ ЗАДАЧИ БЕЗ ГАЛОЧКИ
                 let isDone = task.done;
                 if (task._type === 'template') {
                     isDone = state.completedTemplates && state.completedTemplates[todayIso] && state.completedTemplates[todayIso].includes(task.id);
