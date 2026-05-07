@@ -2313,13 +2313,21 @@
         function initNetwork(hash) {
             syncRef = database.ref('users/' + hash);
 
+            // --- ОБНОВЛЕННЫЙ БЛОК ПРОВЕРКИ СОЕДИНЕНИЯ ---
+            let disconnectTimeout;
             database.ref('.info/connected').on('value', (snap) => {
                 if (snap.val() === true) {
+                    clearTimeout(disconnectTimeout);
                     updateSyncUI('online');
                 } else {
-                    updateSyncUI('offline');
+                    updateSyncUI('connecting');
+                    // Показываем Offline только если нет связи дольше 5 секунд
+                    disconnectTimeout = setTimeout(() => {
+                        updateSyncUI('offline');
+                    }, 5000); 
                 }
             });
+            // ---------------------------------------------
 
             syncRef.on('value', (snapshot) => {
                 const incomingState = snapshot.val();
@@ -4330,19 +4338,19 @@
             });
 
             // 2. Генерируем HTML-блоки
+            // 2. Генерируем HTML-блоки
             const focusHtml = focusItems.map(item => `
-            <div class="task-block" style="border-left: 4px solid ${item.color}; background: transparent; margin-bottom: 10px; display: flex; justify-content: space-between; align-items: center;"
-                <div style="flex: 1; padding-right: 15px;">
+            <div class="task-block" style="border-left: 4px solid ${item.color}; background: transparent; margin-bottom: 10px; display: flex; flex-direction: row; justify-content: space-between; align-items: center; gap: 15px; flex-wrap: wrap;">
+                <div style="flex: 1 1 200px; min-width: 0;">
                     <div style="color: var(--gold); font-size: 0.8em; margin-bottom: 4px;">${item.subtitle}</div>
-                    <strong style="font-size: 1.1em;">${item.title}</strong>
+                    <strong style="font-size: 1.1em; display: block; word-wrap: break-word; color: var(--text);">${item.title}</strong>
                 </div>
-                <div style="display: flex; gap: 10px; align-items: center;">
+                <div style="display: flex; gap: 10px; align-items: center; flex-shrink: 0;">
                     ${item.unpinAction ? `<button class="btn btn-tertiary" style="padding: 6px 12px; border: 1px solid var(--border); border-radius: 6px; font-size: 0.9em;" onclick="${item.unpinAction}" title="Убрать из фокуса">✖</button>` : ''}
-                    <button class="btn btn-secondary" style="border-color: var(--success); color: var(--success); pointer-events: none;">Выполнить</button>
+                    <button class="btn" style="border: 2px solid var(--success); color: var(--success); background: transparent; padding: 8px 16px; width: auto;" onclick="${item.action}">Выполнить</button>
                 </div>
             </div>
             `).join('');
-
             let focusContainer = document.getElementById('dash-focus-container');
             if (!focusContainer) {
                 document.getElementById('dash-summary').insertAdjacentHTML('beforebegin', '<div id="dash-focus-container"></div>');
