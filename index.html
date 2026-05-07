@@ -1241,8 +1241,10 @@
         .scrolling-ground {
             position: absolute;
             bottom: 0; left: 0; width: 200%; 
-            height: 64px; /* Сделали землю толще и заметнее */
+            height: 64px; 
+            background-color: #483223; /* <--- Зальет прозрачный зазор снизу цветом земли */
             background-image: url('ground.png');
+            background-position: bottom left; /* <--- Жестко прижмет текстуру к низу */
             background-size: auto 100%;
             background-repeat: repeat-x;
             animation: scrollBg 2s linear infinite;
