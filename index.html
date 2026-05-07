@@ -1230,17 +1230,24 @@
         </div>
         <div id="dashboard" class="view">
             <div class="btn-group">
-                <button class="btn btn-secondary" style="flex: 1;" onclick="manualEvent()">✨ Добавить опыт за событие</button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="exportData()">💾 Экспорт данных</button>
-                <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт данных</button>
+                <button class="btn btn-primary" style="flex: 1; background-color: var(--success); color: #000; border: none;" id="btnVacation" onclick="toggleVacationMode()">🌴 Уйти в отпуск</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="manualEvent()">✨ Добавить опыт</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="exportData()">💾 Экспорт</button>
+                <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
                 <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
             </div>
-            <div class="hero-stats" style="flex-wrap: wrap;">
+            
+            <div id="vacation-banner" style="display:none; background: rgba(0,204,102,0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; color: var(--success); font-weight: bold;">
+                🌴 ВЫ НАХОДИТЕСЬ В ОТПУСКЕ (ИЛИ БОЛЕЕТЕ) 🌴<br>
+                <span style="font-size: 0.8em; font-weight: normal; color: var(--text-dim);">Урон по здоровью отключен. Стрики заморожены. Получение опыта и золота приостановлено. Восстанавливайтесь!</span>
+            </div>
 
+            <div class="hero-stats" style="flex-wrap: wrap;">
                 <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
                     <div class="hero-val" id="global-level" style="color: var(--accent);">1</div>
                     <div class="hero-label">Уровень</div>
                 </div>
+                
                 <div class="hero-stat-block" style="flex: 2; min-width: 250px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
                         <span class="hero-label">Опыт (XP)</span>
@@ -1248,13 +1255,6 @@
                     </div>
                     <div class="hero-xp-bar">
                         <div class="progress-fill" id="global-xp-bar" style="width:0%"></div>
-                    </div>
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
-                        <span class="hero-label">Энергия ⚡</span>
-                        <span id="global-stamina-text" style="font-weight:bold; color:#ff4444;">100 / 100</span>
-                    </div>
-                    <div class="hero-xp-bar" style="height: 10px;">
-                        <div class="progress-fill" id="global-stamina-bar" style="width:100%; background-color: #ff4444;"></div>
                     </div>
                     
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
@@ -1264,7 +1264,7 @@
                     <div class="hero-xp-bar" style="height: 10px; margin-bottom: 0;">
                         <div class="progress-fill" id="global-hp-bar" style="width:100%; background-color: var(--danger); box-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
                     </div>
-                    </div>
+                </div>
                 
                 <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
                     <div class="hero-val gold-val" id="global-gold">0</div>
@@ -1865,10 +1865,6 @@
                 <div style="flex:1">
                     <label>Стоимость (Золото)</label>
                     <input type="number" id="storePrice" value="50">
-                </div>
-                <div style="flex:1">
-                    <label>Восст. Энергии ⚡</label>
-                    <input type="number" id="storeStamina" value="30" title="Сколько стамины вернет этот отдых (от 0 до 100)">
                 </div>
             </div>
             <div class="modal-buttons" style="margin-top:25px;">
@@ -2534,49 +2530,48 @@
         /* =========================================
         4. СИСТЕМА ОПЫТА И ВЫПОЛНЕНИЯ
         ========================================= */
+        function toggleVacationMode() {
+            if (!state.global.isVacation) {
+                customConfirm("Отпуск", "Включить режим Отпуска? Вы не будете терять здоровье и стрики, но получение Опыта и Золота будет приостановлено.", () => {
+                    state.global.isVacation = true;
+                    save();
+                });
+            } else {
+                state.global.isVacation = false;
+                save();
+            }
+        }
+
         function grantXP(skill, type) {
-        state.global.maxStamina = Math.min(300, 100 + ((state.global.level - 1) * 10));
-        if (state.global.stamina === undefined) state.global.stamina = state.global.maxStamina;
+            if (state.global.isVacation) {
+                console.log("Включен отпуск: Опыт не начисляется.");
+                return;
+            }
 
-        const staminaCosts = {
-        "Краткосрочная": 5,
-        "Среднесрочная": 15,
-        "Долгосрочная": 30,
-        "Повторяющаяся": 2
-        };
-        const staminaCost = staminaCosts[type] || 5;
+            let xpAmount = REWARDS[type].xp;
+            let goldAmount = REWARDS[type].g;
 
-        if (state.global.stamina <= 0) {
-        alert("⚠️ ВЫГОРАНИЕ! Энергия на нуле. Вы слишком много работали. Задачи больше не приносят опыта и золота. Зайдите в Магазин и купите отдых!");
-        return;
+            if (flow.active) {
+                xpAmount *= 2;
+                goldAmount *= 2;
+            }
+
+            if(state.analytics) state.analytics.totalXpEarned += xpAmount;
+
+            state.global.xp += xpAmount;
+            state.global.gold += goldAmount;
+
+            checkGlobalLevelUp();
+
+            if (skill) {
+                skill.xp += xpAmount;
+                if (skill.xp >= 100) {
+                    skill.level += Math.floor(skill.xp / 100);
+                    skill.xp = skill.xp % 100;
+                }
+            }
         }
 
-        state.global.stamina = Math.max(0, state.global.stamina - staminaCost);
-
-        let xpAmount = REWARDS[type].xp;
-        let goldAmount = REWARDS[type].g;
-
-        if (flow.active) {
-        xpAmount *= 2;
-        goldAmount *= 2;
-        }
-
-        if(state.analytics) state.analytics.totalXpEarned += xpAmount;
-
-        state.global.xp += xpAmount;
-        state.global.gold += goldAmount;
-
-        checkGlobalLevelUp();
-        
-
-        if (skill) {
-        skill.xp += xpAmount;
-        if (skill.xp >= 100) {
-        skill.level += Math.floor(skill.xp / 100);
-        skill.xp = skill.xp % 100;
-        }
-        }
-        }
         function checkGlobalLevelUp() {
             let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
             let leveledUp = false;
@@ -2587,10 +2582,8 @@
                 leveledUp = true;
             }
             if (leveledUp) {
-                state.global.maxStamina = Math.min(300, 100 + ((state.global.level - 1) * 10));
-                state.global.stamina = state.global.maxStamina;
                 if ('vibrate' in navigator) navigator.vibrate([100, 50, 100]);
-                alert(`УРОВЕНЬ ПОВЫШЕН ДО ${state.global.level}! Энергия восстановлена.`);
+                alert(`УРОВЕНЬ ПОВЫШЕН ДО ${state.global.level}!`);
             }
         }
         function calculateDegradedReward(baseReward, creationDateStr) {
@@ -3200,15 +3193,13 @@
         7. МАГАЗИН
         ========================================= */
         function saveStoreItem() {
-        const name = document.getElementById('storeName').value;
-        const price = parseInt(document.getElementById('storePrice').value);
-        const staminaRestore = parseInt(document.getElementById('storeStamina').value) || 0;
-
-        if (name && !isNaN(price)) {
-        state.store.push({ id: Date.now(), name: name, price: price, stamina: staminaRestore });
-        closeModals();
-        save();
-        }
+            const name = document.getElementById('storeName').value;
+            const price = parseInt(document.getElementById('storePrice').value);
+            if (name && !isNaN(price)) {
+                state.store.push({ id: Date.now(), name: name, price: price });
+                closeModals();
+                save();
+            }
         }
 
         function buyItem(id) {
@@ -3228,14 +3219,7 @@
                         customAlert("Торговец", `Вы выпили зелье 🧪!\nВосстановлено 30 HP. Текущее здоровье: ${state.global.hp}`);
                     }
                 } else {
-                    const restoreAmount = item.stamina || 0;
-                    if (restoreAmount > 0) {
-                        state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-                        state.global.stamina = Math.min(state.global.maxStamina, state.global.stamina + restoreAmount);
-                        customAlert("Отдых", `Отдых удался: ${item.name}!\nВосстановлено ${restoreAmount} Энергии ⚡.`);
-                    } else {
-                        customAlert("Торговец", `Покупка успешно совершена: ${item.name}!\nНаслаждайтесь.`);
-                    }
+                    customAlert("Торговец", `Покупка успешно совершена: ${item.name}!\nНаслаждайтесь.`);
                 }
 
                 item.price = Math.ceil(item.price * 1.15);
@@ -3901,109 +3885,99 @@
             if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
 
             const todayStr = new Date().toDateString();
+           const todayStr = new Date().toDateString();
             if (state.global.lastLoginDate !== todayStr) {
                 let damageTaken = 0;
 
-                // 1. УРОН ТОЛЬКО ЗА ПРОПУЩЕННОЕ РАСПИСАНИЕ
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
                 const yesterdayOffset = yesterday.getTimezoneOffset() * 60000;
                 const yesterdayIso = new Date(yesterday - yesterdayOffset).toISOString().split('T')[0];
                 const yesterdayDayOfWeek = yesterday.getDay();
 
-                // Собираем всё, что было запланировано на вчера
-                const yesterdayTasks = [
-                    ...(state.schedule[yesterdayDayOfWeek] || []).map(t => ({...t, _type: 'template'})),
-                    ...(state.calendar[yesterdayIso] || []).map(t => ({...t, _type: 'date'}))
-                ];
+                if (!state.global.isVacation) {
+                    // 1. УРОН ТОЛЬКО ЗА ПРОПУЩЕННОЕ РАСПИСАНИЕ
+                    const yesterdayTasks = [
+                        ...(state.schedule[yesterdayDayOfWeek] || []).map(t => ({...t, _type: 'template'})),
+                        ...(state.calendar[yesterdayIso] || []).map(t => ({...t, _type: 'date'}))
+                    ];
 
-                yesterdayTasks.forEach(t => {
-                    let isDone = t.done;
-                    
-                    if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) {
-                        isDone = true;
-                    }
-                    
-                    if (!isDone) {
-                        // Если задача из расписания не выполнена, проверяем наличие Щита (Заморозки)
-                        if (state.inventory.streakFreezes > 0) {
-                            state.inventory.streakFreezes--;
-                            console.log(`Щит спасла от урона за пропущенную задачу: ${t.title}`);
-                            
-                            // Если задача привязана к привычке, спасаем её стрик (фейковое выполнение)
-                            if (t.goalId && t.skillId) {
-                                const skill = state.skills.find(s => s.id === t.skillId);
-                                if (skill) {
-                                    const goal = skill.goals.find(g => g.id === t.goalId);
-                                    if (goal && goal.type === 'Повторяющаяся') {
-                                        goal.lastCompleted = yesterday.toDateString(); 
+                    yesterdayTasks.forEach(t => {
+                        let isDone = t.done;
+                        if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) isDone = true;
+                        
+                        if (!isDone) {
+                            if (state.inventory.streakFreezes > 0) {
+                                state.inventory.streakFreezes--;
+                                if (t.goalId && t.skillId) {
+                                    const skill = state.skills.find(s => s.id === t.skillId);
+                                    if (skill) {
+                                        const goal = skill.goals.find(g => g.id === t.goalId);
+                                        if (goal && goal.type === 'Повторяющаяся') goal.lastCompleted = yesterday.toDateString(); 
                                     }
                                 }
-                            }
-                        } else {
-                            damageTaken += 10; // УРОН НАНОСИТСЯ ТОЛЬКО ЗДЕСЬ! (10 HP за провал задачи из расписания)
-                        }
-                    }
-                });
-
-                // 2. Обходим все навыки: сбрасываем визуал, обнуляем незащищенные стрики и чекаем Боссов
-                state.skills.forEach(s => {
-                    (s.goals || []).forEach(g => {
-                        if (g.type === 'Повторяющаяся') {
-                            g.done = false; // Визуальный сброс галочки на Дашборде
-                            
-                            // Если реально не делали и щит не сработал - стрик сбрасывается (но без урона!)
-                            if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                                g.streak = 0; 
-                            }
-                        }
-                        
-                        // Дедлайны Боссов всё еще наносят урон, так как они независимы от расписания
-                        if (g.type === 'Босс' && !g.done && g.deadline) {
-                            const deadlineDate = new Date(g.deadline);
-                            deadlineDate.setHours(0,0,0,0);
-                            const todayDate = new Date();
-                            todayDate.setHours(0,0,0,0);
-                            
-                            if (deadlineDate < todayDate) {
-                                damageTaken += 50; 
-                                g.done = true; 
-                                customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!\nПолучено 50 урона.`);
+                            } else {
+                                damageTaken += 10; 
                             }
                         }
                     });
-                });
 
-                // Применение урона и проверка на СМЕРТЬ
-                if (damageTaken > 0) {
-                    state.global.hp = (state.global.hp || 100) - damageTaken;
-                    
-                    // Защита от спама: показываем окно только один раз за сессию
-                    const alertKey = 'daily_dmg_shown_' + todayStr;
-                    const alertAlreadyShown = sessionStorage.getItem(alertKey);
+                    // 2. Сбрасываем визуал и чекаем Боссов
+                    state.skills.forEach(s => {
+                        (s.goals || []).forEach(g => {
+                            if (g.type === 'Повторяющаяся') {
+                                g.done = false; 
+                                if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) g.streak = 0; 
+                            }
+                            if (g.type === 'Босс' && !g.done && g.deadline) {
+                                const deadlineDate = new Date(g.deadline);
+                                deadlineDate.setHours(0,0,0,0);
+                                const todayDate = new Date();
+                                todayDate.setHours(0,0,0,0);
+                                
+                                if (deadlineDate < todayDate) {
+                                    damageTaken += 50; 
+                                    g.done = true; 
+                                    customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!\nПолучено 50 урона.`);
+                                }
+                            }
+                        });
+                    });
 
-                    if (!alertAlreadyShown) {
-                        if (state.global.hp <= 0) {
-                            customAlert("ПОРАЖЕНИЕ", `☠️ ВЫ ПОГИБЛИ! Здоровье упало до нуля.\n\nШтраф Смерти:\n- Потерян 1 уровень\n- Потеряно 50% золота\n- Сброшены все стрики\n\nЗдоровье восстановлено. Поднимайтесь и сражайтесь!`);
-                            state.global.level = Math.max(1, state.global.level - 1);
-                            state.global.gold = Math.floor(state.global.gold / 2);
+                    // МЯГКАЯ СМЕРТЬ
+                    if (damageTaken > 0) {
+                        state.global.hp = (state.global.hp || 100) - damageTaken;
+                        const alertKey = 'daily_dmg_shown_' + todayStr;
+                        const alertAlreadyShown = sessionStorage.getItem(alertKey);
+
+                        if (!alertAlreadyShown) {
+                            if (state.global.hp <= 0) {
+                                customAlert("ИСТОЩЕНИЕ", `❤️‍🩹 Здоровье упало до нуля!\n\nШтраф:\n- Потеряно 20% золота\n\nСтрики и уровни сохранены. Здоровье восстановлено. Отдохните и возвращайтесь в строй!`);
+                                state.global.gold = Math.floor(state.global.gold * 0.8);
+                                state.global.hp = 100;
+                                if (!state.analytics) state.analytics = {};
+                                state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
+                            } else {
+                                customAlert("Ночной отчет", `🌙 Вы получили ${damageTaken} урона за пропущенные задачи в расписании!\nОсталось HP: ${state.global.hp}`);
+                            }
+                            sessionStorage.setItem(alertKey, 'true');
+                        } else if (state.global.hp <= 0) {
+                            state.global.gold = Math.floor(state.global.gold * 0.8);
                             state.global.hp = 100;
-                            if (!state.analytics) state.analytics = {};
-                            state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
-                        } else {
-                            customAlert("Ночной отчет", `🌙 Вы получили ${damageTaken} урона за пропущенные задачи в расписании!\nОсталось HP: ${state.global.hp}`);
                         }
-                        sessionStorage.setItem(alertKey, 'true');
-                    } else if (state.global.hp <= 0) {
-                        // Если алерт уже был, но нужно молча откатить статы
-                        state.global.level = Math.max(1, state.global.level - 1);
-                        state.global.gold = Math.floor(state.global.gold / 2);
-                        state.global.hp = 100;
                     }
+                } else {
+                    // ЕСЛИ ОТПУСК: Галочки сбрасываем, но искусственно продлеваем стрик, чтобы он не сгорел
+                    state.skills.forEach(s => {
+                        (s.goals || []).forEach(g => {
+                            if (g.type === 'Повторяющаяся') {
+                                g.done = false; 
+                                g.lastCompleted = yesterday.toDateString();
+                            }
+                        });
+                    });
                 }
 
-                state.global.maxStamina = 100 + ((state.global.level - 1) * 10);
-                state.global.stamina = state.global.maxStamina;
                 state.global.lastLoginDate = todayStr;
                 state.global.lastUpdated = Date.now(); // Жестко обновляем таймштамп
                 
@@ -4297,23 +4271,29 @@
                     `;
                 }
             }
-            document.getElementById('week-display').innerHTML = weekHtml;
+            // Управление кнопкой и баннером Отпуска
+            const vacBtn = document.getElementById('btnVacation');
+            const vacBanner = document.getElementById('vacation-banner');
+            if (state.global.isVacation) {
+                if(vacBtn) { vacBtn.innerText = "▶ Вернуться к работе"; vacBtn.className = "btn btn-danger"; vacBtn.style.flex = "1"; }
+                if(vacBanner) vacBanner.style.display = "block";
+            } else {
+                if(vacBtn) { vacBtn.innerText = "🌴 Уйти в отпуск"; vacBtn.className = "btn btn-primary"; vacBtn.style.background = "var(--success)"; vacBtn.style.color = "#000"; vacBtn.style.flex = "1"; }
+                if(vacBanner) vacBanner.style.display = "none";
+            }
 
             document.getElementById('store-gold-balance').innerText = state.global.gold;
             
-            // ИСПРАВЛЕНЫ КАВЫЧКИ В onclick="buyItem('${i.id}')"
             document.getElementById('store-container').innerHTML = state.store.map(i => `
             <div class="store-item">
             <h3 style="margin:5px 0;">${i.name}</h3>
             <div style="font-size:1.8em; font-weight:bold; color:var(--gold); margin: 10px 0;">🪙 ${i.price}</div>
-            ${i.stamina ? `<div style="color: #ff4444; font-size: 0.9em; margin-bottom: 10px;">+${i.stamina} Энергии ⚡</div>` : '<div style="margin-bottom: 10px;">&nbsp;</div>'}
             <div class="store-actions">
             <button class="btn btn-primary" style="flex:3;" onclick="buyItem('${i.id}')">Купить</button>
             <button class="btn btn-danger" style="flex:1; padding:10px;" title="Удалить" onclick="deleteStoreItem('${i.id}')">✖</button>
             </div>
             </div>
             `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
-            
             renderLootList();
             updateLootboxUI();
         }
