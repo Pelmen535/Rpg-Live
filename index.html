@@ -3645,9 +3645,16 @@
 
                 const circle = document.createElement('div');
                 circle.className = `graph-node ${node.done ? 'done' : ''}`;
-                circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
                 
-                circle.innerHTML = `<div style="font-size: 0.8em; padding: 10px; width: 100%; height: 100%; border-radius: 50%; overflow: hidden; display: flex; align-items: center; justify-content: center;">${node.name}</div>`;
+                // Дизайн: Граница яркая, фон — прозрачный цвет навыка (для глубины)
+                circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
+                circle.style.backgroundColor = node.done ? 'rgba(0, 204, 102, 0.15)' : (skill.color + '33'); // +33 это ~20% прозрачности в HEX
+                circle.style.boxShadow = node.done ? '0 0 15px rgba(0, 204, 102, 0.3)' : `0 0 15px ${skill.color}44`;
+
+                circle.innerHTML = `
+                    <div style="font-size: 0.85em; padding: 10px; color: #ffffff; text-shadow: 1px 1px 2px #000; font-weight: 600; line-height: 1.2;">
+                        ${node.name}
+                    </div>`;
 
                 const startDrag = (clientX, clientY) => {
                     dragNodeId = node.id;
@@ -4184,53 +4191,67 @@
                 const yesterdayDayOfWeek = yesterday.getDay();
 
                 if (!state.global.isVacation) {
-                    // 1. УРОН ТОЛЬКО ЗА ПРОПУЩЕННОЕ РАСПИСАНИЕ
                     const yesterdayTasks = [
                         ...(state.schedule[yesterdayDayOfWeek] || []).map(t => ({...t, _type: 'template'})),
                         ...(state.calendar[yesterdayIso] || []).map(t => ({...t, _type: 'date'}))
                     ];
 
+                    let missedAnything = false;
                     yesterdayTasks.forEach(t => {
                         let isDone = t.done;
                         if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) isDone = true;
-                        
-                        if (!isDone) {
-                            if (state.inventory.streakFreezes > 0) {
-                                state.inventory.streakFreezes--;
-                                if (t.goalId && t.skillId) {
-                                    const skill = state.skills.find(s => s.id === t.skillId);
-                                    if (skill) {
-                                        const goal = skill.goals.find(g => g.id === t.goalId);
-                                        if (goal && goal.type === 'Повторяющаяся') goal.lastCompleted = yesterday.toDateString(); 
-                                    }
-                                }
-                            } else {
-                                damageTaken += 10; 
-                            }
-                        }
+                        if (!isDone) missedAnything = true;
                     });
 
-                    // 2. Сбрасываем визуал и чекаем Боссов
+                    // ФИКС: Проверяем привычки на пропуск
+                    state.skills.forEach(s => {
+                        (s.goals || []).forEach(g => {
+                            if (g.type === 'Повторяющаяся' && g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+                                missedAnything = true;
+                            }
+                        });
+                    });
+
+                    // ГЛОБАЛЬНАЯ ЗАЩИТА: Если пропустили хоть что-то, но есть заморозка
+                    let isProtected = false;
+                    if (missedAnything && state.inventory.streakFreezes > 0) {
+                        state.inventory.streakFreezes--;
+                        isProtected = true;
+                        console.log("🛡️ Заморозка стрика активирована! Весь урон и сброс стриков отменены.");
+                    }
+
+                    if (!isProtected) {
+                        // Если защиты нет — считаем урон
+                        yesterdayTasks.forEach(t => {
+                            let isDone = t.done;
+                            if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) isDone = true;
+                            if (!isDone) damageTaken += 10;
+                        });
+                    }
+
+                    // 2. Обновляем привычки и Боссов
                     state.skills.forEach(s => {
                         (s.goals || []).forEach(g => {
                             if (g.type === 'Повторяющаяся') {
                                 g.done = false; 
-                                if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) g.streak = 0; 
+                                if (isProtected) {
+                                    g.lastCompleted = yesterday.toDateString(); // Фейкуем выполнение для спасения стрика
+                                } else if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
+                                    g.streak = 0; 
+                                }
                             }
+                            // Логика боссов (без изменений...)
                             if (g.type === 'Босс' && !g.done && g.deadline) {
                                 const deadlineDate = new Date(g.deadline);
                                 deadlineDate.setHours(0,0,0,0);
-                                const todayDate = new Date();
-                                todayDate.setHours(0,0,0,0);
-                                
-                                if (deadlineDate < todayDate) {
-                                    damageTaken += 50; 
-                                    g.done = true; 
-                                    customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!\nПолучено 50 урона.`);
+                                if (deadlineDate < new Date().setHours(0,0,0,0)) {
+                                    damageTaken += 50; g.done = true;
+                                    customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!`);
                                 }
                             }
                         });
                     });
+                    // Дальше идет твоя логика Мягкой Смерти...
 
                     // МЯГКАЯ СМЕРТЬ
                     // МЯГКАЯ СМЕРТЬ (Взрыв атома)
