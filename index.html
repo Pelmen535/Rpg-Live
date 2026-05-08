@@ -473,15 +473,30 @@
            ДАШБОРД (СТАТИСТИКА)
         ========================================= */
         .hero-stats {
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
+            display: grid;
+            grid-template-columns: 1fr 2fr 1fr; /* Четкая сетка на десктопе */
             gap: 20px;
             background: linear-gradient(135deg, #1a1a24, #0d0d0f);
-            border: 1px solid var(--border);
+            border: 4px solid var(--text); /* Пиксельная рамка */
             padding: 30px;
-            border-radius: 12px;
-            margin-bottom: 40px;
+            margin-bottom: 30px;
+            position: relative;
+            box-shadow: 8px 8px 0px rgba(0,0,0,0.2);
+        }
+        .player-header {
+            grid-column: 1 / -1; /* Растягиваем на всю ширину */
+            text-align: center;
+            border-bottom: 2px dashed var(--border);
+            margin-bottom: 15px;
+            padding-bottom: 10px;
+        }
+
+        #displayNickname {
+            font-size: 2.2rem;
+            color: var(--accent);
+            text-transform: uppercase;
+            letter-spacing: 3px;
+            text-shadow: 2px 2px 0px #000;
         }
 
         .hero-stat-block {
@@ -605,24 +620,23 @@
 
         .graph-node {
             position: absolute;
-            width: 100px;
-            height: 100px;
+            min-width: 110px; /* Используем min-width вместо width */
+            min-height: 110px;
+            padding: 10px;
+            box-sizing: border-box; /* Чтобы паддинги не раздували узел */
             background-color: transparent;
             border: 2px solid var(--accent);
-            border-radius: 50%; 
+            border-radius: 50%;
             display: flex;
-            flex-direction: column;
             justify-content: center;
             align-items: center;
-            cursor: pointer;
-            box-shadow: 0 4px 12px rgba(0, 0, 0, 0.6);
-            user-select: none;
-            color: #ffffff;
-            font-weight: bold;
-            text-align: center;
-            transition: border-color 0.2s ease, transform 0.2s ease;
-            touch-action: none;
-            /* УБРАЛИ overflow: hidden, чтобы кнопки могли выезжать за края */
+            z-index: 5;
+        }
+
+        .graph-node div {
+            font-size: 0.9rem !important;
+            line-height: 1.1 !important;
+            word-break: break-word; /* Принудительный перенос длинных слов */
         }
 
         .graph-node:hover {
@@ -821,13 +835,11 @@
         ========================================= */
         @media (max-width: 768px) {
             .hero-stats {
-                flex-direction: column;
-                padding: 20px;
-                gap: 15px;
+                grid-template-columns: 1fr 1fr; /* Уровень и Золото в ряд, XP ниже */
             }
 
-            .hero-stat-block {
-                width: 100%;
+            .hero-stat-block[style*="flex: 2"] {
+                grid-column: 1 / -1; /* XP на всю ширину на мобилке */
             }
 
             .week-grid {
@@ -894,14 +906,13 @@
             }
             
             /* Стили для всплывающего меню "Ещё" (Переопределение для Мобилки) */
-            .mobile-menu-expanded { 
-                position: fixed; 
-                top: 75px; 
-                right: 0;
-                width: 100%; 
-                display: grid; 
-                grid-template-columns: 1fr 1fr; 
-                border-radius: 0;
+            .mobile-menu-expanded {
+                position: fixed;
+                top: 75px;
+                left: 0;
+                width: 100%;
+                display: grid;
+                grid-template-columns: 1fr 1fr;
             }
             .mobile-menu-expanded .nav-link { 
                 border: 1px solid var(--border); 
@@ -1304,39 +1315,43 @@
                 <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
                 <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
             </div>
-            <div class="hero-stats" style="flex-wrap: wrap; margin-top: 20px;">
-                <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
-                    <div class="hero-val" id="global-level" style="color: var(--accent);">1</div>
-                    <div class="hero-label">Уровень</div>
+            <div class="hero-stats">
+                <div class="player-header">
+                    <div id="displayNickname">Anonymous Stalker</div>
+                    <div style="font-size: 0.8rem; color: var(--text-dim); letter-spacing: 1px;">SYSTEM STATUS: ONLINE</div>
+                </div>
+
+                <div class="hero-stat-block">
+                    <div class="hero-val" id="global-level">1</div>
+                    <div class="hero-label">Level</div>
                 </div>
                 
-                <div class="hero-stat-block" style="flex: 2; min-width: 250px;">
+                <div class="hero-stat-block" style="flex: 2;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span class="hero-label" style="color: var(--text);">Прогресс (XP)</span>
-                        <span id="global-xp-text" style="font-weight:bold; color:var(--xp-color);">0 / 100</span>
+                        <span class="hero-label" style="font-size: 0.8rem;">Memory Sync (XP)</span>
+                        <span id="global-xp-text" style="font-size: 0.8rem;">0 / 100</span>
                     </div>
-                    <div class="hero-xp-bar" style="margin-top: 5px; height: 12px;">
-                        <div class="progress-fill" id="global-xp-bar" style="width:0%"></div>
+                    <div class="hero-xp-bar" style="margin:0; height: 12px;">
+                        <div class="progress-fill" id="global-xp-bar"></div>
                     </div>
                 </div>
                 
-                <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
+                <div class="hero-stat-block">
                     <div class="hero-val gold-val" id="global-gold">0</div>
-                    <div class="hero-label">Золото</div>
-                    <div style="font-size: 0.85em; color: var(--text-dim); margin-top: 15px;">
-                        Щиты стриков: <strong style="color: var(--accent);" id="dash-freezes">0</strong> ❄️
-                    </div>
+                    <div class="hero-label">Credits</div>
                 </div>
             </div>
-            
-            <div style="display: flex; flex-direction: column; gap: 10px; border-left: 2px solid var(--accent); padding-left: 15px; margin-bottom: 30px; margin-top: 20px;">
-                <label style="font-size: 0.8em; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Сетевой идентификатор (Никнейм)</label>
-                <div style="display: flex; justify-content: space-between; align-items: center; width: 100%;">
-                    <input type="text" id="userNickname" placeholder="Введите имя..." onblur="saveNickname()" style="background: #0b0b0d; color: white; border: 1px solid var(--border); padding: 12px; border-radius: 4px; min-width: 250px;">
-                    <div id="sync-status-badge" style="padding: 6px 15px; border-radius: 20px; font-size: 0.85em; font-weight: bold; background: rgba(255,184,0,0.1); color: var(--gold); border: 1px solid var(--gold); text-align: center;">
+
+           <div class="card" style="padding: 15px; border-style: dashed; display: flex; flex-direction: column; gap: 10px; margin-bottom: 30px;">
+                <div style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 10px;">
+                    <label style="font-size: 0.8rem; color: var(--text-dim); text-transform: uppercase; letter-spacing: 1px;">Идентификатор нейропрофиля:</label>
+                    <div id="sync-status-badge" style="padding: 4px 12px; border-radius: 20px; font-size: 0.75em; font-weight: bold; background: rgba(255,184,0,0.1); color: var(--gold); border: 1px solid var(--gold); text-align: center;">
                         Подключение...
                     </div>
                 </div>
+                
+                <input type="text" id="userNickname" placeholder="Введите ник..." oninput="updateLiveNickname(this.value)" onblur="saveNickname()" 
+                       style="background: transparent; border: none; border-bottom: 1px solid var(--border); color: var(--accent); font-family: var(--font-game); width: 100%; font-size: 1.2rem; outline: none;">
             </div>
             <h2>Сводка по навыкам</h2>
             <div id="dash-summary" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
@@ -1979,7 +1994,10 @@
         // ==========================================
         // МАГИЧЕСКАЯ СИНХРОНИЗАЦИЯ (FIREBASE REALTIME DB)
         // ==========================================
-
+        function updateLiveNickname(val) {
+            const display = document.getElementById('displayNickname');
+            if (display) display.innerText = val || 'Anonymous Stalker';
+        }
         const firebaseConfig = {
         apiKey: "AIzaSyCGtMNjhSehfuGjZ-c1bBQtV_VXhbOSir8",
         authDomain: "rpg-life-os.firebaseapp.com",
@@ -3933,7 +3951,11 @@
             if (!state.completedTemplates) state.completedTemplates = {};
             if (!state.schedule) state.schedule = { 1: [], 2: [], 3: [], 4: [], 5: [], 6: [], 0: [] };
             // Синхронизация 2D мира
-           
+           // Отрисовка ника
+            const nickDisplay = document.getElementById('displayNickname');
+            if (nickDisplay) {
+                nickDisplay.innerText = state.user?.nickname || 'Anonymous Stalker';
+            }
 
            const todayStr = new Date().toDateString();
             if (state.global.lastLoginDate !== todayStr) {
