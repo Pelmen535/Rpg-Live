@@ -834,12 +834,28 @@
            МОБИЛЬНАЯ АДАПТАЦИЯ
         ========================================= */
         @media (max-width: 768px) {
+            /* Идеальная центровка Дашборда для мобилок */
             .hero-stats {
-                grid-template-columns: 1fr 1fr; /* Уровень и Золото в ряд, XP ниже */
+                grid-template-columns: 1fr 1fr; 
+                gap: 20px;
+                text-align: center;
             }
-
-            .hero-stat-block[style*="flex: 2"] {
-                grid-column: 1 / -1; /* XP на всю ширину на мобилке */
+            .player-header {
+                grid-column: 1 / -1;
+                order: 1; /* Ник всегда первый сверху */
+            }
+            .hero-stat-block:nth-child(2) { 
+                grid-column: 1 / 2;
+                order: 2; /* Уровень слева */
+            }
+            .hero-stat-block:nth-child(4) { 
+                grid-column: 2 / 3;
+                order: 3; /* Золото справа на одной линии с уровнем */
+            }
+            .hero-stat-block:nth-child(3) { 
+                grid-column: 1 / -1;
+                order: 4; /* Полоса XP спускается в самый низ на всю ширину */
+                margin-top: 10px;
             }
 
             .week-grid {
@@ -892,11 +908,12 @@
             }
             
             /* Включаем обратно ТОЛЬКО 4 главные + гамбургер */
+            /* Включаем обратно 4 главные вкладки + меню Ещё */
             .nav-link[onclick*="dashboard"], 
             .nav-link[onclick*="skills"], 
             .nav-link[onclick*="schedule"], 
-            .nav-link[onclick*="network"], 
-            .nav-link.mobile-more { 
+            .nav-link[onclick*="flow"], 
+            .nav-link[onclick*="toggleMobileMenu"] { 
                 display: flex; 
             }
             
