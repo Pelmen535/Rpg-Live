@@ -1213,154 +1213,8 @@
             opacity: 1;
             border-top: 1px solid var(--border);
         }
-       /* =========================================
-           ATOM CORE (КВАНТОВОЕ ЯДРО)
-        ========================================= */
-        #game-window {
-            background-color: #0b0b0d; 
-            border: 2px solid #219eb3; 
-            box-shadow: inset 0 0 30px rgba(33, 158, 179, 0.15);
-            position: relative;
-            overflow: hidden;
-            perspective: 800px; /* 3D пространство для орбит */
-        }
-
-        /* Фоновая сетка стабильности */
-        .scrolling-bg {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            background-image: radial-gradient(rgba(33, 158, 179, 0.2) 1px, transparent 1px);
-            background-size: 30px 30px;
-            animation: panGrid 20s linear infinite;
-            z-index: 1;
-        }
-        @keyframes panGrid { 0% { background-position: 0 0; } 100% { background-position: 100px 100px; } }
-
-        /* =========================================
-           URANIUM-238 CORE (ЯДРО УРАНА)
-        ========================================= */
-        #game-window {
-            background-color: #050805; /* Глубокий темно-зеленый */
-            border: 2px solid #4ade80; 
-            box-shadow: inset 0 0 30px rgba(74, 222, 128, 0.1);
-        }
-        #atom-core {
-            position: absolute;
-            top: 50%; left: 30%;
-            transform: translate(-50%, -50%);
-            width: 140px; height: 140px;
-            z-index: 10;
-            transform-style: preserve-3d;
-        }
-        .nucleus {
-            position: absolute; top: 50%; left: 50%; transform: translate(-50%, -50%);
-            width: 45px; height: 45px; /* Увеличили размер для "тяжелого" ядра */
-            background: radial-gradient(circle, #bbf7d0, #166534);
-            border-radius: 50%;
-            box-shadow: 0 0 30px #22c55e, inset 0 0 15px #fff;
-            animation: coreBreathe 4s ease-in-out infinite alternate;
-            z-index: 5;
-        }
-
-        /* Добавляем эффект радиоактивного тумана вокруг ядра */
-        .nucleus::after {
-            content: '';
-            position: absolute; top: -20px; left: -20px; right: -20px; bottom: -20px;
-            background: radial-gradient(circle, rgba(34, 197, 94, 0.2), transparent 70%);
-            border-radius: 50%;
-            animation: pulseFog 2s infinite alternate;
-        }
-
-        @keyframes pulseFog { from { opacity: 0.4; transform: scale(0.8); } to { opacity: 1; transform: scale(1.2); } }
-
-        .electron {
-            width: 8px; height: 8px; 
-            background: #fff;
-            box-shadow: 0 0 15px #4ade80;
-        }
-
-        /* 3D Орбиты */
-        .orbit-plane {
-            position: absolute; top: 0; left: 0; width: 100%; height: 100%;
-            transform-style: preserve-3d;
-        }
-        .plane-1 { transform: rotateY(60deg) rotateX(20deg); }
-        .plane-2 { transform: rotateY(60deg) rotateX(-40deg); }
-        .plane-3 { transform: rotateY(60deg) rotateX(80deg); }
-
-        .orbit-ring {
-            width: 100%; height: 100%;
-            border: 1px solid rgba(33, 158, 179, 0.4);
-            border-radius: 50%;
-            animation: electronSpin 4s linear infinite;
-            position: relative;
-        }
-        .plane-2 .orbit-ring { animation-direction: reverse; animation-duration: 3s; }
-        .plane-3 .orbit-ring { animation-duration: 5s; }
-
-        .electron {
-            position: absolute; top: -5px; left: calc(50% - 5px);
-            width: 10px; height: 10px; background: #fff;
-            border-radius: 50%; box-shadow: 0 0 15px #00f2ff;
-        }
-
-        /* --- СТАДИИ ПЕРЕГРЕВА --- */
-        .status-warning .nucleus { background: radial-gradient(circle, #f6e58d, #8a5a00); box-shadow: 0 0 30px #f6e58d; animation: coreBreathe 1s ease-in-out infinite alternate; }
-        .status-warning .orbit-ring { border-color: rgba(246, 229, 141, 0.4); animation-duration: 1.5s; }
-        .status-warning .electron { box-shadow: 0 0 15px #f6e58d; }
-
-        .status-critical .nucleus { background: radial-gradient(circle, #ff7979, #800000); box-shadow: 0 0 50px #ff7979; animation: meltdown 0.1s infinite; }
-        .status-critical .orbit-ring { border-color: rgba(255, 121, 121, 0.5); animation-duration: 0.5s; }
-        .status-critical .electron { box-shadow: 0 0 15px #ff7979; background: #ffdfdf; }
-
-        @keyframes coreBreathe { 0% { transform: translate(-50%, -50%) scale(0.9); } 100% { transform: translate(-50%, -50%) scale(1.1); } }
-        @keyframes electronSpin { 100% { transform: rotateZ(360deg); } }
-        @keyframes meltdown { 0% { transform: translate(-50%, -50%) scale(1.1); } 50% { transform: translate(calc(-50% + 2px), calc(-50% - 2px)) scale(1.15); } 100% { transform: translate(-50%, -50%) scale(1.1); } }
+    
         
-        /* Терминал логов (оставляем старый, он красивый) */
-        #core-terminal {
-            position: absolute; top: 15px; right: 190px; bottom: 15px; left: 55%;
-            background: rgba(0, 0, 0, 0.6); border: 1px solid rgba(33, 158, 179, 0.3);
-            padding: 10px; font-family: 'VT323', monospace; font-size: 0.9rem; color: #7ed6df; overflow: hidden; z-index: 5;
-        }
-        .log-entry { margin-bottom: 4px; border-left: 2px solid #219eb3; padding-left: 5px; opacity: 0.8; }
-        .log-success { color: #badc58; border-color: #badc58; }
-
-        /* =========================================
-           АДАПТАЦИЯ ЯДРА УРАНА ДЛЯ ТЕЛЕФОНОВ
-        ========================================= */
-        @media (max-width: 768px) {
-            /* 1. Центрируем атом и немного уменьшаем его, чтобы влезли орбиты */
-            #atom-core {
-                left: 50% !important;
-                top: 40% !important;
-                transform: translate(-50%, -50%) scale(0.75) !important;
-            }
-            
-            /* 2. Терминал превращаем в узкую полоску логов в самом низу окна */
-            #core-terminal {
-                top: auto !important;
-                bottom: 10px !important;
-                left: 10px !important;
-                right: 10px !important;
-                height: 65px !important;
-                font-size: 0.75rem !important;
-            }
-            
-            /* 3. Кнопки прокачки выстраиваем в горизонтальный ряд сверху */
-            #core-terminal + div {
-                flex-direction: row !important;
-                left: 10px !important;
-                right: 10px !important;
-                justify-content: center !important;
-                top: 10px !important;
-            }
-            
-            .game-hud-btn {
-                font-size: 0.7rem !important;
-                padding: 4px 8px !important;
-                flex: 1; /* Кнопки поделят ширину экрана пополам */
-            }
-        }
     </style>
 </head>
 <body>
@@ -1373,17 +1227,18 @@
     </div>
     <nav id="main-nav" style="display: none;">
         <div class="nav-link active" onclick="switchView('dashboard')">Дашборд</div>
-        <div class="nav-link" onclick="switchView('analytics')">Аналитика</div>
-        <div class="nav-link" onclick="switchView('achievements')">Достижения 🏆</div>
-        <div class="nav-link" onclick="switchView('skills')">Навыки и Древа</div>
-        <div class="nav-link" onclick="switchView('flow')" id="nav-flow">ПОТОК (Фокус)</div>
         <div class="nav-link" onclick="switchView('schedule')">Расписание</div>
-        <div class="nav-link" onclick="switchView('store')">Магазин</div>
-        <div class="nav-link" onclick="switchView('lootbox')">Лутбоксы</div>
-        <div class="nav-link" onclick="switchView('notes')">Заметки</div>
-        <div class="nav-link" onclick="switchView('network')">Сеть 🌐</div>
-        <div class="nav-link" onclick="switchView('info')">Справка</div>
-        <div class="nav-link mobile-more" onclick="toggleMobileMenu()">Ещё ≡</div>
+        <div class="nav-link" onclick="switchView('skills')">Навыки</div>
+        <div class="nav-link" onclick="switchView('flow')" id="nav-flow">ПОТОК</div>
+        
+        <div class="nav-link mobile-more-target" onclick="switchView('store')" style="display: none;">Магазин</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('network')" style="display: none;">Сеть 🌐</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('notes')" style="display: none;">Заметки</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('analytics')" style="display: none;">Аналитика</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('achievements')" style="display: none;">Трофеи 🏆</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('info')" style="display: none;">Кодекс</div>
+        
+        <div class="nav-link" onclick="toggleMobileMenu()">Ещё ≡</div>
     </nav>
 
     <main>
@@ -1419,36 +1274,7 @@
                 <button class="btn btn-secondary" style="flex: 1;" onclick="importData()">📂 Импорт</button>
                 <button class="btn btn-danger" style="flex: 1;" onclick="logout()">Выход</button>
             </div>
-            <div id="game-window" style="padding: 0; overflow: hidden; position: relative; height: 280px; margin-bottom: 20px;">
-                <div class="scrolling-bg"></div>
-                
-                <div id="atom-core" class="status-normal">
-                    <div class="nucleus"></div>
-                    <div class="orbit-plane plane-1"><div class="orbit-ring"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-2"><div class="orbit-ring" style="animation-duration: 2.5s;"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-3"><div class="orbit-ring" style="animation-duration: 6s;"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-1" style="transform: rotateX(120deg);"><div class="orbit-ring" style="animation-duration: 4.5s;"><div class="electron"></div></div></div>
-                    <div class="orbit-plane plane-2" style="transform: rotateY(90deg);"><div class="orbit-ring" style="animation-duration: 8s;"><div class="electron"></div></div></div>
-                </div>
-
-                <div id="core-terminal">
-                    <div id="terminal-logs">
-                        <div class="log-entry">Quantum Field Initialized...</div>
-                        <div class="log-entry">Atomic integrity: 100%</div>
-                    </div>
-                </div>
-                
-                <div style="position: absolute; top: 15px; right: 15px; display: flex; flex-direction: column; gap: 8px; z-index: 20;">
-                    <button class="game-hud-btn" onclick="upgradeCapacity()">🔋 ЕМКОСТЬ (УР. <span id="ui-capacity-lvl">0</span>)</button>
-                    <button class="game-hud-btn" onclick="upgradeShield()">🛡️ СТАБИЛЬНОСТЬ (УР. <span id="ui-shield-lvl">0</span>)</button>
-                </div>
-            </div>
-            <div id="vacation-banner" style="display:none; background: rgba(0,204,102,0.1); border: 1px solid var(--success); padding: 15px; border-radius: 8px; margin-bottom: 20px; text-align: center; color: var(--success); font-weight: bold;">
-                🌴 ВЫ НАХОДИТЕСЬ В ОТПУСКЕ (ИЛИ БОЛЕЕТЕ) 🌴<br>
-                <span style="font-size: 0.8em; font-weight: normal; color: var(--text-dim);">Урон по здоровью отключен. Стрики заморожены. Получение опыта и золота приостановлено. Восстанавливайтесь!</span>
-            </div>
-
-            <div class="hero-stats" style="flex-wrap: wrap;">
+            <div class="hero-stats" style="flex-wrap: wrap; margin-top: 20px;">
                 <div class="hero-stat-block" style="flex: 1; min-width: 100px;">
                     <div class="hero-val" id="global-level" style="color: var(--accent);">1</div>
                     <div class="hero-label">Уровень</div>
@@ -1456,19 +1282,11 @@
                 
                 <div class="hero-stat-block" style="flex: 2; min-width: 250px;">
                     <div style="display:flex; justify-content:space-between; margin-bottom:5px;">
-                        <span class="hero-label">Опыт (XP)</span>
+                        <span class="hero-label" style="color: var(--text);">Прогресс (XP)</span>
                         <span id="global-xp-text" style="font-weight:bold; color:var(--xp-color);">0 / 100</span>
                     </div>
-                    <div class="hero-xp-bar">
+                    <div class="hero-xp-bar" style="margin-top: 5px; height: 12px;">
                         <div class="progress-fill" id="global-xp-bar" style="width:0%"></div>
-                    </div>
-                    
-                    <div style="display:flex; justify-content:space-between; margin-bottom:5px; margin-top: 15px;">
-                        <span class="hero-label">СТАБИЛЬНОСТЬ АТОМА ⚛️</span>
-                        <span id="global-hp-text" style="font-weight:bold; color:var(--danger);">100 / 100</span>
-                    </div>
-                    <div class="hero-xp-bar" style="height: 10px; margin-bottom: 0;">
-                        <div class="progress-fill" id="global-hp-bar" style="width:100%; background-color: var(--danger); box-shadow: 0 0 10px rgba(255,0,0,0.5);"></div>
                     </div>
                 </div>
                 
@@ -1476,7 +1294,7 @@
                     <div class="hero-val gold-val" id="global-gold">0</div>
                     <div class="hero-label">Золото</div>
                     <div style="font-size: 0.85em; color: var(--text-dim); margin-top: 15px;">
-                        Заморозки стрейка: <strong style="color: var(--accent);" id="dash-freezes">0</strong> ❄️
+                        Щиты стриков: <strong style="color: var(--accent);" id="dash-freezes">0</strong> ❄️
                     </div>
                 </div>
             </div>
@@ -1674,29 +1492,7 @@
             </div>
             <div class="store-grid" id="store-container"></div>
         </div>
-        <div id="lootbox" class="view">
-            <h2>Система Лутбоксов</h2>
-
-            <div style="display: grid; grid-template-columns: 1fr 1fr; gap: 20px;">
-                <div class="card" style="text-align: center;">
-                    <div id="lootbox-progress" style="margin-bottom: 10px; color: var(--text-dim);">Прогресс: 0 / 5</div>
-                    <div id="lootbox-status" style="font-size: 1.2em; margin-bottom: 20px;">Доступно: 0 🎁</div>
-                    <button class="btn btn-primary" onclick="openLootbox()">Открыть Лутбокс</button>
-                    <div id="lootbox-reward" style="margin-top: 20px; font-size: 1.2em; color: var(--accent); min-height: 1.5em;"></div>
-                </div>
-
-                <div class="card">
-                    <h3>Настройка наград (Drop Table)</h3>
-                    <div style="display: flex; gap: 10px; margin-bottom: 15px;">
-                        <input type="text" id="customLootName" placeholder="Название (напр. Стейк)" style="margin:0; flex:2;">
-                        <input type="number" id="customLootGold" placeholder="Золото" style="margin:0; flex:1;">
-                        <input type="number" id="customLootXP" placeholder="XP" style="margin:0; flex:1;">
-                        <button class="btn btn-primary" onclick="addCustomLoot()">+</button>
-                    </div>
-                    <div id="custom-loot-list" style="font-size: 0.9em; max-height: 150px; overflow-y: auto;"></div>
-                </div>
-            </div>
-        </div>
+       
 
         <div id="notes" class="view">
             <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
@@ -2537,7 +2333,6 @@
         if(viewId === 'achievements') renderAchievements(); // Починит пустой список
         if(viewId === 'analytics') renderAnalytics();
         if(viewId === 'notes') renderNotes();
-        if(viewId === 'lootbox') updateLootboxUI();
 
         if (document.getElementById('userNickname') && state.user?.nickname) {
         document.getElementById('userNickname').value = state.user.nickname;
@@ -2841,14 +2636,6 @@
                 node.rewardCollected = true;
                 rewardGiven = true;
 
-                // Механика лутбоксов
-                if (!state.user.tasksCompletedForLoot) state.user.tasksCompletedForLoot = 0;
-                state.user.tasksCompletedForLoot++;
-                if (state.user.tasksCompletedForLoot >= 5) {
-                    state.lootboxes = (state.lootboxes || 0) + 1;
-                    state.user.tasksCompletedForLoot = 0;
-                    if ('vibrate' in navigator) navigator.vibrate([30, 50, 30]);
-                }
             }
 
             // БОЕВАЯ СИСТЕМА БОССОВ
@@ -3416,52 +3203,7 @@
 
         document.getElementById('iosCalendarModal').style.display = 'none';
         }
-        function upgradeCapacity() {
-            if (!state.character.capacityLevel) state.character.capacityLevel = 0;
-            const cost = 300 * (state.character.capacityLevel + 1);
-            if (state.character.capacityLevel >= 5) {
-                customAlert("Максимум", "Достигнут предел удержания плазмы."); return;
-            }
-            if (state.global.gold >= cost) {
-                state.global.gold -= cost;
-                state.character.capacityLevel++;
-                
-                // Увеличиваем макс ХП и лечим на эту же сумму
-                const hpBonus = 20;
-                state.global.maxHp = 100 + (state.character.capacityLevel * hpBonus);
-                state.global.hp += hpBonus; 
-
-                addCoreLog(`Upgrade: Containment field capacity +20.`, "success");
-                save();
-            } else {
-                customAlert("Недостаточно кредитов", `Расширение поля стоит ${cost} 🪙.`);
-            }
-        }
-
-        function upgradeShield() {
-            if (!state.character.shieldLevel) state.character.shieldLevel = 0;
-            const cost = 400 * (state.character.shieldLevel + 1);
-            if (state.character.shieldLevel >= 5) {
-                customAlert("Максимум", "Магнитные ловушки на пике эффективности."); return;
-            }
-            if (state.global.gold >= cost) {
-                state.global.gold -= cost;
-                state.character.shieldLevel++;
-                addCoreLog(`Upgrade: Magnetic shielding level ${state.character.shieldLevel}. Damage reduced by 10%.`, "success");
-                save();
-            } else {
-                customAlert("Недостаточно кредитов", `Калибровка ловушек стоит ${cost} 🪙.`);
-            }
-        }
-        function addCoreLog(text, type = "") {
-            const container = document.getElementById('terminal-logs');
-            if (!container) return;
-            const entry = document.createElement('div');
-            entry.className = `log-entry ${type === "success" ? "log-success" : ""}`;
-            entry.innerText = `[${new Date().toLocaleTimeString()}] ${text}`;
-            container.prepend(entry); // Новые логи сверху
-            if (container.children.length > 10) container.lastChild.remove();
-        }
+        
         /* =========================================
         7. МАГАЗИН
         ========================================= */
@@ -3487,9 +3229,6 @@
                         if (!state.inventory) state.inventory = { streakFreezes: 0 };
                         state.inventory.streakFreezes++;
                         customAlert("Торговец", `Куплена заморозка стрейка ❄️!\nТеперь в инвентаре: ${state.inventory.streakFreezes}`);
-                    } else if (item.id === 'heal') {
-                        state.global.hp = Math.min(state.global.maxHp || 100, (state.global.hp || 100) + (item.heal || 30));
-                        customAlert("Торговец", `Вы выпили зелье 🧪!\nВосстановлено 30 HP. Текущее здоровье: ${state.global.hp}`);
                     }
                 } else {
                     customAlert("Торговец", `Покупка успешно совершена: ${item.name}!\nНаслаждайтесь.`);
@@ -3949,10 +3688,7 @@
         const AUTO_ACHIEVEMENTS = [
             // --- БАЗОВЫЕ / ИГРОВЫЕ ---
             { id: 'first_blood', icon: '🩸', title: 'Первая кровь', desc: 'Получить первый опыт за любую цель.', auto: true, condition: () => state.global.xp > 0 || state.global.level > 1 },
-            { id: 'burnout', icon: '🔥', title: 'Испытание пределов', desc: 'Довести шкалу Энергии до 0 (Выгорание).', auto: true, condition: () => state.global.stamina === 0 },
             { id: 'first_boss', icon: '👹', title: 'Убийца Чудовищ', desc: 'Победить своего первого Рейдового Босса.', auto: true, condition: () => state.analytics?.archive?.some(a => a.type === 'Босс') },
-            { id: 'death', icon: '☠️', title: 'Возрождение из пепла', desc: 'Умереть (HP = 0) и воскреснуть.', auto: true, condition: () => (state.analytics?.deaths || 0) >= 1 },
-            { id: 'survivor', icon: '❤️‍🩹', title: 'На волоске', desc: 'Выжить, когда HP опускается ниже 10.', auto: true, condition: () => state.global.hp > 0 && state.global.hp <= 10 },
             
             // --- СОЗДАНИЕ И ПЛАНИРОВАНИЕ ---
             { id: 'arch_1', icon: '🏗️', title: 'Архитектор Реальности', desc: 'Создать свой первый Навык.', auto: true, condition: () => state.skills.length >= 1 },
@@ -4160,20 +3896,7 @@
         ГЛОБАЛЬНАЯ ОТРИСОВКА ИНТЕРФЕЙСА (RENDER)
         ========================================= */
         function render() {
-            // --- ЛОГИКА АТОМА ---
-            const coreEl = document.getElementById('atom-core');
-            if (!state.global.maxHp) state.global.maxHp = 100 + ((state.character.capacityLevel || 0) * 20);
-            const hpPercent = (state.global.hp / state.global.maxHp) * 100;
-            
-            if (coreEl) {
-                coreEl.className = ""; // Сброс
-                if (hpPercent > 60) coreEl.classList.add('status-normal');
-                else if (hpPercent > 20) coreEl.classList.add('status-warning');
-                else coreEl.classList.add('status-critical');
-
-                document.getElementById('ui-capacity-lvl').innerText = state.character.capacityLevel || 0;
-                document.getElementById('ui-shield-lvl').innerText = state.character.shieldLevel || 0;
-            }
+        
             // --- ЗАЩИТА ОТ КРАШЕЙ (ПЕРЕНЕСЛИ В САМОЕ НАЧАЛО) ---
             if (!state.inventory) state.inventory = { streakFreezes: 0 };
             if (!state.calendar) state.calendar = {};
@@ -4184,110 +3907,44 @@
 
            const todayStr = new Date().toDateString();
             if (state.global.lastLoginDate !== todayStr) {
-                let damageTaken = 0;
-
                 const yesterday = new Date();
                 yesterday.setDate(yesterday.getDate() - 1);
-                const yesterdayOffset = yesterday.getTimezoneOffset() * 60000;
-                const yesterdayIso = new Date(yesterday - yesterdayOffset).toISOString().split('T')[0];
-                const yesterdayDayOfWeek = yesterday.getDay();
+                
+                let usedFreeze = false;
 
                 if (!state.global.isVacation) {
-                    const yesterdayTasks = [
-                        ...(state.schedule[yesterdayDayOfWeek] || []).map(t => ({...t, _type: 'template'})),
-                        ...(state.calendar[yesterdayIso] || []).map(t => ({...t, _type: 'date'}))
-                    ];
-
-                    let missedAnything = false;
-                    yesterdayTasks.forEach(t => {
-                        let isDone = t.done;
-                        if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) isDone = true;
-                        if (!isDone) missedAnything = true;
-                    });
-
-                    // ФИКС: Проверяем привычки на пропуск
+                    // 1. Проверяем, были ли пропущены привычки вчера
+                    let missedHabit = false;
                     state.skills.forEach(s => {
                         (s.goals || []).forEach(g => {
                             if (g.type === 'Повторяющаяся' && g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                                missedAnything = true;
+                                missedHabit = true;
                             }
                         });
                     });
 
-                    // ГЛОБАЛЬНАЯ ЗАЩИТА: Если пропустили хоть что-то, но есть заморозка
-                    let isProtected = false;
-                    if (missedAnything && state.inventory.streakFreezes > 0) {
+                    // 2. Если есть пропуск и есть заморозка — тратим заморозку
+                    if (missedHabit && state.inventory.streakFreezes > 0) {
                         state.inventory.streakFreezes--;
-                        isProtected = true;
-                        console.log("🛡️ Заморозка стрика активирована! Весь урон и сброс стриков отменены.");
+                        usedFreeze = true;
+                        console.log("🛡️ Щит активирован! Стрики спасены.");
                     }
 
-                    if (!isProtected) {
-                        // Если защиты нет — считаем урон
-                        yesterdayTasks.forEach(t => {
-                            let isDone = t.done;
-                            if (state.completedTemplates[yesterdayIso] && state.completedTemplates[yesterdayIso].includes(t.id)) isDone = true;
-                            if (!isDone) damageTaken += 10;
-                        });
-                    }
-
-                    // 2. Обновляем привычки и Боссов
+                    // 3. Обновляем статус привычек
                     state.skills.forEach(s => {
                         (s.goals || []).forEach(g => {
                             if (g.type === 'Повторяющаяся') {
                                 g.done = false; 
-                                if (isProtected) {
-                                    g.lastCompleted = yesterday.toDateString(); // Фейкуем выполнение для спасения стрика
+                                if (usedFreeze) {
+                                    g.lastCompleted = yesterday.toDateString(); // Фейкуем выполнение для защиты
                                 } else if (g.lastCompleted !== yesterday.toDateString() && g.lastCompleted !== todayStr) {
-                                    g.streak = 0; 
-                                }
-                            }
-                            // Логика боссов (без изменений...)
-                            if (g.type === 'Босс' && !g.done && g.deadline) {
-                                const deadlineDate = new Date(g.deadline);
-                                deadlineDate.setHours(0,0,0,0);
-                                if (deadlineDate < new Date().setHours(0,0,0,0)) {
-                                    damageTaken += 50; g.done = true;
-                                    customAlert("Смерть Босса", `💀 Вы провалили дедлайн босса "${g.name}"!`);
+                                    g.streak = 0; // Сбрасываем стрик, если нет щита
                                 }
                             }
                         });
                     });
-                    // Дальше идет твоя логика Мягкой Смерти...
-
-                    // МЯГКАЯ СМЕРТЬ
-                    // МЯГКАЯ СМЕРТЬ (Взрыв атома)
-                    if (damageTaken > 0) {
-                        // --- НОВАЯ ЛОГИКА ЗАЩИТЫ (СТАБИЛЬНОСТИ) ---
-                        const shieldLvl = state.character.shieldLevel || 0;
-                        const reductionMult = 1 - (shieldLvl * 0.1); // -10% урона за каждый уровень
-                        const finalDamage = Math.max(1, Math.floor(damageTaken * reductionMult));
-
-                        state.global.hp = (state.global.hp || 100) - finalDamage;
-                        const alertKey = 'daily_dmg_shown_' + todayStr;
-                        const alertAlreadyShown = sessionStorage.getItem(alertKey);
-
-                        if (!alertAlreadyShown) {
-                            if (state.global.hp <= 0) {
-                                customAlert("☢️ ЯДЕРНЫЙ РАСПАД", `Критическая масса превышена. Ядро Урана раскололось!\n\nПроизошел выброс энергии. Система перезагружена.\n- Потеряно 20% золота.\n\nСтабильность восстановлена до 100%.`);
-                                addCoreLog("CRITICAL: Nuclear fission detected! Emergency cooling active.", "danger");
-                                // ... остальной код (сброс золота и HP)
-                            
-                                state.global.gold = Math.floor(state.global.gold * 0.8);
-                                state.global.hp = state.global.maxHp;
-                                if (!state.analytics) state.analytics = {};
-                                state.analytics.deaths = (state.analytics.deaths || 0) + 1; 
-                            } else {
-                                customAlert("Ночной отчет", `⚠️ Вы получили ${finalDamage} ед. нестабильности за пропущенные задачи!\n(Щиты поглотили ${damageTaken - finalDamage} урона).\nТекущая стабильность: ${state.global.hp}`);
-                            }
-                            sessionStorage.setItem(alertKey, 'true');
-                        } else if (state.global.hp <= 0) {
-                            state.global.gold = Math.floor(state.global.gold * 0.8);
-                            state.global.hp = state.global.maxHp;
-                        }
-                    }
                 } else {
-                    // ЕСЛИ ОТПУСК: Галочки сбрасываем, но искусственно продлеваем стрик, чтобы он не сгорел
+                    // ЕСЛИ ОТПУСК: Просто сбрасываем галочки, сохраняя стрики
                     state.skills.forEach(s => {
                         (s.goals || []).forEach(g => {
                             if (g.type === 'Повторяющаяся') {
@@ -4299,26 +3956,21 @@
                 }
 
                 state.global.lastLoginDate = todayStr;
-                state.global.lastUpdated = Date.now(); // Жестко обновляем таймштамп
+                state.global.lastUpdated = Date.now();
                 
                 safeSetLocal('rpg_os_final_v2', JSON.stringify(state));
-                
-                // ФИКС: Принудительно закидываем итоги ночи в Firebase!
                 pushState();
             }
-
-            // Инициализация HP для старых сохранений
-            if (typeof state.global.hp === 'undefined') { state.global.hp = 100; state.global.maxHp = 100; }
             
-            // Отрисовка HP и прочей статы
-            document.getElementById('global-hp-text').innerText = `${Math.floor(state.global.hp)} / ${state.global.maxHp || 100}`;
-            document.getElementById('global-hp-bar').style.width = `${(state.global.hp / (state.global.maxHp || 100)) * 100}%`;
-            document.getElementById('global-level').innerText = state.global.level;
-            let neededXP = Math.floor(100 * Math.pow(state.global.level, 1.5));
-            document.getElementById('global-xp-text').innerText = `${state.global.xp} / ${neededXP}`;
-            document.getElementById('global-xp-bar').style.width = `${(state.global.xp / neededXP) * 100}%`;
-            document.getElementById('global-gold').innerText = state.global.gold;
+            // Удаляем старые рендеры Атома и ХП-баров
+            // Отрисовка только XP и Золота
+            document.getElementById('global-level').innerText = state.global.level || 1;
+            let neededXP = Math.floor(100 * Math.pow((state.global.level || 1), 1.5));
+            document.getElementById('global-xp-text').innerText = `${state.global.xp || 0} / ${neededXP}`;
+            document.getElementById('global-xp-bar').style.width = `${((state.global.xp || 0) / neededXP) * 100}%`;
+            document.getElementById('global-gold').innerText = state.global.gold || 0;
             document.getElementById('dash-freezes').innerText = state.inventory.streakFreezes || 0;
+
             // --- ЛОГИКА ФОКУСА ДНЯ (АВТО И РУЧНАЯ) ---
             const todayOffset = new Date().getTimezoneOffset() * 60000;
             const todayIso = new Date(Date.now() - todayOffset).toISOString().split('T')[0];
@@ -4629,71 +4281,10 @@
             </div>
             </div>
             `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
-            renderLootList();
-            updateLootboxUI();
+    
         }
 
-        /* =========================================
-        ЛОГИКА ЛУТБОКСОВ (Интегрировано из React)
-        ========================================= */
-        function updateLootboxUI() {
-        const progressEl = document.getElementById('lootbox-progress');
-        const statusEl = document.getElementById('lootbox-status');
-        if (progressEl) progressEl.innerText = `Прогресс: ${state.user.tasksCompletedForLoot || 0} / ${state.user.lootboxThreshold || 5}`;
-        if (statusEl) statusEl.innerText = `Доступно: ${state.lootboxes || 0} 🎁`;
-        }
-
-        function addCustomLoot() {
-        const name = document.getElementById('customLootName').value;
-        const gold = parseInt(document.getElementById('customLootGold').value) || 0;
-        const xp = parseInt(document.getElementById('customLootXP').value) || 0;
-
-        if (!name) return;
-
-        if (!state.lootTable) state.lootTable = [];
-        state.lootTable.push({ name, gold, xp });
-
-        document.getElementById('customLootName').value = '';
-        save();
-        }
-
-        function renderLootList() {
-        const list = document.getElementById('custom-loot-list');
-        if (!list) return;
-        const table = state.lootTable || [];
-        list.innerHTML = table.map((item, idx) => `
-        <div style="display:flex; justify-content:space-between; padding: 5px; border-bottom: 1px solid var(--border);">
-        <span>${item.name} (🪙${item.gold} / ✨${item.xp})</span>
-        <span style="color:var(--danger); cursor:pointer;" onclick="deleteLoot(${idx})">✖</span>
-        </div>
-        `).join('') || 'Список пуст. Добавьте награды!';
-        }
-
-        function deleteLoot(index) {
-        state.lootTable.splice(index, 1);
-        save();
-        }
-
-        function openLootbox() {
-        if (state.lootboxes <= 0) {
-        alert("Нет доступных коробок!");
-        return;
-        }
-        if (!state.lootTable || state.lootTable.length === 0) {
-        alert("Сначала добавьте хотя бы одну награду в список справа!");
-        return;
-        }
-
-        state.lootboxes--;
-        const reward = state.lootTable[Math.floor(Math.random() * state.lootTable.length)];
-
-        state.global.gold += reward.gold;
-        state.global.xp += reward.xp;
-
-        document.getElementById('lootbox-reward').innerText = `Выпало: ${reward.name}!`;
-        save();
-        }
-
+        
         /* =========================================
         ЛОГИКА ЗАМЕТОК (Интегрировано из React)
         ========================================= */
@@ -4816,7 +4407,7 @@
         }
 
         function failSharedHabit(habitId) {
-            if(!confirm("Вы уверены? Это действие сбросит стрик для ВСЕЙ ГРУППЫ до нуля, и вы получите 30 урона по здоровью!")) return;
+            if(!confirm("Вы уверены? Это действие сбросит стрик для ВСЕЙ ГРУППЫ до нуля!")) return;
 
             const habit = realtimeHabits[habitId];
             const myUid = state.network.syncId;
@@ -4825,7 +4416,6 @@
             const today = new Date().toDateString();
 
             // Штраф за провал
-            state.global.hp = Math.max(1, (state.global.hp || 100) - 30);
             saveLocal(); 
 
             // Сбрасываем стрик: теперь новой точкой отсчета станет ЗАВТРАШНИЙ день
