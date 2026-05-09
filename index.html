@@ -656,7 +656,17 @@
             gap: 8px;
             z-index: 10;
         }
-
+        /* Текст на линиях графа */
+        .svg-line-text {
+            font-size: 14px;
+            font-family: var(--font-game);
+            paint-order: stroke; /* Обводка рисуется ПОД текстом */
+            stroke: var(--bg);   /* Цвет обводки совпадает с фоном сайта */
+            stroke-width: 6px;   /* Толщина обводки, чтобы перекрыть линию */
+            font-weight: bold;
+            pointer-events: none;
+            text-shadow: 1px 1px 0px rgba(0,0,0,0.2);
+        }
         .mini-btn {
             width: 32px;
             height: 32px;
@@ -1860,12 +1870,20 @@
 
     <div id="graphNodeModal" class="modal">
         <div class="modal-content">
-            <h3 id="graphNodeModalTitle">Узел декомпозиции</h3>
+            <h3 id="graphNodeModalTitle">Узел развития</h3>
             <input type="hidden" id="graphNodeId">
             <input type="hidden" id="graphNodeParentId">
             <input type="hidden" id="graphNodeAction">
-            <input type="text" id="graphNodeName" placeholder="Название темы">
-            <textarea id="graphNodeNotes" placeholder="Теория, конспект или заметка..."></textarea>
+            
+            <label>Цель (Текст внутри круга)</label>
+            <input type="text" id="graphNodeName" placeholder="Что нужно достичь?">
+            
+            <label>Этап / Раздел (Текст на линии сверху)</label>
+            <input type="text" id="graphNodeLineText" placeholder="Например: Изучение базы...">
+            
+            <label>Теория / Заметки</label>
+            <textarea id="graphNodeNotes" placeholder="Конспект, ссылки, детали..."></textarea>
+            
             <div class="modal-buttons">
                 <button class="btn btn-primary" onclick="saveGraphNode()">Сохранить</button>
                 <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
@@ -3466,28 +3484,24 @@
         }
         function layoutSkillTree(nodes) {
             if (!nodes || nodes.length === 0) return;
-            const levelHeight = 200; // Расстояние между этажами
-            const nodeSpacing = 160; // Расстояние между соседними узлами
+            const levelHeight = 220; // ФИКС: Увеличили со 200 до 220, чтобы влез текст на линии
+            const nodeSpacing = 160; 
 
-            // 1. Считаем "вес" каждой ветки (сколько места ей нужно снизу)
             const getWeight = (id) => {
                 const children = nodes.filter(n => n.parentId === id);
                 if (children.length === 0) return 1;
                 return children.reduce((sum, child) => sum + getWeight(child.id), 0);
             };
 
-            // 2. Рекурсивная функция расстановки
             const assignPos = (id, leftBound, depth) => {
                 const node = nodes.find(n => n.id === id);
                 const children = nodes.filter(n => n.parentId === id);
                 const weight = getWeight(id);
                 const myWidth = weight * nodeSpacing;
 
-                // Ставим узел ровно по центру отведенного ему пространства
-                node.x = leftBound + (myWidth / 2) - 60; // 60 - половина узла
+                node.x = leftBound + (myWidth / 2) - 60; 
                 node.y = 60 + (depth * levelHeight);
 
-                // Расставляем детей внутри границ этого родителя
                 let childLeft = leftBound;
                 children.forEach(child => {
                     const childWeight = getWeight(child.id);
@@ -3496,13 +3510,11 @@
                 });
             };
 
-            // Находим корни и центрируем всю систему относительно экрана
             const roots = nodes.filter(n => !n.parentId);
             const container = document.getElementById('graph-container');
             const totalWeight = roots.reduce((sum, r) => sum + getWeight(r.id), 0);
             const fullTreeWidth = totalWeight * nodeSpacing;
             
-            // Центрируем относительно центра контейнера
             const startX = (container.clientWidth / 2) - (fullTreeWidth / 2);
 
             let currentX = startX;
@@ -3516,15 +3528,33 @@
             const skill = state.skills.find(s => s.id === activeTreeSkillId);
             if (!skill) return;
 
-            // Сначала запускаем авто-расположение
             layoutSkillTree(skill.graphNodes);
+
+            // === АЛГОРИТМ РАСКРАСКИ ВЕТОК ===
+            const palette = ['#ff5252', '#33d9b2', '#ffb142', '#34ace0', '#706fd3', '#ff793f', '#218c74', '#b33939'];
+            const rootNode = skill.graphNodes.find(n => !n.parentId);
+            if (rootNode) {
+                rootNode.branchColor = skill.color;
+                let colorIndex = 0;
+                function colorTraverse(parentId, currentColor) {
+                    skill.graphNodes.filter(n => n.parentId === parentId).forEach(child => {
+                        let childColor = currentColor;
+                        if (parentId === rootNode.id) { // Если это прямая ветка от корня — даем новый цвет
+                            childColor = palette[colorIndex % palette.length];
+                            colorIndex++;
+                        }
+                        child.branchColor = childColor;
+                        colorTraverse(child.id, childColor);
+                    });
+                }
+                colorTraverse(rootNode.id, skill.color);
+            }
+            // ===================================
 
             const svg = document.getElementById('graph-svg');
             const graphWrapper = document.getElementById('graph-wrapper'); 
             svg.innerHTML = '';
             document.querySelectorAll('.canvas-node-wrap').forEach(el => el.remove());
-
-            const nodeSize = 110;
 
             skill.graphNodes.forEach(node => {
                 const wrapper = document.createElement('div');
@@ -3534,22 +3564,23 @@
 
                 const circle = document.createElement('div');
                 circle.className = `graph-node ${node.done ? 'done' : ''}`;
-                circle.style.borderColor = node.done ? 'var(--success)' : skill.color;
                 
-                // Дизайн из Source 8: Текст внутри с эффектом клипа
+                const branchColor = node.branchColor || skill.color;
+                circle.style.borderColor = node.done ? 'var(--success)' : branchColor;
+                
                 circle.innerHTML = `
                     <div class="node-text-wrap">
                         <div class="node-text-inner">
-                            ${node.name}
+                            ${node.name || ''}
                         </div>
                     </div>
                     <div class="node-actions">
                         <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('add', { parentId: '${node.id}' })" title="Добавить ветку">+</div>
                         <div class="mini-btn confirm" onclick="event.stopPropagation(); toggleNodeStatus('${node.id}')" title="Готово">✓</div>
-                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${node.name.replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })" title="Правка">✎</div>
+                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${(node.name || '').replace(/'/g, "\\'")}', lineText: '${(node.lineText || '').replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })" title="Правка">✎</div>
                     </div>
                 `;
-                // Удаление по правому клику
+                
                 circle.oncontextmenu = e => {
                     e.preventDefault();
                     if (!node.isRoot && confirm('Уничтожить эту ветку знаний?')) {
@@ -3562,29 +3593,45 @@
                 graphWrapper.appendChild(wrapper); 
             });
 
-            // Рисуем кибер-линии (как в Source 8)
             skill.graphNodes.forEach(node => {
                 if (node.parentId) {
                     const parent = skill.graphNodes.find(p => p.id === node.parentId);
                     if (parent) {
                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                         
-                        const startX = parent.x + 60; // Центр родителя (120/2)
-                        const startY = parent.y + 120; // Низ родителя
-                        const endX = node.x + 60;    // Центр ребенка
-                        const endY = node.y;         // Верх ребенка
+                        const startX = parent.x + 60; 
+                        const startY = parent.y + 120; 
+                        const endX = node.x + 60;    
+                        const endY = node.y;         
 
-                        // Кривая Безье для "плавности" как на скриншоте
                         const cpY = startY + (endY - startY) / 2;
                         const d = `M ${startX} ${startY} C ${startX} ${cpY}, ${endX} ${cpY}, ${endX} ${endY}`;
 
+                        const branchColor = node.branchColor || skill.color;
+
                         path.setAttribute("d", d);
-                        path.setAttribute("stroke", skill.color);
+                        path.setAttribute("stroke", branchColor);
                         path.setAttribute("stroke-width", "3");
                         path.setAttribute("fill", "none");
-                        path.setAttribute("opacity", "0.3");
-                        path.setAttribute("stroke-dasharray", "5,5"); // Пунктир как в играх
+                        path.setAttribute("opacity", "0.4");
+                        path.setAttribute("stroke-dasharray", "5,5"); 
                         svg.appendChild(path);
+
+                        // === ОТРИСОВКА ТЕКСТА НА ЛИНИИ ===
+                        if (node.lineText) {
+                            const midX = (startX + endX) / 2;
+                            const midY = (startY + endY) / 2;
+                            
+                            const text = document.createElementNS("http://www.w3.org/2000/svg", "text");
+                            text.setAttribute("x", midX);
+                            text.setAttribute("y", midY);
+                            text.setAttribute("text-anchor", "middle");
+                            text.setAttribute("dominant-baseline", "middle");
+                            text.setAttribute("class", "svg-line-text");
+                            text.setAttribute("fill", branchColor); // Текст окрашивается в цвет ветки
+                            text.textContent = node.lineText;
+                            svg.appendChild(text);
+                        }
                     }
                 }
             });
@@ -3606,10 +3653,11 @@
             document.getElementById('graphNodeId').value = params.id || '';
             document.getElementById('graphNodeParentId').value = params.parentId || '';
             document.getElementById('graphNodeName').value = params.name || '';
+            document.getElementById('graphNodeLineText').value = params.lineText || '';
             document.getElementById('graphNodeNotes').value = params.notes || '';
 
             document.getElementById('graphNodeModalTitle').innerText =
-            action === 'edit' ? 'Редактировать тему' : 'Новая ветка обучения';
+            action === 'edit' ? 'Редактировать цель' : 'Новый шаг развития';
 
             openModal('graphNodeModal');
         }
@@ -3618,44 +3666,34 @@
             const skill = state.skills.find(s => s.id === activeTreeSkillId);
             const action = document.getElementById('graphNodeAction').value;
             const name = document.getElementById('graphNodeName').value;
+            const lineText = document.getElementById('graphNodeLineText').value; // Новое поле
             const notes = document.getElementById('graphNodeNotes').value;
             const parentId = document.getElementById('graphNodeParentId').value;
             const id = document.getElementById('graphNodeId').value;
-            const direction = document.getElementById('graphNodeParentId').dataset.direction || 'right';
 
-            if (!name) return;
+            if (!name && !lineText) return; 
             if (!skill.graphNodes) skill.graphNodes = [];
 
             let finalId = id;
 
             if (action === 'edit') {
                 const node = skill.graphNodes.find(n => n.id === id);
-                if (node) { node.name = name; node.notes = notes; }
+                if (node) { node.name = name; node.lineText = lineText; node.notes = notes; }
             } else {
-                const parent = skill.graphNodes.find(n => n.id === parentId);
-
-                let newX = 500;
-                let newY = 300;
-                if (parent) {
-                    // Новые узлы появляются с правильной стороны в зависимости от нажатого плюсика
-                    newX = direction === 'left' ? parent.x - 180 : parent.x + 180;
-                    newY = parent.y + (Math.random() * 40 - 20);
-                }
-
                 finalId = Date.now().toString();
                 skill.graphNodes.push({
                     id: finalId,
                     name: name,
+                    lineText: lineText,
                     notes: notes,
                     parentId: parentId || null,
-                    x: newX,
-                    y: newY,
+                    x: 500, // X и Y перезапишутся авто-алгоритмом
+                    y: 300,
                     done: false
                 });
             }
 
             closeModals();
-            syncNote(finalId, name, notes, "Узел графа", activeTreeSkillId);
             save();
             renderCanvas();
         }
