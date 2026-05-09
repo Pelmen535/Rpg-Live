@@ -629,19 +629,12 @@
             pointer-events: none;
         }
 
-        /* Кнопки управления внутри узла */
         .node-actions {
             position: absolute;
-            bottom: -15px;
+            bottom: -20px;
             display: flex;
-            gap: 10px;
-            opacity: 0;
-            transition: 0.3s;
-        }
-
-        .graph-node:hover .node-actions {
-            opacity: 1;
-            bottom: -25px;
+            gap: 8px;
+            z-index: 10;
         }
 
         .mini-btn {
@@ -1497,7 +1490,7 @@
             <div style="padding: 10px 30px; background: #000000; color: #888888; font-size: 0.85em;">
                 На мобильном: зажать и тащить. На ПК: левый клик + тянуть. Правый клик — удалить. Двойной клик — переименовать. (Опыта за узлы нет, это визуальный черновик).
             </div>
-            <div id="graph-container" style="overflow: hidden; position: relative;">
+            <div id="graph-container" style="overflow: hidden; position: relative; flex: 1; min-height: 600px; width: 100%;">
                 <div id="graph-wrapper" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; transform-origin: 0 0; will-change: transform;">
                     <svg id="graph-svg" style="position: absolute; top: 0; left: 0; width: 100%; height: 100%; pointer-events: none; overflow: visible;"></svg>
                 </div>
@@ -3452,17 +3445,24 @@
             renderCanvas();
         }
         function layoutSkillTree(nodes) {
+            if (!nodes || nodes.length === 0) return;
             const levelHeight = 180; // Расстояние между уровнями (Y)
-            const nodeWidth = 150;  // Горизонтальный шаг (X)
+            const nodeWidth = 160;  // Горизонтальный шаг (X)
             
-            // 1. Строим карту уровней (глубины)
             const layers = {};
             const levels = {};
             
             function getDepth(id, currentDepth) {
+                if (levels[id] !== undefined && levels[id] >= currentDepth) return; // Защита от бесконечного цикла
+                
+                if (levels[id] !== undefined) {
+                    const oldDepth = levels[id];
+                    layers[oldDepth] = layers[oldDepth].filter(x => x !== id);
+                }
+
                 levels[id] = currentDepth;
                 if (!layers[currentDepth]) layers[currentDepth] = [];
-                layers[currentDepth].push(id);
+                if (!layers[currentDepth].includes(id)) layers[currentDepth].push(id);
                 
                 nodes.filter(n => n.parentId === id).forEach(child => {
                     getDepth(child.id, currentDepth + 1);
@@ -3472,16 +3472,19 @@
             const roots = nodes.filter(n => !n.parentId);
             roots.forEach(root => getDepth(root.id, 0));
 
-            // 2. Назначаем координаты
+            // Автоматически берем ширину экрана устройства
+            const container = document.getElementById('graph-container');
+            const containerWidth = container ? container.clientWidth : window.innerWidth;
+            
             Object.keys(layers).forEach(level => {
                 const layerNodes = layers[level];
                 const totalWidth = (layerNodes.length - 1) * nodeWidth;
-                const startX = 640 - (totalWidth / 2); // Центрируем по середине канваса (1280/2)
+                const startX = (containerWidth / 2) - (totalWidth / 2); 
 
                 layerNodes.forEach((id, index) => {
                     const node = nodes.find(n => n.id === id);
                     if (node) {
-                        node.x = startX + (index * nodeWidth) - 55; // -55 для центровки круга
+                        node.x = startX + (index * nodeWidth) - 60; // 60 это половина ширины узла (120px)
                         node.y = 50 + (level * levelHeight);
                     }
                 });
@@ -3545,9 +3548,9 @@
                     if (parent) {
                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                         
-                        const startX = parent.x + (nodeSize / 2);
-                        const startY = parent.y + nodeSize;
-                        const endX = node.x + (nodeSize / 2);
+                        const startX = parent.x + 60; 
+                        const startY = parent.y + 120;
+                        const endX = node.x + 60;
                         const endY = node.y;
 
                         // Кривая Безье для "плавности" как на скриншоте
