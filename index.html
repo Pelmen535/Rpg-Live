@@ -3413,6 +3413,7 @@
             cameraX = 0; cameraY = 0; cameraScale = 1;
             updateCamera();
             switchView('skill-tree-view');
+            renderCanvas(); // ВАЖНО: Форсируем отрисовку при открытии
         }
 
         function updateCamera() {
@@ -3509,35 +3510,45 @@
         }
         function layoutSkillTree(nodes) {
             if (!nodes || nodes.length === 0) return;
-            const levelHeight = 280; // Расширили этажи по вертикали
-            const nodeSpacing = 200; // Расширили расстояние по горизонтали
+            const levelHeight = 280; 
+            const nodeSpacing = 200; 
 
+            // Безопасный подсчет веса ветки
             const getWeight = (id) => {
                 const children = nodes.filter(n => n.parentId === id);
                 if (children.length === 0) return 1;
                 return children.reduce((sum, child) => sum + getWeight(child.id), 0);
             };
 
+            // Безопасная расстановка
             const assignPos = (id, leftBound, depth) => {
                 const node = nodes.find(n => n.id === id);
+                if (!node) return;
+                
+                const children = nodes.filter(n => n.parentId === id);
                 const weight = getWeight(id);
                 const myWidth = weight * nodeSpacing;
                 
-                // Центруем узел (половина от 140px = 70)
                 node.x = leftBound + (myWidth / 2) - 70; 
                 node.y = 60 + (depth * levelHeight);
                 
                 let childLeft = leftBound;
-                nodes.filter(n => n.parentId === id).forEach(child => {
+                children.forEach(child => {
                     assignPos(child.id, childLeft, depth + 1);
                     childLeft += getWeight(child.id) * nodeSpacing;
                 });
             };
-            // остаток функции без изменений...
 
             const roots = nodes.filter(n => !n.parentId);
             const container = document.getElementById('graph-container');
-            let currentX = (container.clientWidth / 2) - (roots.reduce((sum, r) => sum + getWeight(r.id), 0) * nodeSpacing / 2);
+            const containerWidth = container ? container.clientWidth : 1000;
+            
+            // Центрируем корни
+            const totalWeight = roots.reduce((sum, r) => sum + getWeight(r.id), 0);
+            const fullTreeWidth = totalWeight * nodeSpacing;
+            const startX = (containerWidth / 2) - (fullTreeWidth / 2);
+
+            let currentX = startX;
             roots.forEach(root => {
                 assignPos(root.id, currentX, 0);
                 currentX += getWeight(root.id) * nodeSpacing;
@@ -3550,7 +3561,7 @@
 
             layoutSkillTree(skill.graphNodes);
 
-            // === АЛГОРИТМ РАСКРАСКИ ВЕТОК ===
+            // АЛГОРИТМ РАСКРАСКИ ВЕТОК
             const palette = ['#ff5252', '#33d9b2', '#ffb142', '#34ace0', '#706fd3', '#ff793f', '#218c74', '#b33939'];
             const rootNode = skill.graphNodes.find(n => !n.parentId);
             if (rootNode) {
@@ -3559,7 +3570,7 @@
                 function colorTraverse(parentId, currentColor) {
                     skill.graphNodes.filter(n => n.parentId === parentId).forEach(child => {
                         let childColor = currentColor;
-                        if (parentId === rootNode.id) { // Если это прямая ветка от корня — даем новый цвет
+                        if (parentId === rootNode.id) { 
                             childColor = palette[colorIndex % palette.length];
                             colorIndex++;
                         }
@@ -3569,13 +3580,47 @@
                 }
                 colorTraverse(rootNode.id, skill.color);
             }
-            // ===================================
 
             const svg = document.getElementById('graph-svg');
             const graphWrapper = document.getElementById('graph-wrapper'); 
             svg.innerHTML = '';
-            document.querySelectorAll('.canvas-node-wrap').forEach(el => el.remove());
+            document.querySelectorAll('.canvas-node-wrap, .line-label').forEach(el => el.remove());
 
+            // СНАЧАЛА РИСУЕМ ЛИНИИ И ПЛАШКИ
+            skill.graphNodes.forEach(node => {
+                if (node.parentId) {
+                    const parent = skill.graphNodes.find(p => p.id === node.parentId);
+                    if (parent) {
+                        const startX = parent.x + 70; 
+                        const startY = parent.y + 140; 
+                        const endX = node.x + 70;    
+                        const endY = node.y;         
+                        const cpY = startY + (endY - startY) / 2;
+                        const d = `M ${startX} ${startY} C ${startX} ${cpY}, ${endX} ${cpY}, ${endX} ${endY}`;
+                        
+                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
+                        path.setAttribute("d", d);
+                        path.setAttribute("stroke", node.branchColor || skill.color);
+                        path.setAttribute("stroke-width", "3");
+                        path.setAttribute("fill", "none");
+                        path.setAttribute("opacity", "0.4");
+                        path.setAttribute("stroke-dasharray", "5,5");
+                        svg.appendChild(path);
+
+                        if (node.lineText) {
+                            const label = document.createElement('div');
+                            label.className = 'line-label';
+                            label.innerText = node.lineText;
+                            label.style.left = endX + 'px';
+                            label.style.top = (endY - 20) + 'px';
+                            label.style.borderColor = node.branchColor || skill.color;
+                            graphWrapper.appendChild(label);
+                        }
+                    }
+                }
+            });
+
+            // ЗАТЕМ РИСУЕМ САМИ УЗЛЫ
             skill.graphNodes.forEach(node => {
                 const wrapper = document.createElement('div');
                 wrapper.className = 'canvas-node-wrap';
@@ -3611,44 +3656,6 @@
 
                 wrapper.appendChild(circle);
                 graphWrapper.appendChild(wrapper); 
-            });
-
-            skill.graphNodes.forEach(node => {
-                if (node.parentId) {
-                    const parent = skill.graphNodes.find(p => p.id === node.parentId);
-                    if (parent) {
-                        // 1. Рисуем кривую (под размер 140px)
-                        const startX = parent.x + 70; // 140 / 2
-                        const startY = parent.y + 140; 
-                        const endX = node.x + 70;    
-                        const endY = node.y;         
-                        const cpY = startY + (endY - startY) / 2;
-                        const d = `M ${startX} ${startY} C ${startX} ${cpY}, ${endX} ${cpY}, ${endX} ${endY}`;
-                        
-                        const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
-                        path.setAttribute("d", d);
-                        path.setAttribute("stroke", node.branchColor || skill.color);
-                        path.setAttribute("stroke-width", "3");
-                        path.setAttribute("fill", "none");
-                        path.setAttribute("opacity", "0.4");
-                        path.setAttribute("stroke-dasharray", "5,5");
-                        svg.appendChild(path);
-
-                        // 2. РИСУЕМ ПЛАШКУ ТЕКСТА
-                        if (node.lineText) {
-                            const label = document.createElement('div');
-                            label.className = 'line-label';
-                            label.innerText = node.lineText;
-                            
-                            // ФИКС: Плашка теперь сидит прямо над дочерним кругом!
-                            label.style.left = endX + 'px';
-                            label.style.top = (endY - 20) + 'px'; // На 20px выше круга
-                            
-                            label.style.borderColor = node.branchColor || skill.color;
-                            graphWrapper.appendChild(label);
-                        }
-                    }
-                }
             });
         }
 
