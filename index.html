@@ -588,11 +588,11 @@
         /* =========================================
            НОВЫЙ ДИЗАЙН ГРАФОВ (Ref Source 8)
         ========================================= */
-        .graph-node {
+        graph-node {
             position: absolute;
-            width: 120px; /* Чуть увеличили для удобства */
-            height: 120px;
-            background: rgba(255, 243, 224, 0.95); /* Светлый пастельный фон */
+            width: 140px; /* ФИКС: Увеличили со 120 до 140px */
+            height: 140px;
+            background: rgba(255, 243, 224, 0.95);
             border: 3px solid var(--text);
             border-radius: 50%;
             display: flex;
@@ -622,19 +622,16 @@
         }
 
         .node-text-wrap {
-            width: 85%;
-            height: 85%;
+            width: 100%;
+            height: 100%;
             border-radius: 50%;
             display: flex;
             align-items: center;
             justify-content: center;
             text-align: center;
-            overflow: hidden;
-            font-size: 0.8rem;
-            line-height: 1.1;
-            color: #fff;
-            padding: 5px;
-            word-wrap: break-word;
+            overflow: hidden; 
+            padding: 8px; /* Даем больше воздуха тексту */
+            box-sizing: border-box;
             pointer-events: none;
         }
         /* Прямоугольные блоки для текста на линиях */
@@ -642,28 +639,32 @@
             position: absolute;
             background: var(--panel);
             border: 2px solid var(--text);
-            padding: 4px 10px;
-            font-size: 0.75rem;
+            padding: 4px 8px;
+            font-size: 0.8rem;
             color: var(--text);
             font-family: var(--font-game);
-            white-space: nowrap;
             z-index: 4;
-            transform: translate(-50%, -50%); /* Центрирование */
+            transform: translate(-50%, -50%);
             box-shadow: 2px 2px 0px rgba(0,0,0,0.1);
             pointer-events: none;
+            /* ФИКС: Длинные названия линий тоже будут переноситься, а не вылезать в бок */
+            max-width: 160px;
+            text-align: center;
         }
 
         .node-text-inner {
-            font-size: 0.85rem;
+            font-size: 0.9rem;
             line-height: 1.1;
             color: var(--text);
             font-weight: bold;
-            display: -webkit-box;
-            -webkit-line-clamp: 4;
-            -webkit-box-orient: vertical;
-            overflow: hidden;
-            text-overflow: ellipsis;
+            /* ФИКС: Убрали жесткую обрезку многоточием, теперь текст переносится мягко */
             word-wrap: break-word;
+            text-align: center;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            width: 100%;
+            height: 100%;
         }
 
         .node-actions {
@@ -3508,10 +3509,9 @@
         }
         function layoutSkillTree(nodes) {
             if (!nodes || nodes.length === 0) return;
-            const levelHeight = 250; // УВЕЛИЧЕНО для места под прямоугольные блоки
-            const nodeSpacing = 180; 
+            const levelHeight = 280; // Расширили этажи по вертикали
+            const nodeSpacing = 200; // Расширили расстояние по горизонтали
 
-            // (Остальная часть функции getWeight и assignPos остается такой же, как в прошлом шаге)
             const getWeight = (id) => {
                 const children = nodes.filter(n => n.parentId === id);
                 if (children.length === 0) return 1;
@@ -3522,14 +3522,18 @@
                 const node = nodes.find(n => n.id === id);
                 const weight = getWeight(id);
                 const myWidth = weight * nodeSpacing;
-                node.x = leftBound + (myWidth / 2) - 60; 
+                
+                // Центруем узел (половина от 140px = 70)
+                node.x = leftBound + (myWidth / 2) - 70; 
                 node.y = 60 + (depth * levelHeight);
+                
                 let childLeft = leftBound;
                 nodes.filter(n => n.parentId === id).forEach(child => {
                     assignPos(child.id, childLeft, depth + 1);
                     childLeft += getWeight(child.id) * nodeSpacing;
                 });
             };
+            // остаток функции без изменений...
 
             const roots = nodes.filter(n => !n.parentId);
             const container = document.getElementById('graph-container');
@@ -3613,9 +3617,11 @@
                 if (node.parentId) {
                     const parent = skill.graphNodes.find(p => p.id === node.parentId);
                     if (parent) {
-                        // 1. Рисуем кривую (как раньше)
-                        const startX = parent.x + 60; const startY = parent.y + 120;
-                        const endX = node.x + 60; const endY = node.y;
+                        // 1. Рисуем кривую (под размер 140px)
+                        const startX = parent.x + 70; // 140 / 2
+                        const startY = parent.y + 140; 
+                        const endX = node.x + 70;    
+                        const endY = node.y;         
                         const cpY = startY + (endY - startY) / 2;
                         const d = `M ${startX} ${startY} C ${startX} ${cpY}, ${endX} ${cpY}, ${endX} ${endY}`;
                         
@@ -3624,17 +3630,20 @@
                         path.setAttribute("stroke", node.branchColor || skill.color);
                         path.setAttribute("stroke-width", "3");
                         path.setAttribute("fill", "none");
-                        path.setAttribute("opacity", "0.3");
+                        path.setAttribute("opacity", "0.4");
                         path.setAttribute("stroke-dasharray", "5,5");
                         svg.appendChild(path);
 
-                        // 2. РИСУЕМ ПРЯМОУГОЛЬНЫЙ БЛОК ТЕКСТА
+                        // 2. РИСУЕМ ПЛАШКУ ТЕКСТА
                         if (node.lineText) {
                             const label = document.createElement('div');
                             label.className = 'line-label';
                             label.innerText = node.lineText;
-                            label.style.left = ((startX + endX) / 2) + 'px';
-                            label.style.top = ((startY + endY) / 2) + 'px';
+                            
+                            // ФИКС: Плашка теперь сидит прямо над дочерним кругом!
+                            label.style.left = endX + 'px';
+                            label.style.top = (endY - 20) + 'px'; // На 20px выше круга
+                            
                             label.style.borderColor = node.branchColor || skill.color;
                             graphWrapper.appendChild(label);
                         }
