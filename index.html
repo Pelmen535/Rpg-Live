@@ -590,22 +590,31 @@
         ========================================= */
         .graph-node {
             position: absolute;
-            width: 110px;
-            height: 110px;
-            background: rgba(5, 8, 5, 0.9);
-            border: 3px solid var(--accent);
+            width: 120px; /* Чуть увеличили для удобства */
+            height: 120px;
+            background: rgba(255, 243, 224, 0.95); /* Светлый пастельный фон */
+            border: 3px solid var(--text);
             border-radius: 50%;
             display: flex;
             flex-direction: column;
             justify-content: center;
             align-items: center;
             cursor: pointer;
-            box-shadow: 0 0 20px rgba(74, 222, 128, 0.1);
+            box-shadow: 4px 4px 0px var(--text);
             user-select: none;
-            transition: all 0.4s cubic-bezier(0.175, 0.885, 0.32, 1.275);
+            transition: all 0.3s cubic-bezier(0.175, 0.885, 0.32, 1.275);
             z-index: 5;
         }
-
+        #graph-container {
+            flex: 1;
+            min-height: 600px; 
+            width: 100%;
+            overflow: hidden;
+            position: relative;
+            background-color: var(--bg);
+            background-image: radial-gradient(var(--border) 1px, transparent 1px);
+            background-size: 30px 30px; /* Сетка как в редакторах */
+        }
         .graph-node.done {
             border-color: var(--success);
             box-shadow: 0 0 25px var(--success);
@@ -627,6 +636,17 @@
             padding: 5px;
             word-wrap: break-word;
             pointer-events: none;
+        }
+        .node-text-inner {
+            font-size: 0.9rem;
+            line-height: 1.1;
+            color: var(--text);
+            display: -webkit-box;
+            -webkit-line-clamp: 4; /* Максимум 4 строки */
+            -webkit-box-orient: vertical;
+            overflow: hidden;
+            text-overflow: ellipsis;
+            word-wrap: break-word;
         }
 
         .node-actions {
@@ -3446,48 +3466,49 @@
         }
         function layoutSkillTree(nodes) {
             if (!nodes || nodes.length === 0) return;
-            const levelHeight = 180; // Расстояние между уровнями (Y)
-            const nodeWidth = 160;  // Горизонтальный шаг (X)
-            
-            const layers = {};
-            const levels = {};
-            
-            function getDepth(id, currentDepth) {
-                if (levels[id] !== undefined && levels[id] >= currentDepth) return; // Защита от бесконечного цикла
-                
-                if (levels[id] !== undefined) {
-                    const oldDepth = levels[id];
-                    layers[oldDepth] = layers[oldDepth].filter(x => x !== id);
-                }
+            const levelHeight = 200; // Расстояние между этажами
+            const nodeSpacing = 160; // Расстояние между соседними узлами
 
-                levels[id] = currentDepth;
-                if (!layers[currentDepth]) layers[currentDepth] = [];
-                if (!layers[currentDepth].includes(id)) layers[currentDepth].push(id);
-                
-                nodes.filter(n => n.parentId === id).forEach(child => {
-                    getDepth(child.id, currentDepth + 1);
+            // 1. Считаем "вес" каждой ветки (сколько места ей нужно снизу)
+            const getWeight = (id) => {
+                const children = nodes.filter(n => n.parentId === id);
+                if (children.length === 0) return 1;
+                return children.reduce((sum, child) => sum + getWeight(child.id), 0);
+            };
+
+            // 2. Рекурсивная функция расстановки
+            const assignPos = (id, leftBound, depth) => {
+                const node = nodes.find(n => n.id === id);
+                const children = nodes.filter(n => n.parentId === id);
+                const weight = getWeight(id);
+                const myWidth = weight * nodeSpacing;
+
+                // Ставим узел ровно по центру отведенного ему пространства
+                node.x = leftBound + (myWidth / 2) - 60; // 60 - половина узла
+                node.y = 60 + (depth * levelHeight);
+
+                // Расставляем детей внутри границ этого родителя
+                let childLeft = leftBound;
+                children.forEach(child => {
+                    const childWeight = getWeight(child.id);
+                    assignPos(child.id, childLeft, depth + 1);
+                    childLeft += childWeight * nodeSpacing;
                 });
-            }
+            };
 
+            // Находим корни и центрируем всю систему относительно экрана
             const roots = nodes.filter(n => !n.parentId);
-            roots.forEach(root => getDepth(root.id, 0));
-
-            // Автоматически берем ширину экрана устройства
             const container = document.getElementById('graph-container');
-            const containerWidth = container ? container.clientWidth : window.innerWidth;
+            const totalWeight = roots.reduce((sum, r) => sum + getWeight(r.id), 0);
+            const fullTreeWidth = totalWeight * nodeSpacing;
             
-            Object.keys(layers).forEach(level => {
-                const layerNodes = layers[level];
-                const totalWidth = (layerNodes.length - 1) * nodeWidth;
-                const startX = (containerWidth / 2) - (totalWidth / 2); 
+            // Центрируем относительно центра контейнера
+            const startX = (container.clientWidth / 2) - (fullTreeWidth / 2);
 
-                layerNodes.forEach((id, index) => {
-                    const node = nodes.find(n => n.id === id);
-                    if (node) {
-                        node.x = startX + (index * nodeWidth) - 60; // 60 это половина ширины узла (120px)
-                        node.y = 50 + (level * levelHeight);
-                    }
-                });
+            let currentX = startX;
+            roots.forEach(root => {
+                assignPos(root.id, currentX, 0);
+                currentX += getWeight(root.id) * nodeSpacing;
             });
         }
 
@@ -3523,9 +3544,9 @@
                         </div>
                     </div>
                     <div class="node-actions">
-                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('add', { parentId: '${node.id}' })">+</div>
-                        <div class="mini-btn confirm" onclick="event.stopPropagation(); toggleNodeStatus('${node.id}')">✓</div>
-                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${node.name.replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })">✎</div>
+                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('add', { parentId: '${node.id}' })" title="Добавить ветку">+</div>
+                        <div class="mini-btn confirm" onclick="event.stopPropagation(); toggleNodeStatus('${node.id}')" title="Готово">✓</div>
+                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${node.name.replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })" title="Правка">✎</div>
                     </div>
                 `;
                 // Удаление по правому клику
@@ -3548,10 +3569,10 @@
                     if (parent) {
                         const path = document.createElementNS("http://www.w3.org/2000/svg", "path");
                         
-                        const startX = parent.x + 60; 
-                        const startY = parent.y + 120;
-                        const endX = node.x + 60;
-                        const endY = node.y;
+                        const startX = parent.x + 60; // Центр родителя (120/2)
+                        const startY = parent.y + 120; // Низ родителя
+                        const endX = node.x + 60;    // Центр ребенка
+                        const endY = node.y;         // Верх ребенка
 
                         // Кривая Безье для "плавности" как на скриншоте
                         const cpY = startY + (endY - startY) / 2;
