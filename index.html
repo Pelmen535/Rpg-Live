@@ -3515,15 +3515,16 @@
                 // Дизайн из Source 8: Текст внутри с эффектом клипа
                 circle.innerHTML = `
                     <div class="node-text-wrap">
-                        ${node.name}
+                        <div class="node-text-inner">
+                            ${node.name}
+                        </div>
                     </div>
                     <div class="node-actions">
                         <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('add', { parentId: '${node.id}' })">+</div>
                         <div class="mini-btn confirm" onclick="event.stopPropagation(); toggleNodeStatus('${node.id}')">✓</div>
-                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${node.name}', notes: '${node.notes || ''}' })">✎</div>
+                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${node.name.replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })">✎</div>
                     </div>
                 `;
-
                 // Удаление по правому клику
                 circle.oncontextmenu = e => {
                     e.preventDefault();
