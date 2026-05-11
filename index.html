@@ -2497,6 +2497,7 @@
         }
 
         render();
+        renderMath();
         }
         function toggleMobileMenu() {
             let menu = document.querySelector('.mobile-menu-expanded');
@@ -5347,15 +5348,18 @@
                 }
             });
         }
-        // Функция для обновления математики
-        // Функция для обновления математики (умная очередь)
         function renderMath() {
-            if (typeof MathJax !== 'undefined' && MathJax.typesetClear && MathJax.typesetPromise) {
+            // Проверяем, загрузилась ли библиотека
+            if (window.MathJax && MathJax.typesetPromise) {
+                // Очищаем предыдущие сопоставления, чтобы MathJax нашел новые $...$
                 MathJax.typesetClear();
-                MathJax.typesetPromise().catch((err) => console.log('MathJax Error:', err.message));
+                // Запускаем поиск формул по всей странице
+                MathJax.typesetPromise().then(() => {
+                    console.log("MathJax: Все формулы отрисованы");
+                }).catch((err) => console.log('MathJax Error:', err.message));
             } else {
-                // Если скрипт еще качается, ждем полсекунды и пробуем снова
-                setTimeout(renderMath, 500);
+                // Если скрипт еще не подгрузился (медленный интернет), пробуем снова через 300мс
+                setTimeout(renderMath, 300);
             }
         }
     </script>
