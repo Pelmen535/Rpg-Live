@@ -3654,7 +3654,7 @@
                     <div class="node-actions">
                         <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('add', { parentId: '${node.id}' })" title="Добавить ветку">+</div>
                         <div class="mini-btn confirm" onclick="event.stopPropagation(); toggleNodeStatus('${node.id}')" title="Готово">✓</div>
-                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${(node.name || '').replace(/'/g, "\\'")}', lineText: '${(node.lineText || '').replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/'/g, "\\'")}' })" title="Правка">✎</div>
+                        <div class="mini-btn" onclick="event.stopPropagation(); openGraphNodeModal('edit', { id: '${node.id}', name: '${(node.name || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', lineText: '${(node.lineText || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'")}', notes: '${(node.notes || '').replace(/\\/g, "\\\\").replace(/'/g, "\\'")}' })" title="Правка">✎</div>
                     </div>
                 `;
                 
@@ -5348,9 +5348,14 @@
             });
         }
         // Функция для обновления математики
+        // Функция для обновления математики (умная очередь)
         function renderMath() {
-            if (window.MathJax && window.MathJax.typesetPromise) {
+            if (typeof MathJax !== 'undefined' && MathJax.typesetClear && MathJax.typesetPromise) {
+                MathJax.typesetClear();
                 MathJax.typesetPromise().catch((err) => console.log('MathJax Error:', err.message));
+            } else {
+                // Если скрипт еще качается, ждем полсекунды и пробуем снова
+                setTimeout(renderMath, 500);
             }
         }
     </script>
