@@ -1337,6 +1337,18 @@
     
         
     </style>
+    <script>
+        window.MathJax = {
+            tex: {
+                inlineMath: [['$', '$'], ['\\(', '\\)']],
+                displayMath: [['$$', '$$'], ['\\[', '\\]']]
+            },
+            startup: {
+                typeset: false // Отключаем авто-рендер при старте, так как мы делаем это динамически
+            }
+        };
+    </script>
+    <script id="MathJax-script" async src="https://cdn.jsdelivr.net/npm/mathjax@3/es5/tex-mml-chtml.js"></script>
 </head>
 <body>
     <div id="loading-screen" style="position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: #050805; z-index: 9999; display: flex; flex-direction: column; justify-content: center; align-items: center; color: #4ade80; font-family: 'VT323', monospace;">
@@ -3657,6 +3669,7 @@
                 wrapper.appendChild(circle);
                 graphWrapper.appendChild(wrapper); 
             });
+            renderMath();
         }
 
         // Вспомогательная функция для смены статуса
@@ -4474,7 +4487,7 @@
             </div>
             </div>
             `).join('') || '<div style="color:var(--text-dim); grid-column: 1 / -1;">Добавьте награды, чтобы тратить заработанное золото.</div>';
-    
+            renderMath();
         }
 
         
@@ -4501,6 +4514,7 @@
         </div>
         </div>
         `).join('') || '<p>Заметок пока нет.</p>';
+        renderMath();
         }
 
         function goToNoteSource(type, skillId) {
@@ -5332,6 +5346,12 @@
                     }
                 }
             });
+        }
+        // Функция для обновления математики
+        function renderMath() {
+            if (window.MathJax && window.MathJax.typesetPromise) {
+                MathJax.typesetPromise().catch((err) => console.log('MathJax Error:', err.message));
+            }
         }
     </script>
     <script>
