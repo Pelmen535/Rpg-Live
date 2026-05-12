@@ -4537,19 +4537,15 @@
         }
 
         
-        /* =========================================
-        ЛОГИКА ЗАМЕТОК (Интегрировано из React)
-        ========================================= */
-      // 1. Отрисовка заметок
+        // 1. Отрисовка заметок
         function renderNotes() {
             const container = document.getElementById('notes-list');
             if (!container) return;
 
             container.innerHTML = state.notes.map(note => {
                 const date = new Date(note.id).toLocaleString();
-                // Экранируем текст для безопасной передачи в функции
-                const safeText = note.text.replace(/'/g, "\\'").replace(/"/g, "&quot;");
                 
+                // Исправление: передаем ID как строку (в кавычках), чтобы JS не ломался
                 return `
                 <div class="note-card" id="note-${note.id}">
                     <div class="note-header">
@@ -4561,8 +4557,8 @@
                     <div class="note-footer">
                         <div class="note-actions">
                             <button class="btn btn-tertiary btn-sm" onclick="toggleNoteExpand('${note.id}')">📖 Читать/Свернуть</button>
-                            <button class="btn btn-primary btn-sm" onclick="openEditNoteModal(${note.id})">✎ Правка</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteNote(${note.id})">🗑 Удалить</button>
+                            <button class="btn btn-primary btn-sm" onclick="openEditNoteModal('${note.id}')">✎ Правка</button>
+                            <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">🗑 Удалить</button>
                         </div>
                     </div>
                 </div>`;
