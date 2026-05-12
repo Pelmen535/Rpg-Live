@@ -78,41 +78,7 @@
         .btn-primary { background-color: var(--accent); }
 
         
-        /* Стили для функциональных заметок */
-        .note-card {
-            transition: all 0.3s ease;
-            max-height: 200px; /* Высота в свернутом виде */
-            overflow: hidden;
-            position: relative;
-        }
 
-        .note-card.expanded {
-            max-height: 2000px; /* Раскрытая заметка */
-        }
-
-        .note-content {
-            white-space: pre-wrap;
-            word-wrap: break-word;
-            margin-bottom: 40px;
-        }
-
-        .note-actions {
-            display: flex;
-            gap: 10px;
-            margin-top: 10px;
-        }
-
-        /* Затемнение снизу для свернутых длинных заметок */
-        .note-card:not(.expanded)::after {
-            content: '';
-            position: absolute;
-            bottom: 60px;
-            left: 0;
-            right: 0;
-            height: 50px;
-            background: linear-gradient(transparent, var(--panel));
-            pointer-events: none;
-        }
         /* =========================================
            НАВИГАЦИЯ (ВЕРХНЕЕ МЕНЮ)
         ========================================= */
@@ -1482,7 +1448,6 @@
             <h2>Сводка по навыкам</h2>
             <div id="dash-summary" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;"></div>
         </div>
-        
         <div id="network" class="view">
             <h2 style="color: var(--accent);">Глобальная Таблица Лидеров</h2>
             <div class="card" style="border-color: var(--accent);">
@@ -1560,23 +1525,8 @@
                 </div>
                 <div class="btn-group" style="width: auto; margin-bottom: 0;">
                     <button class="btn btn-secondary" onclick="importSkillTemplate()">📂 Импорт шаблона</button>
-                    <<button class="btn btn-secondary" onclick="openModal('skillModal')" style="margin-top: 20px; width: 100%; border: 2px dashed var(--text); background: transparent;">+ Создать Навык</button>
-                </div> 
-
-            </div>
-            <div id="notes-view" class="view">
-                <div class="view-header">
-                    <div>
-                        <h2 style="font-size: 2rem; color: var(--accent); margin: 0; text-transform: uppercase;">
-                            >_ ЗАМЕТКИ И ИДЕИ
-                        </h2>
-                        <p style="color: var(--text); opacity: 0.7; margin: 5px 0 0 0;">Хранилище знаний и инсайтов</p>
-                    </div>
-                    <button class="btn btn-primary" onclick="openNewNoteModal()">+ Добавить заметку</button>
+                    <button class="btn btn-primary" onclick="openModal('skillModal')">+ Создать Навык</button>
                 </div>
-
-                <div id="notes-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;">
-                    </div>
             </div>
             <div id="skills-list"></div>
         </div>
@@ -1906,8 +1856,20 @@
             </div>
         </div>
     </div>
-    
+    <div id="notes-view" class="view">
+        <div class="view-header">
+            <div>
+                <h2 style="font-size: 2rem; color: var(--accent); margin: 0; text-transform: uppercase;">
+                    >_ ЗАМЕТКИ И ИДЕИ
+                </h2>
+                <p style="color: var(--text); opacity: 0.7; margin: 5px 0 0 0;">Хранилище знаний и инсайтов</p>
+            </div>
+            <button class="btn btn-primary" onclick="openNewNoteModal()">+ Добавить заметку</button>
+        </div>
 
+        <div id="notes-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 50px;">
+            </div>
+    </div>
     <div id="goalModal" class="modal">
         <div class="modal-content">
             <h3 id="goalModalTitle">Цель</h3>
@@ -2121,17 +2083,6 @@
             </div>
 
             <button class="btn btn-primary" style="width: 100%; margin-top: 15px; border-radius: 8px;" onclick="applyIOSCalendar()">Готово</button>
-        </div>
-    </div>
-    <div id="noteModal" class="modal">
-        <div class="modal-content">
-            <h3 id="noteModalTitle">Новая заметка</h3>
-            <input type="hidden" id="editNoteId"> <textarea id="noteText" placeholder="Пиши здесь (поддерживается LaTeX $...$)" oninput="updateMathPreview('noteText', 'noteMathPreview')"></textarea>
-            <div id="noteMathPreview" class="math-preview"></div>
-            <div class="modal-buttons">
-                <button class="btn btn-primary" onclick="saveNote()">Сохранить</button>
-                <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
-            </div>
         </div>
     </div>
     <div id="addAchievementModal" class="modal">
@@ -4554,94 +4505,32 @@
         }
 
         
-        // 1. Отрисовка заметок
+        /* =========================================
+        ЛОГИКА ЗАМЕТОК (Интегрировано из React)
+        ========================================= */
         function renderNotes() {
-            const container = document.getElementById('notes-list');
-            if (!container) return;
+        const container = document.getElementById('notes-container');
+        if (!container) return;
 
-            container.innerHTML = state.notes.map(note => {
-                const date = new Date(note.id).toLocaleString();
-                
-                // Исправление: передаем ID в кавычках как строку '${note.id}' 
-                return `
-                <div class="note-card" id="note-${note.id}">
-                    <div class="note-header">
-                        <small style="color: var(--accent)">${date}</small>
-                    </div>
-                    <div class="note-content" id="content-${note.id}">
-                        ${note.text}
-                    </div>
-                    <div class="note-footer">
-                        <div class="note-actions">
-                            <button class="btn btn-tertiary btn-sm" onclick="toggleNoteExpand('${note.id}')">📖 Читать/Свернуть</button>
-                            <button class="btn btn-primary btn-sm" onclick="openEditNoteModal('${note.id}')">✎ Правка</button>
-                            <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">🗑 Удалить</button>
-                        </div>
-                    </div>
-                </div>`;
-            }).join('') || '<p>Заметок пока нет.</p>';
-            
-            renderMath();
+        container.innerHTML = (state.notes || []).map((note, idx) => `
+        <div class="card" style="border-left: 3px solid ${note.sourceId ? 'var(--accent)' : 'var(--border)'}">
+        <div style="display:flex; justify-content:space-between;">
+        <h3 style="margin:0; font-size:1em;">${note.title}</h3>
+        <span style="font-size:0.7em; color:var(--text-dim);">${note.date}</span>
+        </div>
+        <p style="font-size:0.9em; margin:15px 0; color:var(--text-dim); white-space:pre-wrap;">${note.content}</p>
+        <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
+        ${note.sourceId ? `
+        <button class="btn btn-secondary" style="font-size:0.7em; padding:5px 10px;"
+        onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
+        ` : ''}
+        <button class="btn btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
+        </div>
+        </div>
+        `).join('') || '<p>Заметок пока нет.</p>';
+        renderMath();
         }
 
-        // 2. Переключение развертывания
-        function toggleNoteExpand(id) {
-            const card = document.getElementById(`note-${id}`);
-            card.classList.toggle('expanded');
-        }
-
-        // 3. Открытие модалки для редактирования
-        function openEditNoteModal(id) {
-            const note = state.notes.find(n => n.id == id);
-            if (!note) return;
-
-            document.getElementById('noteModalTitle').innerText = "Редактировать заметку";
-            document.getElementById('editNoteId').value = id;
-            document.getElementById('noteText').value = note.text;
-            
-            updateMathPreview('noteText', 'noteMathPreview');
-            openModal('noteModal');
-        }
-
-        // 4. Универсальное сохранение (Новая или Правка)
-        function saveNote() {
-            const text = document.getElementById('noteText').value;
-            const editId = document.getElementById('editNoteId').value;
-            
-            if (!text.trim()) return;
-
-            if (editId) {
-                // Редактируем существующую
-                const noteIndex = state.notes.findIndex(n => n.id == editId);
-                if (noteIndex !== -1) {
-                    state.notes[noteIndex].text = text;
-                }
-            } else {
-                // Создаем новую
-                const newNote = {
-                    id: Date.now(),
-                    text: text
-                };
-                state.notes.unshift(newNote);
-            }
-
-            closeModals();
-            save();
-            renderNotes();
-            
-            // Сброс полей
-            document.getElementById('editNoteId').value = '';
-            document.getElementById('noteText').value = '';
-        }
-
-        // Обнови старую функцию открытия модалки для создания новой заметки
-        function openNewNoteModal() {
-            document.getElementById('noteModalTitle').innerText = "Новая заметка";
-            document.getElementById('editNoteId').value = '';
-            document.getElementById('noteText').value = '';
-            document.getElementById('noteMathPreview').innerHTML = '';
-            openModal('noteModal');
-        }
         function goToNoteSource(type, skillId) {
         if (type === "Цель" || type === "Навык") {
         switchView('skills');
