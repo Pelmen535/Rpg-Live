@@ -4545,7 +4545,7 @@
             container.innerHTML = state.notes.map(note => {
                 const date = new Date(note.id).toLocaleString();
                 
-                // Исправление: передаем ID как строку (в кавычках), чтобы JS не ломался
+                // Исправление: передаем ID в кавычках как строку '${note.id}' 
                 return `
                 <div class="note-card" id="note-${note.id}">
                     <div class="note-header">
