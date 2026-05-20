@@ -142,6 +142,7 @@
         /* =========================================
            ОСНОВНОЙ КОНТЕЙНЕР И ЭКРАНЫ
         ========================================= */
+        
         main {
             flex: 1;
             overflow-y: auto;
@@ -1392,15 +1393,16 @@
             border-left: 12px solid var(--accent) !important;
             padding: 20px !important;
             margin-bottom: 20px !important;
-            box-shadow: 4px 4px 0px rgba(0,0,0,0.2) !important;
-            max-height: 155px;
+            box-shadow: 4px 4px 0px rgba(0,0,0,0.3) !important;
+            max-height: 160px;
             overflow: hidden;
             position: relative;
             transition: max-height 0.3s ease-out !important;
+            color: #ffffff !important;
         }
         .note-card-rpg.expanded {
-            max-height: 30000px !important;
-            transition: max-height 0.5s ease-in !important;
+            max-height: 20000px !important; /* Бесконечное раскрытие конспекта */
+            transition: max-height 0.4s ease-in !important;
         }
         .note-content-rpg {
             white-space: pre-wrap !important;
@@ -1408,19 +1410,19 @@
             word-break: break-word !important;
             overflow-x: auto;
             margin-top: 15px !important;
-            margin-bottom: 55px !important;
+            margin-bottom: 60px !important;
             color: var(--text-dim) !important;
-            line-height: 1.5 !important;
-            font-size: 1.1rem !important;
+            line-height: 1.6 !important;
+            font-size: 1.05rem !important;
         }
         .note-card-rpg:not(.expanded)::after {
             content: '';
             position: absolute;
-            bottom: 55px;
+            bottom: 60px;
             left: 0;
             right: 0;
             height: 50px;
-            background: linear-gradient(to bottom, transparent, var(--panel) 90%) !important;
+            background: linear-gradient(to bottom, transparent, var(--panel) 95%) !important;
             pointer-events: none;
         }
         .note-actions-rpg {
@@ -1429,7 +1431,7 @@
             left: 20px;
             display: flex;
             gap: 12px;
-            z-index: 10;
+            z-index: 20;
         }
 
     </style>
