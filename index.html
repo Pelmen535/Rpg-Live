@@ -17,6 +17,9 @@
     <script src="https://www.gstatic.com/firebasejs/10.11.0/firebase-auth-compat.js"></script>
     <link href="https://fonts.googleapis.com/css2?family=VT323&display=swap" rel="stylesheet">
     <style>
+        * {
+            box-sizing: border-box;
+        }
         /* =========================================
            БАЗОВЫЕ ПЕРЕМЕННЫЕ И НАСТРОЙКИ
         ========================================= */
@@ -1386,7 +1389,21 @@
         }
 
     
-        /* === БАЗА ЗНАНИЙ (RPG-STYLE) === */
+        /* Делаем контейнер списка заметок гибким, чтобы он занимал всё место и скроллился */
+        #notes-view {
+            display: flex;
+            flex-direction: column;
+            height: 100%;
+            overflow: hidden; /* Отключаем скролл у родителя */
+        }
+
+        #notes-list {
+            flex: 1;
+            overflow-y: auto; /* Включаем скролл здесь */
+            padding-bottom: 50px;
+        }
+
+        /* Упрощаем карточку, убираем внутренний скролл, чтобы скроллился весь список */
         .note-card-rpg {
             background-color: var(--panel) !important;
             border: 4px solid var(--text) !important;
@@ -1394,41 +1411,34 @@
             padding: 20px !important;
             margin-bottom: 20px !important;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.3) !important;
-            display: flex;
-            flex-direction: column; /* Вертикальный поток */
-            min-height: 200px;      /* Базовая высота */
-            max-height: 300px;      /* Лимит по умолчанию */
-            overflow: hidden;
-            transition: max-height 0.3s ease-out !important;
             color: #ffffff !important;
+            display: flex;
+            flex-direction: column;
+            height: auto; /* Больше нет жесткого max-height */
+        }
+
+        .note-content-rpg {
+            flex: none; /* Убираем лишние flex-параметры */
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important;
+            margin: 15px 0 !important;
+            color: var(--text-dim) !important;
+            line-height: 1.6 !important;
+            font-size: 1.05rem !important;
+        }
+
+        .note-actions-rpg {
+            display: flex;
+            gap: 12px;
+            padding-top: 10px;
+            border-top: 1px solid var(--text-dim);
         }
 
         /* Разрешаем карточке расширяться при клике */
         .note-card-rpg.expanded {
             max-height: 2000px !important; 
         }
-        .note-content-rpg {
-            flex: 1; /* Занимает все свободное место */
-            overflow-y: auto; /* ВКЛЮЧАЕМ СКРОЛЛ */
-            white-space: pre-wrap !important;
-            word-wrap: break-word !important;
-            margin-top: 15px !important;
-            margin-bottom: 15px !important;
-            color: var(--text-dim) !important;
-            line-height: 1.6 !important;
-            font-size: 1.05rem !important;
-            min-width: 0; /* Фикс для "съезжающего" текста в flex */
-        }
-
-        /* Кнопки теперь в потоке, не перекрывают текст */
-        .note-actions-rpg {
-            display: flex;
-            gap: 12px;
-            z-index: 20;
-            margin-top: auto; /* Прижимает кнопки вниз, но не через absolute */
-            padding-top: 10px;
-            border-top: 1px solid var(--text-dim);
-        }
+        
         .note-card-rpg:not(.expanded)::after {
             content: '';
             position: absolute;
@@ -1984,9 +1994,7 @@
             </div>
         </div>
 
-        <div id="notes-list" style="display: flex; flex-direction: column;">
-            <!-- Карточки заметок -->
-        </div>
+      
     </div>
 
        
