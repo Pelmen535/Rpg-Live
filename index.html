@@ -154,8 +154,6 @@
             padding: 30px;
             max-width: 1400px;
             margin: 0 auto;
-            overflow-y: auto !important; /* Позволяет листать любой экран вниз */
-            max-height: calc(100vh - 60px) !important; /* Ограничиваем высоту для появления скролла */
         }
 
             .view.active {
@@ -1968,7 +1966,7 @@
                 <p style="color: var(--text-dim); margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'VT323', monospace;">СИСТЕМАТИЗАЦИЯ НАУЧНЫХ ДАННЫХ И КОНСПЕКТОВ</p>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
-                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 4px solid var(--text); color: var(--text); padding: 8px 12px; font-family: var(--font-game); font-size: 1rem; min-width: 220px;">
+                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 4px solid var(--text); color: #fff; padding: 8px 12px; font-family: var(--font-game); font-size: 1rem; min-width: 220px;">
                     <option value="all">ВСЕ КАТЕГОРИИ</option>
                     <option value="math">МАТЕМАТИКА / АЛГЕМ</option>
                     <option value="code">ПРОГРАММИРОВАНИЕ</option>
@@ -4665,6 +4663,9 @@
         // =========================================================
         // МОДУЛЬ СИНХРОНИЗАЦИИ И РЕНДЕРИНГА БАЗЫ ЗНАНИЙ
         // =========================================================
+        // =========================================================
+        // МОДУЛЬ СИНХРОНИЗАЦИИ И РЕНДЕРИНГА БАЗЫ ЗНАНИЙ (ФИКС БЭКАПА)
+        // =========================================================
         function updateNotesSkillsSelects() {
             const filterSelect = document.getElementById('noteFilter');
             const categorySelect = document.getElementById('noteCategory');
@@ -4672,7 +4673,6 @@
             const currentFilter = filterSelect ? filterSelect.value : 'all';
             const currentCat = categorySelect ? categorySelect.value : 'other';
 
-            // Базовые хардкод категории лекций
             let baseOptionsHTML = `
                 <option value="math">МАТЕМАТИКА / АЛГЕМ</option>
                 <option value="code">ПРОГРАММИРОВАНИЕ</option>
@@ -4702,7 +4702,6 @@
         }
 
         function renderNotes() {
-            // Генерируем опции на основе реального дерева навыков
             updateNotesSkillsSelects();
 
             const container = document.getElementById('notes-list');
@@ -4712,23 +4711,29 @@
 
             if (!state.notes) state.notes = [];
 
+            // Принудительно размечаем ID для заметок из бэкапа, если их нет
+            state.notes.forEach((note, index) => {
+                if (!note.id) note.id = "bup-" + index + "-" + (note.title ? note.title.length : 0);
+            });
+
             let filteredNotes = state.notes;
             if (filter !== 'all') {
-                filteredNotes = filteredNotes.filter(n => (n.category || 'other') === filter);
+                filteredNotes = filteredNotes.filter(note => {
+                    const cat = note.skillId || note.category || 'other';
+                    return String(cat) === String(filter);
+                });
             }
 
-            container.innerHTML = filteredNotes.map(note => {
-                const date = new Date(note.id || Date.now()).toLocaleString('ru-RU', {day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit'});
-                const cat = note.category || 'other';
+            container.innerHTML = filteredNotes.map((note, index) => {
+                const date = note.date || new Date(note.id).toLocaleString('ru-RU', {day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit'});
+                const cat = note.skillId || note.category || 'other';
                 
-                let catColor = '#706fd3'; // Дефолтный фиолетовый для разного
+                let catColor = '#706fd3'; 
                 let catName = 'ОБЩЕЕ / РАЗНОЕ';
                 
-                // Проверяем хардкод категории
                 if (cat === 'math') { catColor = '#ff5252'; catName = 'МАТЕМАТИКА / АЛГЕМ'; }
                 else if (cat === 'code') { catColor = '#33d9b2'; catName = 'ПРОГРАММИРОВАНИЕ'; }
                 else if (cat === 'cyber') { catColor = '#ffb142'; catName = 'КИБЕРБЕЗОПАСНОСТЬ'; }
-                // Если привязано к динамическому навыку пользователя
                 else if (state.skills) {
                     const linkedSkill = state.skills.find(s => String(s.id) === String(cat));
                     if (linkedSkill) {
@@ -4737,23 +4742,28 @@
                     }
                 }
                 
+                const noteTitle = note.title || 'Запись без заголовка';
                 const noteText = note.text || note.content || '';
                 
+                // Передаем уникальный индекс и строковый ID для избежания багов дублирования
                 return `
-                <div class="note-card-rpg" id="note-${note.id}" style="border-left: 12px solid ${catColor} !important;">
+                <div class="note-card-rpg" id="note-wrapper-${index}" style="border-left: 12px solid ${catColor} !important;">
                     <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--text); padding-bottom: 8px;">
                         <span style="background: ${catColor}20; color: ${catColor}; border: 2px solid ${catColor}50; padding: 2px 8px; font-size: 0.85em; font-weight: bold; font-family: var(--font-game);">
                             ${catName.toUpperCase()}
                         </span>
                         <small style="color: var(--text-dim); font-family: monospace;">${date}</small>
                     </div>
+                    <div style="margin-top: 10px; font-weight: bold; color: var(--accent); font-size: 1.2rem;">
+                        ${noteTitle}
+                    </div>
                     <div class="note-content-rpg">
                         ${noteText}
                     </div>
                     <div class="note-actions-rpg">
-                        <button class="btn btn-tertiary btn-sm" onclick="toggleNoteExpand('${note.id}')">📖 РАСКРЫТЬ</button>
-                        <button class="btn btn-primary btn-sm" onclick="openEditNoteModal('${note.id}')">✎ ПРАВКА</button>
-                        <button class="btn btn-danger btn-sm" onclick="deleteNote('${note.id}')">🗑 УДAЛИТЬ</button>
+                        <button class="btn btn-tertiary btn-sm" onclick="toggleNoteExpandRpg('${index}', this)">=== РАСКРЫТЬ ===</button>
+                        <button class="btn btn-primary btn-sm" onclick="openEditNoteModalRpg('${note.id}')">ПРАВКА</button>
+                        <button class="btn btn-danger btn-sm" onclick="deleteNoteRpg('${note.id}')">УДAЛИТЬ</button>
                     </div>
                 </div>`;
             }).join('') || '<div style="text-align: center; color: var(--text-dim); padding: 40px; border: 4px dashed var(--text); font-family: var(--font-game); font-size: 1.2rem; background: var(--panel);">В ЭТОЙ КАТЕГОРИИ ПОКА ПУСТО.</div>';
@@ -4761,13 +4771,12 @@
             renderMath();
         }
 
-        function toggleNoteExpand(id) {
-            const card = document.getElementById(`note-${id}`);
+        function toggleNoteExpandRpg(index, btnEl) {
+            const card = document.getElementById(`note-wrapper-${index}`);
             if (card) {
                 card.classList.toggle('expanded');
-                const btn = card.querySelector('.btn-tertiary');
-                if (btn) {
-                    btn.innerText = card.classList.contains('expanded') ? '📖 СВЕРНУТЬ' : '📖 РАСКРЫТЬ';
+                if (btnEl) {
+                    btnEl.innerText = card.classList.contains('expanded') ? '=== СВЕРНУТЬ ===' : '=== РАСКРЫТЬ ===';
                 }
             }
         }
@@ -4782,14 +4791,16 @@
             openModal('noteModal');
         }
 
-        function openEditNoteModal(id) {
+        function openEditNoteModalRpg(id) {
             updateNotesSkillsSelects();
             const note = state.notes.find(n => String(n.id) === String(id));
             if (!note) return;
             document.getElementById('noteModalTitle').innerText = "РЕДАКТИРОВАТЬ ЗАПИСЬ";
-            document.getElementById('editNoteId').value = id;
+            document.getElementById('editNoteId').value = note.id;
             document.getElementById('noteText').value = note.text || note.content || '';
-            if(document.getElementById('noteCategory')) document.getElementById('noteCategory').value = note.category || 'other';
+            if(document.getElementById('noteCategory')) {
+                document.getElementById('noteCategory').value = note.skillId || note.category || 'other';
+            }
             updateMathPreview('noteText', 'noteMathPreview');
             openModal('noteModal');
         }
@@ -4806,10 +4817,18 @@
                 const noteIndex = state.notes.findIndex(n => String(n.id) === String(editId));
                 if (noteIndex !== -1) {
                     state.notes[noteIndex].text = text;
+                    state.notes[noteIndex].skillId = cat;
                     state.notes[noteIndex].category = cat;
                 }
             } else {
-                state.notes.unshift({ id: Date.now(), text: text, category: cat });
+                state.notes.unshift({ 
+                    id: "note-" + Date.now(), 
+                    text: text, 
+                    title: "Пользовательская запись",
+                    skillId: cat, 
+                    category: cat,
+                    date: new Date().toLocaleDateString('ru-RU')
+                });
             }
 
             closeModals();
@@ -4817,13 +4836,14 @@
             renderNotes();
         }
 
-        function deleteNote(id) {
-            if (!confirm('Удалить этот конспект из базы данных?')) return;
+        function deleteNoteRpg(id) {
+            if (!confirm('Удалить эту запись из базы данных?')) return;
             if (!state.notes) return;
             state.notes = state.notes.filter(n => String(n.id) !== String(id));
             save();
             renderNotes();
         }
+
 
 
         function openNewNoteModal() {
