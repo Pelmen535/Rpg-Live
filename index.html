@@ -1394,26 +1394,40 @@
             padding: 20px !important;
             margin-bottom: 20px !important;
             box-shadow: 4px 4px 0px rgba(0,0,0,0.3) !important;
-            max-height: 160px;
+            display: flex;
+            flex-direction: column; /* Вертикальный поток */
+            min-height: 200px;      /* Базовая высота */
+            max-height: 300px;      /* Лимит по умолчанию */
             overflow: hidden;
-            position: relative;
             transition: max-height 0.3s ease-out !important;
             color: #ffffff !important;
         }
+
+        /* Разрешаем карточке расширяться при клике */
         .note-card-rpg.expanded {
-            max-height: 20000px !important; /* Бесконечное раскрытие конспекта */
-            transition: max-height 0.4s ease-in !important;
+            max-height: 2000px !important; 
         }
         .note-content-rpg {
+            flex: 1; /* Занимает все свободное место */
+            overflow-y: auto; /* ВКЛЮЧАЕМ СКРОЛЛ */
             white-space: pre-wrap !important;
             word-wrap: break-word !important;
-            word-break: break-word !important;
-            overflow-x: auto;
             margin-top: 15px !important;
-            margin-bottom: 60px !important;
+            margin-bottom: 15px !important;
             color: var(--text-dim) !important;
             line-height: 1.6 !important;
             font-size: 1.05rem !important;
+            min-width: 0; /* Фикс для "съезжающего" текста в flex */
+        }
+
+        /* Кнопки теперь в потоке, не перекрывают текст */
+        .note-actions-rpg {
+            display: flex;
+            gap: 12px;
+            z-index: 20;
+            margin-top: auto; /* Прижимает кнопки вниз, но не через absolute */
+            padding-top: 10px;
+            border-top: 1px solid var(--text-dim);
         }
         .note-card-rpg:not(.expanded)::after {
             content: '';
@@ -1425,14 +1439,7 @@
             background: linear-gradient(to bottom, transparent, var(--panel) 95%) !important;
             pointer-events: none;
         }
-        .note-actions-rpg {
-            position: absolute;
-            bottom: 15px;
-            left: 20px;
-            display: flex;
-            gap: 12px;
-            z-index: 20;
-        }
+        
 
     </style>
     <script>
@@ -1982,9 +1989,7 @@
         </div>
     </div>
 
-        <div id="notes-list" style="display: flex; flex-direction: column; padding-bottom: 50px;">
-            <!-- Карточки будут здесь -->
-        </div>
+       
     </div>
 
         <!-- Модальное окно Заметок -->
