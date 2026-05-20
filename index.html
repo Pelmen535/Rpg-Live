@@ -1414,7 +1414,7 @@
         
         <div class="nav-link mobile-more-target" onclick="switchView('store')" style="display: none;">Магазин</div>
         <div class="nav-link mobile-more-target" onclick="switchView('network')" style="display: none;">Сеть 🌐</div>
-        <div class="nav-link mobile-more-target" onclick="switchView('notes')" style="display: none;">Заметки</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('notes-view')" style="display: none;">Заметки</div>
         <div class="nav-link mobile-more-target" onclick="switchView('analytics')" style="display: none;">Аналитика</div>
         <div class="nav-link mobile-more-target" onclick="switchView('achievements')" style="display: none;">Трофеи 🏆</div>
         <div class="nav-link mobile-more-target" onclick="switchView('info')" style="display: none;">Кодекс</div>
@@ -2518,6 +2518,7 @@
 
         pushState();
         render();
+        renderNotes();
         }
 
         /* =========================================
@@ -2570,7 +2571,7 @@
             if (loader) loader.style.display = 'none';
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        const targetView = document.getElementById(viewId) || document.getElementById(viewId + '-view');
+        const targetView = document.getElementById(viewId) || document.getElementById(viewId + '-view') || document.getElementById('notes-view');
         if (targetView) targetView.classList.add('active');
 
         const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
@@ -2589,7 +2590,10 @@
         }
         if(viewId === 'achievements') renderAchievements(); 
         if(viewId === 'analytics') renderAnalytics();
-        if(viewId === 'notes' || viewId === 'notes-view') renderNotes();
+        if(viewId === 'notes' || viewId === 'notes-view' || viewId.includes('note')) {
+            console.log("=== switchView: переключение на заметки активировано ===");
+            renderNotes();
+        }
 
         if (document.getElementById('userNickname') && state.user?.nickname) {
         document.getElementById('userNickname').value = state.user.nickname;
@@ -2667,6 +2671,7 @@
         closeModals();
         save();
         render();
+        renderNotes();
         }
 
         /* =========================================
@@ -2786,6 +2791,7 @@
         syncNote(finalId, goalName, goalNotes, "Цель", skillId);
         save();
         render();
+        renderNotes();
         }
 
         function deleteGoal() {
@@ -3122,6 +3128,7 @@
             document.getElementById('tab-static').style.color = tab === 'static' ? '#000' : 'var(--text)';
             
             render();
+        renderNotes();
         }
 
         function toggleTaskDone(type, key, id, dateStr = '') {
