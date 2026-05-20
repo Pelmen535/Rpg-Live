@@ -148,10 +148,11 @@
         
         main {
             flex: 1;
-            overflow-y: auto;
+            overflow: hidden; /* Родитель НЕ скроллится */
             position: relative;
+            display: flex;
+            flex-direction: column;
         }
-
         .view {
             display: none;
             padding: 30px;
@@ -1393,14 +1394,14 @@
         #notes-view {
             display: flex;
             flex-direction: column;
-            height: 100%;
-            overflow: hidden; /* Отключаем скролл у родителя */
+            height: 100%; /* Заполняет всю высоту main */
+            overflow: hidden; 
         }
 
         #notes-list {
             flex: 1;
-            overflow-y: auto; /* Включаем скролл здесь */
-            padding-bottom: 50px;
+            overflow-y: auto; /* Скроллится только список */
+            padding-bottom: 20px; /* Уменьшил, чтобы не было огромной белой полосы */
         }
 
         /* Упрощаем карточку, убираем внутренний скролл, чтобы скроллился весь список */
