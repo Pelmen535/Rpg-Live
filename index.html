@@ -154,6 +154,8 @@
             padding: 30px;
             max-width: 1400px;
             margin: 0 auto;
+            overflow-y: auto !important; /* Позволяет листать любой экран вниз */
+            max-height: calc(100vh - 60px) !important; /* Ограничиваем высоту для появления скролла */
         }
 
             .view.active {
@@ -1966,7 +1968,7 @@
                 <p style="color: var(--text-dim); margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'VT323', monospace;">СИСТЕМАТИЗАЦИЯ НАУЧНЫХ ДАННЫХ И КОНСПЕКТОВ</p>
             </div>
             <div style="display: flex; gap: 15px; align-items: center;">
-                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 4px solid var(--text); color: #fff; padding: 8px 12px; font-family: var(--font-game); font-size: 1rem; min-width: 220px;">
+                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 4px solid var(--text); color: var(--text); padding: 8px 12px; font-family: var(--font-game); font-size: 1rem; min-width: 220px;">
                     <option value="all">ВСЕ КАТЕГОРИИ</option>
                     <option value="math">МАТЕМАТИКА / АЛГЕМ</option>
                     <option value="code">ПРОГРАММИРОВАНИЕ</option>
