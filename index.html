@@ -1338,58 +1338,56 @@
         
     
         /* Стили для функциональных заметок */
-        /* УЛЬТРА СТИЛИ ДЛЯ КАРТОЧЕК БАЗЫ ЗНАНИЙ */
+        /* РЕТРО-КИБЕРПАНК СТИЛИ ДЛЯ БАЗЫ ЗНАНИЙ */
         .note-card {
-            background: #121216 !important;
-            border: 1px solid var(--border) !important;
-            border-left: 5px solid var(--accent) !important;
-            padding: 22px !important;
-            border-radius: 6px !important;
-            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
-            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1) !important;
-            max-height: 160px; 
+            background-color: var(--panel) !important;
+            border: 4px solid var(--text) !important;
+            border-left: 10px solid var(--accent) !important;
+            border-radius: 0 !important;
+            padding: 20px !important;
+            margin-bottom: 20px !important;
+            box-shadow: 4px 4px 0px rgba(0, 0, 0, 0.3) !important;
+            max-height: 165px; 
             overflow: hidden;
             position: relative;
-            margin-bottom: 20px;
-            color: #ffffff !important;
+            transition: max-height 0.3s ease-out !important;
         }
 
         .note-card.expanded {
-            max-height: 10000px !important; /* Дает раскрыться любому объёму текста */
-            transition: max-height 0.4s ease-in !important;
+            max-height: 20000px !important; /* Полноценное раскрытие */
         }
 
-        .note-content {
+        .note-content-text {
             white-space: pre-wrap !important;
             word-wrap: break-word !important; 
             word-break: break-word !important;
             overflow-x: auto; 
             margin-top: 15px !important;
-            margin-bottom: 50px !important;
-            color: #e4e4e7 !important;
-            line-height: 1.6 !important;
-            font-size: 1.05rem !important;
+            margin-bottom: 60px !important;
+            color: var(--text-dim) !important;
+            line-height: 1.5 !important;
+            font-size: 1.1rem !important;
         }
 
-        /* Плавное размытие нижней кромки у свернутой карточки */
+        /* Нативное пиксельное затенение нижней кромки свернутой карточки */
         .note-card:not(.expanded)::after {
             content: '';
             position: absolute;
-            bottom: 55px;
+            bottom: 60px;
             left: 0;
             right: 0;
-            height: 60px;
-            background: linear-gradient(to bottom, transparent, #121216 90%) !important;
+            height: 50px;
+            background: linear-gradient(to bottom, transparent, var(--panel) 95%) !important;
             pointer-events: none;
         }
 
-        .note-actions {
+        .note-card-actions {
             position: absolute;
             bottom: 15px;
-            left: 22px;
+            left: 20px;
             display: flex;
-            gap: 12px;
-            z-index: 5;
+            gap: 15px;
+            z-index: 10;
         }
 
     </style>
@@ -1915,24 +1913,24 @@
     
     
     <!-- Экран Заметок -->
-    <div id="notes-view" class="view" style="overflow-y: auto; max-height: calc(100vh - 100px); padding-right: 5px;">
-        <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
+    <div id="notes-view" class="view">
+        <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; border-bottom: 4px solid var(--text); padding-bottom: 15px;">
             <div>
-                <h2 style="font-size: 2rem; color: var(--accent); margin: 0; text-transform: uppercase; font-family: 'VT323', monospace; letter-spacing: 2px;">
+                <h2 style="font-size: 2.5rem; color: var(--accent); margin: 0; text-transform: uppercase; font-family: 'VT323', monospace; letter-spacing: 2px;">
                     >_ БАЗА ЗНАНИЙ
                 </h2>
-                <p style="color: #fff; opacity: 0.7; margin: 5px 0 0 0; font-size: 0.95rem;">Систематизация лекций, формул и теории по навыкам</p>
+                <p style="color: var(--text-dim); margin: 5px 0 0 0; font-size: 1.1rem; font-family: 'VT323', monospace;">СИСТЕМАТИЗАЦИЯ НАУЧНЫХ ДАННЫХ И КОНСПЕКТОВ</p>
             </div>
-            <div style="display: flex; gap: 12px; align-items: center;">
-                <select id="noteFilter" onchange="renderNotes()" style="background: #0b0b0d; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; font-family: inherit; font-size: 0.95rem; min-width: 180px;">
-                    <option value="all">Все навыки</option>
-                    <option value="other">Общие / Разное</option>
+            <div style="display: flex; gap: 15px; align-items: center;">
+                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 4px solid var(--text); color: #fff; padding: 8px 12px; font-family: var(--font-game); font-size: 1rem; min-width: 200px;">
+                    <option value="all">ВСЕ НАВЫКИ</option>
+                    <option value="other">ОБЩИЕ / РАЗНОЕ</option>
                 </select>
-                <button class="btn btn-primary" onclick="openNewNoteModal()" style="height: 40px; padding: 0 20px; font-weight: bold;">+ Добавить запись</button>
+                <button class="btn btn-primary" onclick="openNewNoteModal()">+ ДОБАВИТЬ</button>
             </div>
         </div>
 
-        <div id="notes-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 60px;">
+        <div id="notes-list" style="display: flex; flex-direction: column; padding-bottom: 40px;">
             <!-- Карточки заметок генерируются динамически -->
         </div>
     </div>
@@ -4598,7 +4596,41 @@
         /* =========================================
         ЛОГИКА ЗАМЕТОК (Интегрировано из React)
         ========================================= */
+        // =========================================================
+        // ДИНАМИЧЕСКАЯ РЕГЕНЕРАЦИЯ ВЫПАДАЮЩИХ СПИСКОВ НАВЫКОВ
+        // =========================================================
+        function updateNotesSkillsSelects() {
+            const filterSelect = document.getElementById('noteFilter');
+            const categorySelect = document.getElementById('noteCategory');
+            
+            const currentFilter = filterSelect ? filterSelect.value : 'all';
+            const currentCat = categorySelect ? categorySelect.value : 'other';
+
+            if (filterSelect) {
+                filterSelect.innerHTML = '<option value="all">ВСЕ НАВЫКИ</option><option value="other">ОБЩИЕ / РАЗНОЕ</option>';
+                if (state.skills) {
+                    state.skills.forEach(skill => {
+                        filterSelect.innerHTML += `<option value="${skill.id}">${skill.name.toUpperCase()}</option>`;
+                    });
+                }
+                filterSelect.value = currentFilter;
+            }
+
+            if (categorySelect) {
+                categorySelect.innerHTML = '<option value="other">ОБЩИЕ / РАЗНОЕ</option>';
+                if (state.skills) {
+                    state.skills.forEach(skill => {
+                        categorySelect.innerHTML += `<option value="${skill.id}">${skill.name.toUpperCase()}</option>`;
+                    });
+                }
+                categorySelect.value = currentCat;
+            }
+        }
+
         function renderNotes() {
+            // Принудительно генерируем списки на основе реально созданных навыков
+            updateNotesSkillsSelects();
+
             const container = document.getElementById('notes-list');
             const filterEl = document.getElementById('noteFilter');
             const filter = filterEl ? filterEl.value : 'all';
@@ -4615,50 +4647,57 @@
                 const date = new Date(note.id || Date.now()).toLocaleString('ru-RU', {day: '2-digit', month: 'short', hour: '2-digit', minute:'2-digit'});
                 const cat = note.category || 'other';
                 
-                let catColor = '#706fd3'; // other
-                let catName = 'Разное';
+                let catColor = '#706fd3'; 
+                let catName = 'ОБЩЕЕ';
                 
-                if (cat === 'math') { catColor = '#ff5252'; catName = 'Матан'; }
-                if (cat === 'code') { catColor = '#33d9b2'; catName = 'Код'; }
-                if (cat === 'cyber') { catColor = '#ffb142'; catName = 'Кибербез'; }
+                // Ищем цвет и название среди реальных навыков
+                if (state.skills && cat !== 'other') {
+                    const linkedSkill = state.skills.find(s => String(s.id) === String(cat));
+                    if (linkedSkill) {
+                        catColor = linkedSkill.color || 'var(--accent)';
+                        catName = linkedSkill.name;
+                    }
+                }
                 
-                // ПОДДЕРЖКА СТАРЫХ ЗАМЕТОК
                 const noteText = note.text || note.content || '';
                 
                 return `
-                <div class="note-card" id="note-${note.id}" style="border-left-color: ${catColor}">
-                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 1px solid rgba(255,255,255,0.1); padding-bottom: 10px;">
-                        <span style="background: ${catColor}20; color: ${catColor}; border: 1px solid ${catColor}50; padding: 4px 10px; border-radius: 12px; font-size: 0.85em; font-weight: bold; letter-spacing: 1px;">
-                            ${catName}
+                <div class="note-card" id="note-${note.id}" style="border-left: 10px solid ${catColor} !important;">
+                    <div style="display: flex; justify-content: space-between; align-items: center; border-bottom: 2px solid var(--text); padding-bottom: 10px;">
+                        <span style="background: ${catColor}20; color: ${catColor}; border: 2px solid ${catColor}50; padding: 4px 10px; font-size: 0.85em; font-weight: bold; letter-spacing: 1px; font-family: var(--font-game);">
+                            ${catName.toUpperCase()}
                         </span>
-                        <small style="color: gray; font-family: monospace;">${date}</small>
+                        <small style="color: var(--text-dim); font-family: monospace;">${date}</small>
                     </div>
-                    <div class="note-content">
+                    <div class="note-content-text">
                         ${noteText}
                     </div>
-                    <div class="note-actions">
-                        <button class="btn btn-tertiary btn-sm" onclick="document.getElementById('note-${note.id}').classList.toggle('expanded')">📖 Раскрыть</button>
+                    <div class="note-card-actions">
+                        <button class="btn btn-tertiary btn-sm" onclick="document.getElementById('note-${note.id}').classList.toggle('expanded')">📖 Раскрыть/Свернуть</button>
                         <button class="btn btn-primary btn-sm" onclick="openEditNoteModal('${note.id}')">✎ Правка</button>
                         <button class="btn btn-danger btn-sm" onclick="if(confirm('Точно удалить?')) deleteNote('${note.id}')">🗑 Удалить</button>
                     </div>
                 </div>`;
-            }).join('') || '<div style="text-align: center; color: gray; padding: 40px; border: 1px dashed gray; border-radius: 8px;">В этой категории пока пусто. Добавь первую заметку!</div>';
+            }).join('') || '<div style="text-align: center; color: var(--text-dim); padding: 40px; border: 4px dashed var(--text); font-family: var(--font-game);">В ЭТОЙ КАТЕГОРИИ ПОКА ПУСТО.</div>';
             
             renderMath();
         }
 
         function openNewNoteModal() {
-            document.getElementById('noteModalTitle').innerText = "Новая запись";
+            updateNotesSkillsSelects();
+            document.getElementById('noteModalTitle').innerText = "НОВАЯ ЗАПИСЬ";
             document.getElementById('editNoteId').value = '';
             document.getElementById('noteText').value = '';
+            document.getElementById('noteCategory').value = 'other';
             document.getElementById('noteMathPreview').innerHTML = '';
             openModal('noteModal');
         }
 
         function openEditNoteModal(id) {
+            updateNotesSkillsSelects();
             const note = state.notes.find(n => String(n.id) === String(id));
             if (!note) return;
-            document.getElementById('noteModalTitle').innerText = "Редактировать запись";
+            document.getElementById('noteModalTitle').innerText = "РЕДАКТИРОВАТЬ ЗАПИСЬ";
             document.getElementById('editNoteId').value = id;
             document.getElementById('noteText').value = note.text || note.content || '';
             if(document.getElementById('noteCategory')) document.getElementById('noteCategory').value = note.category || 'other';
