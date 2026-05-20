@@ -2570,7 +2570,8 @@
             if (loader) loader.style.display = 'none';
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        document.getElementById(viewId).classList.add('active');
+        const targetView = document.getElementById(viewId) || document.getElementById(viewId + '-view');
+        if (targetView) targetView.classList.add('active');
 
         const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
         if(activeLink) {
@@ -2586,9 +2587,9 @@
         loadLeaderboard();
         renderSharedHabits();
         }
-        if(viewId === 'achievements') renderAchievements(); // Починит пустой список
+        if(viewId === 'achievements') renderAchievements(); 
         if(viewId === 'analytics') renderAnalytics();
-        if(viewId === 'notes') renderNotes();
+        if(viewId === 'notes' || viewId === 'notes-view') renderNotes();
 
         if (document.getElementById('userNickname') && state.user?.nickname) {
         document.getElementById('userNickname').value = state.user.nickname;
