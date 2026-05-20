@@ -1338,50 +1338,58 @@
         
     
         /* Стили для функциональных заметок */
+        /* УЛЬТРА СТИЛИ ДЛЯ КАРТОЧЕК БАЗЫ ЗНАНИЙ */
         .note-card {
-            background: var(--panel);
-            border-left: 4px solid var(--accent);
-            padding: 20px;
-            border-radius: 8px;
-            box-shadow: 0 4px 6px rgba(0,0,0,0.3);
-            transition: all 0.3s ease;
-            max-height: 180px; 
+            background: #121216 !important;
+            border: 1px solid var(--border) !important;
+            border-left: 5px solid var(--accent) !important;
+            padding: 22px !important;
+            border-radius: 6px !important;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.4) !important;
+            transition: max-height 0.4s cubic-bezier(0, 1, 0, 1) !important;
+            max-height: 160px; 
             overflow: hidden;
             position: relative;
-            margin-bottom: 15px;
+            margin-bottom: 20px;
+            color: #ffffff !important;
         }
 
         .note-card.expanded {
-            max-height: 5000px; 
+            max-height: 10000px !important; /* Дает раскрыться любому объёму текста */
+            transition: max-height 0.4s ease-in !important;
         }
 
         .note-content {
-            white-space: pre-wrap;
-            word-wrap: break-word; 
+            white-space: pre-wrap !important;
+            word-wrap: break-word !important; 
+            word-break: break-word !important;
             overflow-x: auto; 
-            margin-top: 10px;
-            margin-bottom: 40px;
-            color: #ddd;
-            line-height: 1.5;
+            margin-top: 15px !important;
+            margin-bottom: 50px !important;
+            color: #e4e4e7 !important;
+            line-height: 1.6 !important;
+            font-size: 1.05rem !important;
         }
 
+        /* Плавное размытие нижней кромки у свернутой карточки */
         .note-card:not(.expanded)::after {
             content: '';
             position: absolute;
-            bottom: 40px;
+            bottom: 55px;
             left: 0;
             right: 0;
             height: 60px;
-            background: linear-gradient(transparent, var(--panel));
+            background: linear-gradient(to bottom, transparent, #121216 90%) !important;
             pointer-events: none;
         }
 
         .note-actions {
             position: absolute;
             bottom: 15px;
-            left: 20px;
+            left: 22px;
             display: flex;
-            gap: 10px;
+            gap: 12px;
+            z-index: 5;
         }
 
     </style>
@@ -1414,7 +1422,7 @@
         
         <div class="nav-link mobile-more-target" onclick="switchView('store')" style="display: none;">Магазин</div>
         <div class="nav-link mobile-more-target" onclick="switchView('network')" style="display: none;">Сеть 🌐</div>
-        <div class="nav-link mobile-more-target" onclick="switchView('notes-view')" style="display: none;">Заметки</div>
+        <div class="nav-link mobile-more-target" onclick="switchView('notes')" style="display: none;">Заметки</div>
         <div class="nav-link mobile-more-target" onclick="switchView('analytics')" style="display: none;">Аналитика</div>
         <div class="nav-link mobile-more-target" onclick="switchView('achievements')" style="display: none;">Трофеи 🏆</div>
         <div class="nav-link mobile-more-target" onclick="switchView('info')" style="display: none;">Кодекс</div>
@@ -1907,54 +1915,48 @@
     
     
     <!-- Экран Заметок -->
-    <div id="notes-view" class="view">
-        <div class="view-header" style="flex-wrap: wrap;">
+    <div id="notes-view" class="view" style="overflow-y: auto; max-height: calc(100vh - 100px); padding-right: 5px;">
+        <div class="view-header" style="display: flex; justify-content: space-between; align-items: center; flex-wrap: wrap; gap: 15px; margin-bottom: 25px; border-bottom: 1px solid var(--border); padding-bottom: 15px;">
             <div>
-                <h2 style="font-size: 2rem; color: var(--accent); margin: 0; text-transform: uppercase;">
+                <h2 style="font-size: 2rem; color: var(--accent); margin: 0; text-transform: uppercase; font-family: 'VT323', monospace; letter-spacing: 2px;">
                     >_ БАЗА ЗНАНИЙ
                 </h2>
-                <p style="color: var(--text); opacity: 0.7; margin: 5px 0 0 0;">Хранилище лекций, инсайтов и идей</p>
+                <p style="color: #fff; opacity: 0.7; margin: 5px 0 0 0; font-size: 0.95rem;">Систематизация лекций, формул и теории по навыкам</p>
             </div>
-            <div style="display: flex; gap: 10px; align-items: center;">
-                <select id="noteFilter" onchange="renderNotes()" style="background: var(--bg); border: 1px solid var(--text); color: var(--text); padding: 8px; border-radius: 4px; font-family: inherit;">
-                    <option value="all">Все заметки</option>
-                    <option value="math">Математика</option>
-                    <option value="code">Программирование</option>
-                    <option value="cyber">Кибербез</option>
-                    <option value="other">Разное</option>
+            <div style="display: flex; gap: 12px; align-items: center;">
+                <select id="noteFilter" onchange="renderNotes()" style="background: #0b0b0d; border: 1px solid var(--border); color: #fff; padding: 10px; border-radius: 4px; font-family: inherit; font-size: 0.95rem; min-width: 180px;">
+                    <option value="all">Все навыки</option>
+                    <option value="other">Общие / Разное</option>
                 </select>
-                <button class="btn btn-primary" onclick="openNewNoteModal()">+ Добавить</button>
+                <button class="btn btn-primary" onclick="openNewNoteModal()" style="height: 40px; padding: 0 20px; font-weight: bold;">+ Добавить запись</button>
             </div>
         </div>
 
-        <div id="notes-list" style="display: flex; flex-direction: column; padding-bottom: 50px;">
-            <!-- Карточки будут здесь -->
+        <div id="notes-list" style="display: flex; flex-direction: column; gap: 20px; padding-bottom: 60px;">
+            <!-- Карточки заметок генерируются динамически -->
         </div>
     </div>
 
     <!-- Модальное окно Заметок -->
     <div id="noteModal" class="modal">
-        <div class="modal-content" style="max-width: 800px; width: 90%;">
-            <h3 id="noteModalTitle">Новая запись</h3>
+        <div class="modal-content" style="max-width: 800px; width: 92%; background: #121216; border: 2px solid var(--border); box-shadow: 0 0 20px rgba(0,242,255,0.15);">
+            <h3 id="noteModalTitle" style="font-family: 'VT323', monospace; font-size: 1.8rem; color: var(--accent); margin-top: 0; text-transform: uppercase;">Новая запись</h3>
             <input type="hidden" id="editNoteId">
             
-            <label style="color: var(--accent);">Категория</label>
-            <select id="noteCategory" style="width: 100%; background: var(--bg); border: 1px solid var(--text); color: white; padding: 10px; margin-bottom: 15px; border-radius: 4px; font-family: inherit;">
-                <option value="math">Математика</option>
-                <option value="code">Программирование</option>
-                <option value="cyber">Кибербезопасность</option>
-                <option value="other">Другое</option>
+            <label style="color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block;">Привязать к навыку</label>
+            <select id="noteCategory" style="width: 100%; background: #0b0b0d; border: 1px solid var(--border); color: #fff; padding: 12px; margin-bottom: 18px; border-radius: 4px; font-family: inherit; font-size: 1rem;">
+                <option value="other">Общие / Разное</option>
             </select>
 
-            <label style="color: var(--accent);">Текст (Поддерживается LaTeX)</label>
-            <textarea id="noteText" placeholder="Пиши здесь..." oninput="updateMathPreview('noteText', 'noteMathPreview')" style="min-height: 200px; width: 100%; padding: 10px; background: var(--bg); color: var(--text); border: 1px solid var(--text); border-radius: 4px; font-family: monospace; margin-bottom: 10px;"></textarea>
+            <label style="color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block;">Теория / Текст (Поддерживается LaTeX: $...$ или $$...$$)</label>
+            <textarea id="noteText" placeholder="Введи текст лекции, формулы или шпаргалку..." oninput="updateMathPreview('noteText', 'noteMathPreview')" style="min-height: 250px; width: 100%; padding: 12px; background: #0b0b0d; color: #fff; border: 1px solid var(--border); border-radius: 4px; font-family: 'Courier New', monospace; margin-bottom: 15px; font-size: 1rem; line-height: 1.4; resize: vertical;"></textarea>
             
-            <label style="color: var(--accent);">Живой предпросмотр:</label>
-            <div id="noteMathPreview" style="margin-top: 5px; padding: 15px; background: rgba(0,0,0,0.3); border-radius: 4px; min-height: 50px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; color: white;"></div>
+            <label style="color: var(--accent); font-weight: bold; margin-bottom: 5px; display: block;">Результат рендеринга (Live Preview):</label>
+            <div id="noteMathPreview" style="padding: 15px; background: rgba(0,0,0,0.4); border: 1px dashed var(--border); border-radius: 4px; min-height: 60px; overflow-x: auto; white-space: pre-wrap; word-wrap: break-word; color: #fff; font-size: 1rem;"></div>
             
-            <div class="modal-buttons" style="margin-top: 20px;">
-                <button class="btn btn-primary" onclick="saveNote()">Сохранить</button>
-                <button class="btn btn-tertiary" onclick="closeModals()">Отмена</button>
+            <div class="modal-buttons" style="margin-top: 25px; display: flex; gap: 12px; justify-content: flex-end;">
+                <button class="btn btn-primary" onclick="saveNote()" style="padding: 0 25px; height: 44px; font-weight: bold;">💾 Сохранить</button>
+                <button class="btn btn-tertiary" onclick="closeModals()" style="padding: 0 20px; height: 44px;">Отмена</button>
             </div>
         </div>
     </div>
@@ -2518,7 +2520,6 @@
 
         pushState();
         render();
-        renderNotes();
         }
 
         /* =========================================
@@ -2571,8 +2572,7 @@
             if (loader) loader.style.display = 'none';
         document.querySelectorAll('.view').forEach(v => v.classList.remove('active'));
         document.querySelectorAll('.nav-link').forEach(n => n.classList.remove('active'));
-        const targetView = document.getElementById(viewId) || document.getElementById(viewId + '-view') || document.getElementById('notes-view');
-        if (targetView) targetView.classList.add('active');
+        document.getElementById(viewId).classList.add('active');
 
         const activeLink = document.querySelector(`.nav-link[onclick*="${viewId}"]`);
         if(activeLink) {
@@ -2588,12 +2588,9 @@
         loadLeaderboard();
         renderSharedHabits();
         }
-        if(viewId === 'achievements') renderAchievements(); 
+        if(viewId === 'achievements') renderAchievements(); // Починит пустой список
         if(viewId === 'analytics') renderAnalytics();
-        if(viewId === 'notes' || viewId === 'notes-view' || viewId.includes('note')) {
-            console.log("=== switchView: переключение на заметки активировано ===");
-            renderNotes();
-        }
+        if(viewId === 'notes') renderNotes();
 
         if (document.getElementById('userNickname') && state.user?.nickname) {
         document.getElementById('userNickname').value = state.user.nickname;
@@ -2671,7 +2668,6 @@
         closeModals();
         save();
         render();
-        renderNotes();
         }
 
         /* =========================================
@@ -2791,7 +2787,6 @@
         syncNote(finalId, goalName, goalNotes, "Цель", skillId);
         save();
         render();
-        renderNotes();
         }
 
         function deleteGoal() {
@@ -3128,7 +3123,6 @@
             document.getElementById('tab-static').style.color = tab === 'static' ? '#000' : 'var(--text)';
             
             render();
-        renderNotes();
         }
 
         function toggleTaskDone(type, key, id, dateStr = '') {
