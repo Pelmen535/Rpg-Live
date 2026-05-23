@@ -1344,6 +1344,20 @@
             color: var(--text-dim);
             white-space: pre-wrap;
             transition: max-height 0.3s ease;
+            word-wrap: break-word;
+            overflow-wrap: break-word;
+            word-break: break-word;
+            max-width: 100%;
+            overflow-x: auto;
+        }
+        
+        /* Предотвращение вылаза MathJax формул за пределы карточек */
+        .note-content-text mjx-container,
+        .note-content-text .MathJax,
+        .note-content-text .MathJax_Display {
+            max-width: 100% !important;
+            overflow-x: auto !important;
+            overflow-y: hidden !important;
         }
         .note-content-text.collapsible {
             max-height: 100px;
@@ -4614,7 +4628,7 @@
                 return `
                 <div class="card" style="border-left: 3px solid ${borderColor}">
                     <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
-                        <h3 style="margin:0; font-size:1em; display:flex; align-items:center; flex-wrap:wrap; gap:5px;">
+                        <h3 style="margin:0; font-size:1em; display:flex; align-items:center; flex-wrap:wrap; gap:5px; word-wrap:break-word; overflow-wrap:break-word; word-break:break-word; max-width:100%;">
                             ${badgeHtml}
                             <span>${note.title}</span>
                         </h3>
