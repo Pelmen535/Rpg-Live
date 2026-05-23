@@ -1334,8 +1334,39 @@
             opacity: 1;
             border-top: 1px solid var(--border);
         }
-    
-        
+
+        /* =========================================
+           ДОПОЛНИТЕЛЬНЫЕ СТИЛИ ДЛЯ ЗАМЕТОК
+        ========================================= */
+        .note-content-text {
+            font-size: 0.9em;
+            margin: 15px 0;
+            color: var(--text-dim);
+            white-space: pre-wrap;
+            transition: max-height 0.3s ease;
+        }
+        .note-content-text.collapsible {
+            max-height: 100px;
+            overflow: hidden;
+            position: relative;
+        }
+        .note-content-text.collapsible::after {
+            content: '';
+            position: absolute;
+            bottom: 0;
+            left: 0;
+            width: 100%;
+            height: 40px;
+            background: linear-gradient(transparent, var(--panel));
+            pointer-events: none;
+            transition: opacity 0.3s ease;
+        }
+        .note-content-text.collapsible.expanded {
+            max-height: 2000px;
+        }
+        .note-content-text.collapsible.expanded::after {
+            opacity: 0;
+        }
     </style>
     <script>
         window.MathJax = {
@@ -1632,9 +1663,18 @@
        
 
         <div id="notes" class="view">
-            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px;">
+            <div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 20px; flex-wrap: wrap; gap: 15px;">
                 <h2>База Знаний / Заметки</h2>
-                <button class="btn btn-primary" onclick="createNewNote()">+ Создать заметку</button>
+                <div style="display: flex; gap: 15px; align-items: center; flex-wrap: wrap;">
+                    <div style="display: flex; align-items: center; gap: 8px;">
+                        <span style="font-size: 0.9em; color: var(--text-dim); text-transform: uppercase;">Фильтр:</span>
+                        <select id="filterNotesSkill" onchange="renderNotes()" style="background-color: var(--panel); border: 2px solid var(--text); padding: 5px 10px; color: var(--text); font-family: var(--font-game); font-size: 0.9em; border-radius: 0; outline: none; cursor: pointer; box-shadow: 2px 2px 0px rgba(0,0,0,0.15); min-height: auto;">
+                            <option value="all">Все заметки</option>
+                            <option value="none">Без навыка</option>
+                        </select>
+                    </div>
+                    <button class="btn btn-primary" onclick="createNewNote()">+ Создать заметку</button>
+                </div>
             </div>
             <div id="notes-container" style="display: grid; grid-template-columns: repeat(auto-fill, minmax(300px, 1fr)); gap: 20px;">
             </div>
@@ -1933,6 +1973,10 @@
             <h3>Новая заметка</h3>
             <label>Заголовок</label>
             <input type="text" id="newNoteTitle" placeholder="Тема заметки">
+            <label>Связать с навыком</label>
+            <select id="newNoteSkillId" style="width: 100%; background-color: #0b0b0d; border: 1px solid var(--border); color: #ffffff; padding: 14px; margin-bottom: 20px; border-radius: 4px; font-family: var(--font-game);">
+                <option value="">Без навыка</option>
+            </select>
             <label>Текст заметки</label>
             <textarea id="newNoteContent" placeholder="Пишите сюда..."></textarea>
             <div class="modal-buttons" style="margin-top:25px;">
@@ -4495,64 +4539,154 @@
         /* =========================================
         ЛОГИКА ЗАМЕТОК (Интегрировано из React)
         ========================================= */
-        function renderNotes() {
-        const container = document.getElementById('notes-container');
-        if (!container) return;
+        if (!window.expandedNotes) {
+            window.expandedNotes = new Set();
+        }
 
-        container.innerHTML = (state.notes || []).map((note, idx) => `
-        <div class="card" style="border-left: 3px solid ${note.sourceId ? 'var(--accent)' : 'var(--border)'}">
-        <div style="display:flex; justify-content:space-between;">
-        <h3 style="margin:0; font-size:1em;">${note.title}</h3>
-        <span style="font-size:0.7em; color:var(--text-dim);">${note.date}</span>
-        </div>
-        <p style="font-size:0.9em; margin:15px 0; color:var(--text-dim); white-space:pre-wrap;">${note.content}</p>
-        <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px;">
-        ${note.sourceId ? `
-        <button class="btn btn-secondary" style="font-size:0.7em; padding:5px 10px;"
-        onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
-        ` : ''}
-        <button class="btn btn-danger" style="font-size:0.7em; padding:5px 10px;" onclick="deleteNote(${idx})">Удалить</button>
-        </div>
-        </div>
-        `).join('') || '<p>Заметок пока нет.</p>';
-        renderMath();
+        function toggleNoteExpand(noteId) {
+            if (window.expandedNotes.has(noteId)) {
+                window.expandedNotes.delete(noteId);
+            } else {
+                window.expandedNotes.add(noteId);
+            }
+            renderNotes();
+        }
+
+        function deleteNoteById(noteId) {
+            if (confirm("Удалить эту заметку?")) {
+                const index = state.notes.findIndex(n => n.id === noteId);
+                if (index !== -1) {
+                    state.notes.splice(index, 1);
+                    renderNotes();
+                    save();
+                }
+            }
+        }
+
+        function renderNotes() {
+            const container = document.getElementById('notes-container');
+            if (!container) return;
+
+            // Обеспечиваем обратную совместимость - добавляем id старым заметкам
+            if (!state.notes) state.notes = [];
+            state.notes.forEach((note, idx) => {
+                if (!note.id) {
+                    note.id = 'note_' + idx + '_' + Date.now();
+                }
+            });
+
+            // Обновляем список фильтра по навыкам
+            const filterSelect = document.getElementById('filterNotesSkill');
+            if (filterSelect) {
+                const selectedVal = filterSelect.value || 'all';
+                let optionsHtml = '<option value="all">Все заметки</option><option value="none">Без навыка</option>';
+                (state.skills || []).forEach(s => {
+                    optionsHtml += `<option value="${s.id}">${s.name}</option>`;
+                });
+                filterSelect.innerHTML = optionsHtml;
+                filterSelect.value = selectedVal;
+            }
+
+            const filterSkillId = filterSelect ? filterSelect.value : 'all';
+
+            // Фильтруем заметки
+            let filteredNotes = state.notes || [];
+            if (filterSkillId !== 'all') {
+                if (filterSkillId === 'none') {
+                    filteredNotes = filteredNotes.filter(n => !n.skillId);
+                } else {
+                    filteredNotes = filteredNotes.filter(n => n.skillId === filterSkillId);
+                }
+            }
+
+            container.innerHTML = filteredNotes.map((note, idx) => {
+                const skill = note.skillId ? (state.skills || []).find(s => s.id === note.skillId) : null;
+                const borderColor = skill ? skill.color : (note.sourceId ? 'var(--accent)' : 'var(--border)');
+                const badgeHtml = skill ? `
+                    <span style="font-size:0.7em; background-color:${skill.color}22; color:${borderColor}; border: 1px solid ${borderColor}; padding:2px 6px; border-radius:4px; margin-right:8px; display:inline-block; font-weight:bold; vertical-align:middle;">
+                        ${skill.name}
+                    </span>
+                ` : '';
+
+                const isLong = note.content.length > 200 || note.content.split('\n').length > 4;
+                const isExpanded = window.expandedNotes.has(note.id);
+
+                return `
+                <div class="card" style="border-left: 3px solid ${borderColor}">
+                    <div style="display:flex; justify-content:space-between; align-items:center; flex-wrap:wrap; gap:5px; margin-bottom:10px;">
+                        <h3 style="margin:0; font-size:1em; display:flex; align-items:center; flex-wrap:wrap; gap:5px;">
+                            ${badgeHtml}
+                            <span>${note.title}</span>
+                        </h3>
+                        <span style="font-size:0.7em; color:var(--text-dim);">${note.date}</span>
+                    </div>
+                    <p class="note-content-text ${isLong ? 'collapsible' : ''} ${isExpanded ? 'expanded' : ''}">${note.content}</p>
+                    <div style="display:flex; gap:10px; border-top:1px solid var(--border); padding-top:10px; flex-wrap:wrap; margin-top:10px;">
+                        ${isLong ? `
+                            <button class="btn btn-secondary" style="font-size:0.7em; padding:5px 10px; min-height:auto;" onclick="toggleNoteExpand('${note.id}')">
+                                ${isExpanded ? 'Свернуть' : 'Развернуть'}
+                            </button>
+                        ` : ''}
+                        ${note.sourceId ? `
+                            <button class="btn btn-secondary" style="font-size:0.7em; padding:5px 10px; min-height:auto;" onclick="goToNoteSource('${note.sourceType}', '${note.skillId}')">Перейти к объекту</button>
+                        ` : ''}
+                        <button class="btn btn-danger" style="font-size:0.7em; padding:5px 10px; min-height:auto;" onclick="deleteNoteById('${note.id}')">Удалить</button>
+                    </div>
+                </div>
+                `;
+            }).join('') || '<p style="color:var(--text-dim); grid-column: 1 / -1;">Заметок пока нет.</p>';
+
+            renderMath();
         }
 
         function goToNoteSource(type, skillId) {
-        if (type === "Цель" || type === "Навык") {
-        switchView('skills');
-        } else if (type === "Узел графа") {
-        openTreeCanvas(skillId);
-        }
+            if (type === "Цель" || type === "Навык") {
+                switchView('skills');
+            } else if (type === "Узел графа") {
+                openTreeCanvas(skillId);
+            }
         }
 
         function createNewNote() {
-        document.getElementById('newNoteTitle').value = '';
-        document.getElementById('newNoteContent').value = '';
-        openModal('createNoteModal');
+            document.getElementById('newNoteTitle').value = '';
+            document.getElementById('newNoteContent').value = '';
+            
+            const skillSelect = document.getElementById('newNoteSkillId');
+            if (skillSelect) {
+                skillSelect.innerHTML = '<option value="">Без навыка</option>';
+                (state.skills || []).forEach(s => {
+                    skillSelect.innerHTML += `<option value="${s.id}">${s.name}</option>`;
+                });
+            }
+            
+            openModal('createNoteModal');
         }
 
         function saveNewNote() {
-        const title = document.getElementById('newNoteTitle').value;
-        const content = document.getElementById('newNoteContent').value;
-        if(!title || !content) return;
+            const title = document.getElementById('newNoteTitle').value;
+            const content = document.getElementById('newNoteContent').value;
+            const skillId = document.getElementById('newNoteSkillId')?.value || null;
+            if(!title || !content) return;
 
-        if(!state.notes) state.notes = [];
-        state.notes.push({
-        title: title,
-        content: content,
-        date: new Date().toLocaleDateString()
-        });
-        closeModals();
-        renderNotes();
-        save();
+            if(!state.notes) state.notes = [];
+            state.notes.push({
+                id: 'note_' + Date.now(),
+                title: title,
+                content: content,
+                date: new Date().toLocaleDateString(),
+                skillId: skillId
+            });
+            closeModals();
+            renderNotes();
+            save();
         }
 
         function deleteNote(index) {
-        if(confirm("Удалить эту заметку?")) {
-        state.notes.splice(index, 1);
-        renderNotes();
-        }
+            if(confirm("Удалить эту заметку?")) {
+                state.notes.splice(index, 1);
+                renderNotes();
+                save();
+            }
         }
 
         /* =========================================
